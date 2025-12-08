@@ -1,0 +1,15 @@
+.DS_Store
+*.log
+
+# Nix
+result
+result-*
+
+# Editor
+.vscode/
+.idea/
+
+# User-specific
+*.swp
+*.swo
+*~
