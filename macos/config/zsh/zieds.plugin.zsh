@@ -1,9 +1,4 @@
 # Zied's Oh My Zsh plugin
-# Exports and aliases from vars_and_aliases.sh moved here so users can enable as a plugin
-#
-# Added: an interactive `cleanup` function you can call from the terminal to
-# perform the same interactive cleanup behavior previously implemented in
-# zsh/macos/cleanup.sh
 
 # Environment variables
 export PATH="$PATH:$(go env GOPATH)/bin"
@@ -25,34 +20,49 @@ alias vim='nvim'
 alias vi='nvim'
 alias v='nvim'
 
-# Helpful aliases
 alias ll='ls -la'
-alias gcb='git fetch --prune && git branch -vv | grep ': gone]' | awk '{print $1}' | xargs -n 1 git branch -d'
+alias gcb='git fetch --prune && git branch -vv | grep ": gone]" | awk "{print \$1}" | xargs -n 1 git branch -d'
 
-# Quick shortcut to exit GUI agents for the current user
-bootout-gui(){ launchctl bootout gui/$UID }
-
-# Ensure oh-my-zsh 'git' plugin doesn't leave 'gd' alias (git diff) enabled if the
-# user prefers not to have it. This unaliases `gd` after plugins are loaded.
-# The git plugin defines a number of short aliases (like 'gd') and we intentionally
-# remove this one here so `gd` is no longer an alias in the user's shell.
 unalias gd 2>/dev/null || true
 
-# Convenience directory function
 mkd() { mkdir -p -- "$1" && cd -P -- "$1"; }
 
-# Reload zsh configuration
 reload-zsh() { source "$HOME/.zshrc" && echo "zsh reloaded"; }
 
-# ---------------------------------------------------------------------
-# Interactive cleanup function
-# Usage: run `cleanup` in a directory to interactively mark files/directories
-# for deletion, review the selection, and confirm final removal.
-#
-# This mirrors the behavior in zsh/macos/cleanup.sh but as an in-shell function.
-# ---------------------------------------------------------------------
+# Tool aliases
+alias ls='eza --icons --group-directories-first --git --color=always'
+alias find='fd'
+alias grep='rg'
+alias rg='rg --color=always --smart-case --hidden --glob "!.git/*" --glob "!.svn/*" --glob "!.hg/*" --glob "!node_modules/*"'
+alias lg='lazygit'
+alias ff='fastfetch'
+alias oc='opencode'
+alias zeze='zoxide edit'
+alias tmux='tmux -f $XDG_CONFIG_HOME/tmux/tmux.conf'
+
+export TERM="xterm-256color"
+
+# Fuzzy file picker - opens selection in neovim
+pf() {
+  local file
+  file=$(fzf --preview='bat {} --color=always --style=numbers' --bind shift-up:preview-page-up,shift-down:preview-page-down)
+  [ -n "$file" ] && nvim "$file"
+}
+
+# Update packages (macOS implementation)
+update() {
+  echo "Updating packages..."
+  brew update && brew upgrade && brew cleanup
+  echo "Packages updated successfully."
+}
+
+# macOS-specific: bootout GUI session
+bootout-gui() { launchctl bootout gui/$UID }
+
+# zoxide initialization (run: eval "$(zoxide init zsh)")
+eval "$(zoxide init zsh)"
+
 cleanup() {
-  # Ensure we're running in an interactive terminal for prompts
   if [[ -z "$PS1" ]]; then
     echo "cleanup: Cette commande est prévue pour un usage interactif."
     return 1
@@ -64,21 +74,17 @@ cleanup() {
 
   typeset -A deletions_to_perform
 
-  # Use a glob that includes hidden files; iterate hidden first for predictable ordering.
   for item in .* *; do
-    # Skip the special entries
     if [[ "$item" == "." || "$item" == ".." ]]; then
       continue
     fi
 
-    # Skip if it doesn't exist (handles some shells where unmatched glob stays literal)
     if [[ ! -e "$item" && ! -L "$item" ]]; then
       continue
     fi
 
     echo "------------------------------------------------------"
     echo "Voulez-vous supprimer '$item' ? (y/n/q pour quitter)"
-    # -q reads a single char silently; we'll print a newline after
     read -q "choice?Votre choix, étoile filante : "
     echo ""
 
@@ -157,5 +163,3 @@ cleanup() {
 
   echo "Fin du processus. Que la lumière guide tes pas. 🌟"
 }
-
-# End of plugin
