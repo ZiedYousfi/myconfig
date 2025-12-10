@@ -6,7 +6,6 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_DIR="$SCRIPT_DIR/../config"
 PLATFORM_CONFIG_DIR="$SCRIPT_DIR/config"
 
 # Colors for output
@@ -190,7 +189,7 @@ install_zsh_plugins() {
     local ZIEDS_PLUGIN_DIR="$ZSH_CUSTOM/plugins/zieds"
     mkdir -p "$ZIEDS_PLUGIN_DIR"
     log_info "Installing zieds custom plugin..."
-    cp "$CONFIG_DIR/zsh/zieds.plugin.zsh" "$ZIEDS_PLUGIN_DIR/zieds.plugin.zsh"
+    cp "$PLATFORM_CONFIG_DIR/zsh/zieds.plugin.zsh" "$ZIEDS_PLUGIN_DIR/zieds.plugin.zsh"
     log_success "zieds plugin installed"
 }
 
@@ -292,9 +291,9 @@ install_lazyvim() {
     log_info "Installing custom Neovim plugins..."
     mkdir -p "$NVIM_CONFIG_DIR/lua/plugins"
 
-    cp "$CONFIG_DIR/nvim/lua/plugins/avante.lua" "$NVIM_CONFIG_DIR/lua/plugins/avante.lua"
-    cp "$CONFIG_DIR/nvim/lua/plugins/auto-save.lua" "$NVIM_CONFIG_DIR/lua/plugins/auto-save.lua"
-    cp "$CONFIG_DIR/nvim/lua/plugins/colorscheme.lua" "$NVIM_CONFIG_DIR/lua/plugins/colorscheme.lua"
+    cp "$PLATFORM_CONFIG_DIR/nvim/lua/plugins/avante.lua" "$NVIM_CONFIG_DIR/lua/plugins/avante.lua"
+    cp "$PLATFORM_CONFIG_DIR/nvim/lua/plugins/auto-save.lua" "$NVIM_CONFIG_DIR/lua/plugins/auto-save.lua"
+    cp "$PLATFORM_CONFIG_DIR/nvim/lua/plugins/colorscheme.lua" "$NVIM_CONFIG_DIR/lua/plugins/colorscheme.lua"
 
     log_success "Custom Neovim plugins installed"
 }
