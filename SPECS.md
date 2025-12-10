@@ -427,7 +427,7 @@ System information display.
 
 ---
 
-## opencode
+## sst/opencode
 
 AI coding assistant CLI.
 
