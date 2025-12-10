@@ -108,11 +108,13 @@ install_packages() {
     # Cask applications
     install_brew_package "ghostty" "true"
 
-    # opencode (if available via brew, otherwise manual install may be needed)
-    if brew search opencode | grep -q "^opencode$"; then
-        install_brew_package "opencode"
+    # opencode (install SST version from sst/tap)
+    if brew list "sst/tap/opencode" &>/dev/null; then
+        log_success "SST opencode is already installed"
     else
-        log_warning "opencode not found in Homebrew. You may need to install it manually."
+        log_info "Installing SST opencode..."
+        brew install sst/tap/opencode
+        log_success "SST opencode installed"
     fi
 
     log_success "All packages installed"
