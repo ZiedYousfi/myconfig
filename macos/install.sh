@@ -7,6 +7,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$SCRIPT_DIR/../config"
+PLATFORM_CONFIG_DIR="$SCRIPT_DIR/config"
 
 # Colors for output
 RED='\033[0;31m'
@@ -306,7 +307,7 @@ configure_ghostty() {
     log_info "Configuring Ghostty..."
 
     mkdir -p "$GHOSTTY_CONFIG_DIR"
-    cp "$CONFIG_DIR/ghostty/config" "$GHOSTTY_CONFIG_DIR/config"
+    cp "$PLATFORM_CONFIG_DIR/ghostty/config" "$GHOSTTY_CONFIG_DIR/config"
 
     log_success "Ghostty configured"
 }
