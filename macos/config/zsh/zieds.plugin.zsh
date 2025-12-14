@@ -27,6 +27,8 @@ unalias gd 2>/dev/null || true
 
 mkd() { mkdir -p -- "$1" && cd -P -- "$1"; }
 
+use-tmux() { /bin/bash --noprofile --norc -c "/opt/homebrew/bin/tmux has-session 2>/dev/null && /opt/homebrew/bin/tmux attach-session -d || /opt/homebrew/bin/tmux new-session"; }
+
 reload-zsh() { source "$HOME/.zshrc" && echo "zsh reloaded"; }
 
 # Tool aliases
