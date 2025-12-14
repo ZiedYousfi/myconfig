@@ -120,37 +120,6 @@ install_packages() {
 }
 
 # ============================================================================
-# Font Installation
-# ============================================================================
-
-install_fonts() {
-    log_info "Installing Departure Mono Nerd Font..."
-
-    # Add the Nerd Fonts tap if not already added
-    if ! brew tap | grep -q "homebrew/cask-fonts"; then
-        brew tap homebrew/cask-fonts 2>/dev/null || true
-    fi
-
-    # Try installing via Homebrew first
-    if brew list --cask font-departure-mono-nerd-font &>/dev/null; then
-        log_success "Departure Mono Nerd Font is already installed"
-    else
-        # Try the nerd-fonts tap
-        if ! brew tap | grep -q "^homebrew/cask-fonts$"; then
-            log_info "Adding fonts tap..."
-            brew tap homebrew/cask-fonts 2>/dev/null || true
-        fi
-
-        if brew install --cask font-departure-mono-nerd-font 2>/dev/null; then
-            log_success "Departure Mono Nerd Font installed via Homebrew"
-        else
-            log_warning "Could not install Departure Mono via Homebrew."
-            log_warning "Please install Departure Mono Nerd Font manually from https://www.nerdfonts.com/"
-        fi
-    fi
-}
-
-# ============================================================================
 # Oh My Zsh Installation
 # ============================================================================
 
@@ -290,8 +259,7 @@ install_lazyvim() {
     # Install custom plugins
     log_info "Installing custom Neovim plugins..."
     mkdir -p "$NVIM_CONFIG_DIR/lua/plugins"
-
-    cp "$PLATFORM_CONFIG_DIR/nvim/lua/plugins/avante.lua" "$NVIM_CONFIG_DIR/lua/plugins/avante.lua"
+    
     cp "$PLATFORM_CONFIG_DIR/nvim/lua/plugins/auto-save.lua" "$NVIM_CONFIG_DIR/lua/plugins/auto-save.lua"
     cp "$PLATFORM_CONFIG_DIR/nvim/lua/plugins/colorscheme.lua" "$NVIM_CONFIG_DIR/lua/plugins/colorscheme.lua"
 
@@ -352,9 +320,6 @@ main() {
 
     # Install all packages
     install_packages
-
-    # Install fonts
-    install_fonts
 
     # Setup Oh My Zsh and plugins
     install_oh_my_zsh
