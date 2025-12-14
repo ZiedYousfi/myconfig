@@ -16,10 +16,10 @@ Table of contents
 
 ## Quick start
 
-Clone the repository (replace `<repo_url>` with your repository's URL if remote):
+Clone the repository:
 
 ```setup-config/README.md#L1-L3
-git clone <repo_url>
+git clone https://github.com/ZiedYousfi/myconfig.git
 cd setup-config
 ```
 
