@@ -213,16 +213,6 @@ EOF
     log_success ".zshrc configured"
 }
 
-set_default_shell() {
-    if [ "$SHELL" = "$(which zsh)" ]; then
-        log_success "Zsh is already the default shell"
-    else
-        log_info "Setting Zsh as default shell..."
-        chsh -s "$(which zsh)"
-        log_success "Zsh set as default shell (requires logout to take effect)"
-    fi
-}
-
 # ============================================================================
 # Oh My Tmux Installation
 # ============================================================================
@@ -375,7 +365,6 @@ main() {
     install_oh_my_zsh
     install_zsh_plugins
     configure_zshrc
-    set_default_shell
 
     # Setup tmux with Oh My Tmux
     install_oh_my_tmux
