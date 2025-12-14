@@ -242,13 +242,22 @@ install_oh_my_tmux() {
         log_success "tmux.conf symlink created"
     fi
 
-    # Copy tmux.conf.local if it doesn't exist
+    # Copy tmux.conf.local from Oh My Tmux if it doesn't exist
     if [ -f "$TMUX_CONFIG_DIR/tmux.conf.local" ]; then
         log_success "tmux.conf.local already exists"
     else
-        log_info "Copying tmux.conf.local..."
+        log_info "Copying tmux.conf.local from Oh My Tmux..."
         cp "$OH_MY_TMUX_DIR/.tmux.conf.local" "$TMUX_CONFIG_DIR/tmux.conf.local"
         log_success "tmux.conf.local copied"
+    fi
+
+    # Append custom tmux settings if not already present
+    if ! grep -q "# Custom settings from setup-config" "$TMUX_CONFIG_DIR/tmux.conf.local"; then
+        log_info "Appending custom tmux settings..."
+        cat "$PLATFORM_CONFIG_DIR/tmux/tmux.conf.local" >> "$TMUX_CONFIG_DIR/tmux.conf.local"
+        log_success "Custom tmux settings appended"
+    else
+        log_success "Custom tmux settings already present"
     fi
 }
 
@@ -282,7 +291,7 @@ install_lazyvim() {
     # Install custom plugins
     log_info "Installing custom Neovim plugins..."
     mkdir -p "$NVIM_CONFIG_DIR/lua/plugins"
-    
+
     cp "$PLATFORM_CONFIG_DIR/nvim/lua/plugins/auto-save.lua" "$NVIM_CONFIG_DIR/lua/plugins/auto-save.lua"
     cp "$PLATFORM_CONFIG_DIR/nvim/lua/plugins/colorscheme.lua" "$NVIM_CONFIG_DIR/lua/plugins/colorscheme.lua"
 

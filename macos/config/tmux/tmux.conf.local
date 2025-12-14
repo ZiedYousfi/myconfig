@@ -1,0 +1,4 @@
+# Custom settings from setup-config
+
+# Set ZSH as the default shell
+set-option -g default-shell /bin/zsh
