@@ -282,8 +282,7 @@ install_lazyvim() {
     # Install custom plugins
     log_info "Installing custom Neovim plugins..."
     mkdir -p "$NVIM_CONFIG_DIR/lua/plugins"
-
-    cp "$PLATFORM_CONFIG_DIR/nvim/lua/plugins/avante.lua" "$NVIM_CONFIG_DIR/lua/plugins/avante.lua"
+    
     cp "$PLATFORM_CONFIG_DIR/nvim/lua/plugins/auto-save.lua" "$NVIM_CONFIG_DIR/lua/plugins/auto-save.lua"
     cp "$PLATFORM_CONFIG_DIR/nvim/lua/plugins/colorscheme.lua" "$NVIM_CONFIG_DIR/lua/plugins/colorscheme.lua"
 
