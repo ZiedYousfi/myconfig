@@ -198,8 +198,6 @@ Terminal emulator.
 ```
 fullscreen=true
 background = #000000
-font-size = 18
-font-family = "Departure Mono"
 command = <platform-specific command to attach or create tmux session>
 ```
 
@@ -437,18 +435,22 @@ AI coding assistant CLI.
 
 ---
 
-## Departure Mono
-
-Nerd Font used by terminal and editor. Must be installed system-wide.
-
----
-
 ## Platform-Specific Notes
 
 ### macOS
 
+- Package manager: **Homebrew**
 - Disable press-and-hold for key repeat: `defaults write ApplePressAndHoldEnabled -bool false`
 - `bootout-gui` function available: `bootout-gui() { launchctl bootout gui/$UID }`
+
+### Ubuntu/Linux
+
+- Package manager: **Homebrew** (Linuxbrew)
+- We use Homebrew on Linux because `apt` package versions are often outdated and limited. Homebrew provides up-to-date packages, handles architecture (amd64/arm64) automatically, and offers a consistent experience across macOS and Linux.
+- Essential system dependencies (`build-essential`, `curl`, `git`, `zsh`, etc.) are still installed via `apt` as they are required for Homebrew itself.
+- Ghostty is installed via a community script since it's not available in Homebrew for Linux.
+- Homebrew is installed to `/home/linuxbrew/.linuxbrew` (system-wide) or `$HOME/.linuxbrew` (user).
+- The `.zshrc` automatically sources the Homebrew shellenv for proper PATH setup.
 
 ---
 

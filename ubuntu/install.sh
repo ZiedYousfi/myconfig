@@ -2,6 +2,7 @@
 
 # Ubuntu Development Environment Setup Script
 # This script is idempotent - running it multiple times is safe
+# Uses Homebrew as the primary package manager for better package availability
 
 set -e
 
@@ -39,244 +40,85 @@ mkdir -p "$XDG_CONFIG_HOME"
 mkdir -p "$XDG_CACHE_HOME"
 
 # ============================================================================
-# System Update
+# System Update & Essential Dependencies
 # ============================================================================
 
-update_system() {
-    log_info "Updating system packages..."
+install_system_dependencies() {
+    log_info "Installing essential system dependencies via apt..."
     sudo apt update
-    sudo apt upgrade -y
-    log_success "System packages updated"
+    sudo apt install -y build-essential procps curl file git zsh
+    log_success "System dependencies installed"
 }
 
 # ============================================================================
-# APT Package Installation
+# Homebrew Installation
 # ============================================================================
 
-install_apt_package() {
+install_homebrew() {
+    if command -v brew &>/dev/null; then
+        log_success "Homebrew is already installed"
+    else
+        log_info "Installing Homebrew..."
+        NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        log_success "Homebrew installed"
+    fi
+
+    # Add Homebrew to PATH for this session
+    if [ -d "/home/linuxbrew/.linuxbrew" ]; then
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+    elif [ -d "$HOME/.linuxbrew" ]; then
+        eval "$($HOME/.linuxbrew/bin/brew shellenv)"
+    fi
+}
+
+# ============================================================================
+# Brew Package Installation
+# ============================================================================
+
+install_brew_package() {
     local package="$1"
-    if dpkg -l "$package" 2>/dev/null | grep -q "^ii"; then
+
+    if brew list "$package" &>/dev/null; then
         log_success "$package is already installed"
     else
         log_info "Installing $package..."
-        sudo apt install -y "$package"
+        brew install "$package"
         log_success "$package installed"
     fi
 }
 
-install_base_packages() {
-    log_info "Installing base packages via APT..."
+install_packages() {
+    log_info "Installing packages via Homebrew..."
 
-    # Essential build tools and dependencies
-    install_apt_package "build-essential"
-    install_apt_package "curl"
-    install_apt_package "wget"
-    install_apt_package "git"
-    install_apt_package "zsh"
-    install_apt_package "tmux"
-    install_apt_package "unzip"
-    install_apt_package "fontconfig"
-    install_apt_package "software-properties-common"
+    # Core tools
+    install_brew_package "git"
+    install_brew_package "zsh"
+    install_brew_package "tmux"
+    install_brew_package "neovim"
+    install_brew_package "go"
+    install_brew_package "llvm"
 
-    # btop
-    install_apt_package "btop"
+    # Modern CLI tools
+    install_brew_package "zoxide"
+    install_brew_package "eza"
+    install_brew_package "fd"
+    install_brew_package "fzf"
+    install_brew_package "ripgrep"
+    install_brew_package "bat"
+    install_brew_package "lazygit"
+    install_brew_package "btop"
+    install_brew_package "fastfetch"
 
-    log_success "Base packages installed"
-}
-
-# ============================================================================
-# Go Installation
-# ============================================================================
-
-install_go() {
-    if command -v go &>/dev/null; then
-        log_success "Go is already installed ($(go version))"
+    # opencode (install SST version from sst/tap)
+    if brew list "sst/tap/opencode" &>/dev/null; then
+        log_success "SST opencode is already installed"
     else
-        log_info "Installing Go..."
-        local GO_VERSION="1.22.5"
-        local GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz"
-
-        wget -q "https://go.dev/dl/${GO_TARBALL}" -O "/tmp/${GO_TARBALL}"
-        sudo rm -rf /usr/local/go
-        sudo tar -C /usr/local -xzf "/tmp/${GO_TARBALL}"
-        rm "/tmp/${GO_TARBALL}"
-
-        # Add to current session
-        export PATH="$PATH:/usr/local/go/bin"
-
-        log_success "Go ${GO_VERSION} installed"
+        log_info "Installing SST opencode..."
+        brew install sst/tap/opencode
+        log_success "SST opencode installed"
     fi
 
-    # Ensure Go is in PATH for this session
-    export PATH="$PATH:/usr/local/go/bin"
-    export PATH="$PATH:$(go env GOPATH)/bin"
-}
-
-# ============================================================================
-# LLVM/Clang Installation
-# ============================================================================
-
-install_clang() {
-    if command -v clang &>/dev/null; then
-        log_success "Clang is already installed ($(clang --version | head -n1))"
-    else
-        log_info "Installing LLVM/Clang..."
-        install_apt_package "clang"
-        install_apt_package "llvm"
-        log_success "LLVM/Clang installed"
-    fi
-}
-
-# ============================================================================
-# Neovim Installation (latest stable from GitHub releases)
-# ============================================================================
-
-install_neovim() {
-    if command -v nvim &>/dev/null; then
-        log_success "Neovim is already installed ($(nvim --version | head -n1))"
-    else
-        log_info "Installing Neovim..."
-
-        # Install latest stable from GitHub releases
-        local NVIM_VERSION="v0.10.1"
-        wget -q "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux64.tar.gz" -O /tmp/nvim-linux64.tar.gz
-        sudo rm -rf /opt/nvim
-        sudo tar -C /opt -xzf /tmp/nvim-linux64.tar.gz
-        sudo mv /opt/nvim-linux64 /opt/nvim
-        sudo ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim
-        rm /tmp/nvim-linux64.tar.gz
-
-        log_success "Neovim ${NVIM_VERSION} installed"
-    fi
-}
-
-# ============================================================================
-# Modern CLI Tools Installation
-# ============================================================================
-
-install_zoxide() {
-    if command -v zoxide &>/dev/null; then
-        log_success "zoxide is already installed"
-    else
-        log_info "Installing zoxide..."
-        curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
-        # Move to /usr/local/bin if installed to ~/.local/bin
-        if [ -f "$HOME/.local/bin/zoxide" ]; then
-            sudo mv "$HOME/.local/bin/zoxide" /usr/local/bin/
-        fi
-        log_success "zoxide installed"
-    fi
-}
-
-install_eza() {
-    if command -v eza &>/dev/null; then
-        log_success "eza is already installed"
-    else
-        log_info "Installing eza..."
-        # Add eza repository
-        sudo mkdir -p /etc/apt/keyrings
-        wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
-        echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
-        sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
-        sudo apt update
-        sudo apt install -y eza
-        log_success "eza installed"
-    fi
-}
-
-install_fd() {
-    if command -v fd &>/dev/null || command -v fdfind &>/dev/null; then
-        log_success "fd is already installed"
-    else
-        log_info "Installing fd..."
-        sudo apt install -y fd-find
-        # Create symlink from fdfind to fd
-        if [ ! -f /usr/local/bin/fd ] && command -v fdfind &>/dev/null; then
-            sudo ln -sf "$(which fdfind)" /usr/local/bin/fd
-        fi
-        log_success "fd installed"
-    fi
-}
-
-install_fzf() {
-    if command -v fzf &>/dev/null; then
-        log_success "fzf is already installed"
-    else
-        log_info "Installing fzf..."
-        sudo apt install -y fzf
-        log_success "fzf installed"
-    fi
-}
-
-install_ripgrep() {
-    if command -v rg &>/dev/null; then
-        log_success "ripgrep is already installed"
-    else
-        log_info "Installing ripgrep..."
-        sudo apt install -y ripgrep
-        log_success "ripgrep installed"
-    fi
-}
-
-install_bat() {
-    if command -v bat &>/dev/null || command -v batcat &>/dev/null; then
-        log_success "bat is already installed"
-    else
-        log_info "Installing bat..."
-        sudo apt install -y bat
-        # Create symlink from batcat to bat on Ubuntu
-        if [ ! -f /usr/local/bin/bat ] && command -v batcat &>/dev/null; then
-            sudo ln -sf "$(which batcat)" /usr/local/bin/bat
-        fi
-        log_success "bat installed"
-    fi
-}
-
-install_lazygit() {
-    if command -v lazygit &>/dev/null; then
-        log_success "lazygit is already installed"
-    else
-        log_info "Installing lazygit..."
-        LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-        curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-        sudo tar -xzf /tmp/lazygit.tar.gz -C /usr/local/bin lazygit
-        rm /tmp/lazygit.tar.gz
-        log_success "lazygit installed"
-    fi
-}
-
-install_fastfetch() {
-    if command -v fastfetch &>/dev/null; then
-        log_success "fastfetch is already installed"
-    else
-        log_info "Installing fastfetch..."
-        # Try to install from apt first (available in newer Ubuntu versions)
-        if apt-cache show fastfetch &>/dev/null; then
-            sudo apt install -y fastfetch
-        else
-            # Install from GitHub releases
-            FASTFETCH_VERSION=$(curl -s "https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest" | grep -Po '"tag_name": "\K[^"]*')
-            curl -Lo /tmp/fastfetch.deb "https://github.com/fastfetch-cli/fastfetch/releases/download/${FASTFETCH_VERSION}/fastfetch-linux-amd64.deb"
-            sudo dpkg -i /tmp/fastfetch.deb || sudo apt install -f -y
-            rm /tmp/fastfetch.deb
-        fi
-        log_success "fastfetch installed"
-    fi
-}
-
-install_modern_cli_tools() {
-    log_info "Installing modern CLI tools..."
-
-    install_zoxide
-    install_eza
-    install_fd
-    install_fzf
-    install_ripgrep
-    install_bat
-    install_lazygit
-    install_fastfetch
-
-    log_success "Modern CLI tools installed"
+    log_success "All packages installed"
 }
 
 # ============================================================================
@@ -287,85 +129,9 @@ install_ghostty() {
     if command -v ghostty &>/dev/null; then
         log_success "Ghostty is already installed"
     else
-        log_info "Installing Ghostty..."
-
-        # Ghostty requires building from source on Linux
-        # Dependencies
-        sudo apt install -y libgtk-4-dev libadwaita-1-dev git
-
-        # Check if zig is installed (needed to build Ghostty)
-        if ! command -v zig &>/dev/null; then
-            log_info "Installing Zig (required for Ghostty build)..."
-            local ZIG_VERSION="0.13.0"
-            wget -q "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" -O /tmp/zig.tar.xz
-            sudo tar -xf /tmp/zig.tar.xz -C /opt
-            sudo ln -sf "/opt/zig-linux-x86_64-${ZIG_VERSION}/zig" /usr/local/bin/zig
-            rm /tmp/zig.tar.xz
-            log_success "Zig installed"
-        fi
-
-        # Clone and build Ghostty
-        if [ ! -d "/tmp/ghostty" ]; then
-            git clone https://github.com/ghostty-org/ghostty.git /tmp/ghostty
-        fi
-
-        cd /tmp/ghostty
-        zig build -Doptimize=ReleaseFast
-
-        # Install binary
-        sudo cp zig-out/bin/ghostty /usr/local/bin/
-
-        # Install desktop file and icons if available
-        if [ -f "dist/linux/ghostty.desktop" ]; then
-            sudo cp dist/linux/ghostty.desktop /usr/share/applications/
-        fi
-
-        cd - > /dev/null
-        rm -rf /tmp/ghostty
-
+        log_info "Installing Ghostty via community script..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/mkasberg/ghostty-ubuntu/HEAD/install.sh)"
         log_success "Ghostty installed"
-    fi
-}
-
-# ============================================================================
-# OpenCode (SST) Installation
-# ============================================================================
-
-install_opencode() {
-    if command -v opencode &>/dev/null; then
-        log_success "opencode is already installed"
-    else
-        log_info "Installing opencode..."
-        # Install via Go
-        go install github.com/sst/opencode@latest
-        log_success "opencode installed"
-    fi
-}
-
-# ============================================================================
-# Font Installation
-# ============================================================================
-
-install_fonts() {
-    log_info "Installing Departure Mono Nerd Font..."
-
-    local FONT_DIR="$HOME/.local/share/fonts"
-    mkdir -p "$FONT_DIR"
-
-    if fc-list | grep -qi "Departure"; then
-        log_success "Departure Mono Nerd Font is already installed"
-    else
-        # Download Departure Mono Nerd Font
-        local NERD_FONTS_VERSION="v3.2.1"
-        wget -q "https://github.com/ryanoasis/nerd-fonts/releases/download/${NERD_FONTS_VERSION}/DepartureMono.zip" -O /tmp/DepartureMono.zip
-
-        unzip -q -o /tmp/DepartureMono.zip -d "$FONT_DIR"
-        rm /tmp/DepartureMono.zip
-
-        # Refresh font cache
-        fc-cache -fv
-
-        log_success "Departure Mono Nerd Font installed"
     fi
 }
 
@@ -428,8 +194,12 @@ configure_zshrc() {
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
-# Add Go to PATH
-export PATH="$PATH:/usr/local/go/bin"
+# Homebrew setup for Linux
+if [ -d "/home/linuxbrew/.linuxbrew" ]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+elif [ -d "$HOME/.linuxbrew" ]; then
+    eval "$($HOME/.linuxbrew/bin/brew shellenv)"
+fi
 
 # Theme
 ZSH_THEME="refined"
@@ -569,6 +339,7 @@ main() {
     echo ""
     echo "╔════════════════════════════════════════════════════════════════╗"
     echo "║         Ubuntu Development Environment Setup                   ║"
+    echo "║                   (Powered by Homebrew)                        ║"
     echo "╚════════════════════════════════════════════════════════════════╝"
     echo ""
 
@@ -578,38 +349,24 @@ main() {
         exit 1
     fi
 
-    # Check if running on Ubuntu/Debian-based system
-    if ! command -v apt &>/dev/null; then
-        log_error "This script requires apt package manager (Ubuntu/Debian)."
-        exit 1
+    # Install essential system dependencies via apt first
+    install_system_dependencies
+
+    # Install Homebrew
+    install_homebrew
+
+    # Ensure brew is in PATH for this session
+    if [ -d "/home/linuxbrew/.linuxbrew" ]; then
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+    elif [ -d "$HOME/.linuxbrew" ]; then
+        eval "$($HOME/.linuxbrew/bin/brew shellenv)"
     fi
 
-    # Update system first
-    update_system
+    # Install all packages via Homebrew
+    install_packages
 
-    # Install base packages (git first, then others)
-    install_base_packages
-
-    # Install Go (needed for some tools like opencode)
-    install_go
-
-    # Install Clang/LLVM
-    install_clang
-
-    # Install Neovim
-    install_neovim
-
-    # Install modern CLI tools
-    install_modern_cli_tools
-
-    # Install Ghostty (this can take a while as it builds from source)
+    # Install Ghostty (via community script, not available in brew for Linux)
     install_ghostty
-
-    # Install opencode
-    install_opencode
-
-    # Install fonts
-    install_fonts
 
     # Configure locale
     configure_locale
