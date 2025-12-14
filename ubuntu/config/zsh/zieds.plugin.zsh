@@ -1,7 +1,7 @@
 # Zied's Oh My Zsh plugin (Ubuntu version)
 
 # Environment variables
-export PATH="$PATH:$(go env GOPATH)/bin"
+export PATH="$PATH:$(go env GOPATH)/bin:$(brew--prefix)/bin:$(brew --prefix)/sbin"
 
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_CACHE_HOME="$HOME/.cache"
