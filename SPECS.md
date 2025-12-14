@@ -51,6 +51,12 @@ unalias gd 2>/dev/null || true
 
 mkd() { mkdir -p -- "$1" && cd -P -- "$1"; }
 
+use-tmux() {
+  # Platform-specific implementation:
+  # macOS: /bin/bash --noprofile --norc -c "/opt/homebrew/bin/tmux has-session 2>/dev/null && /opt/homebrew/bin/tmux attach-session -d || /opt/homebrew/bin/tmux new-session"
+  # Ubuntu: /bin/bash --noprofile --norc -c "/usr/bin/tmux has-session 2>/dev/null && /usr/bin/tmux attach-session -d || /usr/bin/tmux new-session"
+}
+
 reload-zsh() { source "$HOME/.zshrc" && echo "zsh reloaded"; }
 
 # Tool aliases
@@ -230,56 +236,6 @@ Text editor with LazyVim distribution.
 - Clone LazyVim starter from `https://github.com/LazyVim/starter` to `$XDG_CONFIG_HOME/nvim`
 - Remove the `.git` directory from the cloned config
 
-### Plugin: avante.nvim (`$XDG_CONFIG_HOME/nvim/lua/plugins/avante.lua`)
-
-```lua
-return {
-  {
-    "yetone/avante.nvim",
-    event = "VeryLazy",
-    version = false,
-    opts = {
-      provider = "copilot",
-      providers = {
-        copilot = {
-          model = "gpt-5-mini",
-        },
-      },
-    },
-    build = "make BUILD_FROM_SOURCE=true",
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter",
-      "stevearc/dressing.nvim",
-      "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
-      "nvim-mini/mini.pick",
-      "nvim-telescope/telescope.nvim",
-      "hrsh7th/nvim-cmp",
-      "ibhagwan/fzf-lua",
-      "nvim-tree/nvim-web-devicons",
-      "zbirenbaum/copilot.lua",
-      {
-        "HakonHarnes/img-clip.nvim",
-        event = "VeryLazy",
-        opts = {
-          default = {
-            embed_image_as_base64 = false,
-            prompt_for_file_name = false,
-            drag_and_drop = { insert_mode = true },
-            use_absolute_path = true,
-          },
-        },
-      },
-      {
-        "MeanderingProgrammer/render-markdown.nvim",
-        opts = { file_types = { "markdown", "Avante" } },
-        ft = { "markdown", "Avante" },
-      },
-    },
-  },
-}
-```
-
 ### Plugin: auto-save.nvim (`$XDG_CONFIG_HOME/nvim/lua/plugins/auto-save.lua`)
 
 ```lua
@@ -304,13 +260,13 @@ return {
 
 ```lua
 return {
-  { "thesimonho/kanagawa-paper.nvim" },
-  {
-    "LazyVim/LazyVim",
-    opts = {
-      colorscheme = "kanagawa-paper",
+    { "tanvirtin/monokai.nvim" },
+    {
+        "LazyVim/LazyVim",
+        opts = {
+            colorscheme = "monokai",
+        },
     },
-  },
 }
 ```
 
