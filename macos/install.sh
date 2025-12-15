@@ -155,17 +155,71 @@ stow_package() {
 
     log_info "Stowing $package to $target..."
 
-    # Use --restow to handle already stowed packages gracefully
-    # Use --no-folding to create directories instead of symlinking them
-    if stow --dir="$USER_DOTFILES_DIR" --target="$target" --restow --no-folding "$package" 2>/dev/null; then
+    # Try to stow and capture any error output
+    local stow_output
+    if stow_output=$(stow --dir="$USER_DOTFILES_DIR" --target="$target" --restow --no-folding "$package" 2>&1); then
         log_success "$package stowed successfully"
-    else
-        # If restow fails, try to adopt existing files and restow
-        log_warning "$package has conflicts, attempting to adopt and restow..."
-        stow --dir="$USER_DOTFILES_DIR" --target="$target" --adopt "$package"
-        stow --dir="$USER_DOTFILES_DIR" --target="$target" --restow --no-folding "$package"
-        log_success "$package adopted and restowed successfully"
+        return 0
     fi
+
+    # If we get here, there was a conflict
+    log_warning "$package has conflicts with existing files:"
+    echo ""
+
+    # Extract and display conflicting files from stow output
+    echo "$stow_output" | grep -E "(existing target|conflict)" | while read -r line; do
+        echo -e "  ${YELLOW}→${NC} $line"
+    done
+    echo ""
+
+    # Ask user what to do
+    echo -e "${BLUE}How would you like to resolve this conflict?${NC}"
+    echo "  [a] Adopt   - Keep existing files and bring them into ~/.dotfiles"
+    echo "               (Use this if you've customized these configs)"
+    echo "  [o] Override - Delete existing files and use ~/.dotfiles versions"
+    echo "               (Use this to get fresh configs from the repo)"
+    echo "  [s] Skip    - Don't stow this package"
+    echo ""
+
+    while true; do
+        read -r -p "Your choice [a/o/s]: " choice
+        case "$choice" in
+            [aA])
+                log_info "Adopting existing files for $package..."
+                stow --dir="$USER_DOTFILES_DIR" --target="$target" --adopt "$package"
+                stow --dir="$USER_DOTFILES_DIR" --target="$target" --restow --no-folding "$package"
+                log_success "$package adopted and restowed successfully"
+                return 0
+                ;;
+            [oO])
+                log_info "Overriding existing files for $package..."
+                # Find and remove conflicting files
+                # Use stow --simulate to find what would be stowed, then remove existing files
+                local conflicts
+                conflicts=$(stow --dir="$USER_DOTFILES_DIR" --target="$target" --simulate --restow --no-folding "$package" 2>&1 | grep -oE "existing target is not owned by stow: [^ ]+" | sed 's/existing target is not owned by stow: //')
+
+                for conflict_file in $conflicts; do
+                    local full_path="$target/$conflict_file"
+                    if [ -e "$full_path" ] || [ -L "$full_path" ]; then
+                        log_info "Removing $full_path..."
+                        rm -rf "$full_path"
+                    fi
+                done
+
+                # Now stow should work
+                stow --dir="$USER_DOTFILES_DIR" --target="$target" --restow --no-folding "$package"
+                log_success "$package stowed successfully (existing files overridden)"
+                return 0
+                ;;
+            [sS])
+                log_warning "Skipping $package"
+                return 0
+                ;;
+            *)
+                echo "Please enter 'a' for adopt, 'o' for override, or 's' for skip."
+                ;;
+        esac
+    done
 }
 
 # ============================================================================
