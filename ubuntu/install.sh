@@ -3,11 +3,12 @@
 # Ubuntu Development Environment Setup Script
 # This script is idempotent - running it multiple times is safe
 # Uses Homebrew as the primary package manager for better package availability
+# Uses GNU Stow for dotfiles management
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLATFORM_CONFIG_DIR="$SCRIPT_DIR/config"
+DOTFILES_DIR="$SCRIPT_DIR/dotfiles"
 
 # Colors for output
 RED='\033[0;31m'
@@ -46,7 +47,7 @@ mkdir -p "$XDG_CACHE_HOME"
 install_system_dependencies() {
     log_info "Installing essential system dependencies via apt..."
     sudo apt update
-    sudo apt install -y build-essential procps curl file git zsh
+    sudo apt install -y build-essential procps curl file git zsh stow
     log_success "System dependencies installed"
 }
 
@@ -122,6 +123,29 @@ install_packages() {
 }
 
 # ============================================================================
+# Stow Helper Functions
+# ============================================================================
+
+stow_package() {
+    local package="$1"
+    local target="${2:-$HOME}"
+
+    log_info "Stowing $package to $target..."
+
+    # Use --restow to handle already stowed packages gracefully
+    # Use --no-folding to create directories instead of symlinking them
+    if stow --dir="$DOTFILES_DIR" --target="$target" --restow --no-folding "$package" 2>/dev/null; then
+        log_success "$package stowed successfully"
+    else
+        # If restow fails, try to adopt existing files and restow
+        log_warning "$package has conflicts, attempting to adopt and restow..."
+        stow --dir="$DOTFILES_DIR" --target="$target" --adopt "$package"
+        stow --dir="$DOTFILES_DIR" --target="$target" --restow --no-folding "$package"
+        log_success "$package adopted and restowed successfully"
+    fi
+}
+
+# ============================================================================
 # Ghostty Installation
 # ============================================================================
 
@@ -170,12 +194,8 @@ install_zsh_plugins() {
         log_success "zsh-syntax-highlighting installed"
     fi
 
-    # Custom zieds plugin (use Ubuntu-specific version)
-    local ZIEDS_PLUGIN_DIR="$ZSH_CUSTOM/plugins/zieds"
-    mkdir -p "$ZIEDS_PLUGIN_DIR"
-    log_info "Installing zieds custom plugin..."
-    cp "$PLATFORM_CONFIG_DIR/zsh/zieds.plugin.zsh" "$ZIEDS_PLUGIN_DIR/zieds.plugin.zsh"
-    log_success "zieds plugin installed"
+    # Stow custom zieds plugin
+    stow_package "zsh"
 }
 
 configure_zshrc() {
@@ -233,7 +253,7 @@ install_oh_my_tmux() {
     # Create tmux config directory
     mkdir -p "$TMUX_CONFIG_DIR"
 
-    # Symlink tmux.conf
+    # Symlink tmux.conf from Oh My Tmux
     if [ -L "$TMUX_CONFIG_DIR/tmux.conf" ]; then
         log_success "tmux.conf symlink already exists"
     else
@@ -242,23 +262,9 @@ install_oh_my_tmux() {
         log_success "tmux.conf symlink created"
     fi
 
-    # Copy tmux.conf.local from Oh My Tmux if it doesn't exist
-    if [ -f "$TMUX_CONFIG_DIR/tmux.conf.local" ]; then
-        log_success "tmux.conf.local already exists"
-    else
-        log_info "Copying tmux.conf.local from Oh My Tmux..."
-        cp "$OH_MY_TMUX_DIR/.tmux.conf.local" "$TMUX_CONFIG_DIR/tmux.conf.local"
-        log_success "tmux.conf.local copied"
-    fi
-
-    # Append custom tmux settings if not already present
-    if ! grep -q "# Custom settings from setup-config" "$TMUX_CONFIG_DIR/tmux.conf.local"; then
-        log_info "Appending custom tmux settings..."
-        cat "$PLATFORM_CONFIG_DIR/tmux/tmux.conf.local" >> "$TMUX_CONFIG_DIR/tmux.conf.local"
-        log_success "Custom tmux settings appended"
-    else
-        log_success "Custom tmux settings already present"
-    fi
+    # Stow custom tmux.conf.local (like we do for LazyVim plugins)
+    log_info "Stowing custom tmux configuration..."
+    stow_package "tmux"
 }
 
 # ============================================================================
@@ -288,14 +294,9 @@ install_lazyvim() {
         log_success "LazyVim installed"
     fi
 
-    # Install custom plugins
-    log_info "Installing custom Neovim plugins..."
-    mkdir -p "$NVIM_CONFIG_DIR/lua/plugins"
-
-    cp "$PLATFORM_CONFIG_DIR/nvim/lua/plugins/auto-save.lua" "$NVIM_CONFIG_DIR/lua/plugins/auto-save.lua"
-    cp "$PLATFORM_CONFIG_DIR/nvim/lua/plugins/colorscheme.lua" "$NVIM_CONFIG_DIR/lua/plugins/colorscheme.lua"
-
-    log_success "Custom Neovim plugins installed"
+    # Stow custom Neovim plugins
+    log_info "Stowing custom Neovim plugins..."
+    stow_package "nvim"
 }
 
 # ============================================================================
@@ -303,13 +304,8 @@ install_lazyvim() {
 # ============================================================================
 
 configure_ghostty() {
-    local GHOSTTY_CONFIG_DIR="$XDG_CONFIG_HOME/ghostty"
-
-    log_info "Configuring Ghostty..."
-
-    mkdir -p "$GHOSTTY_CONFIG_DIR"
-    cp "$PLATFORM_CONFIG_DIR/ghostty/config" "$GHOSTTY_CONFIG_DIR/config"
-
+    log_info "Configuring Ghostty via stow..."
+    stow_package "ghostty"
     log_success "Ghostty configured"
 }
 
@@ -337,7 +333,7 @@ main() {
     echo ""
     echo "╔════════════════════════════════════════════════════════════════╗"
     echo "║         Ubuntu Development Environment Setup                   ║"
-    echo "║                   (Powered by Homebrew)                        ║"
+    echo "║            (Powered by Homebrew & GNU Stow)                    ║"
     echo "╚════════════════════════════════════════════════════════════════╝"
     echo ""
 
@@ -347,7 +343,7 @@ main() {
         exit 1
     fi
 
-    # Install essential system dependencies via apt first
+    # Install essential system dependencies via apt first (including stow)
     install_system_dependencies
 
     # Install Homebrew
@@ -369,24 +365,27 @@ main() {
     # Configure locale
     configure_locale
 
-    # Setup Oh My Zsh and plugins
+    # Setup Oh My Zsh and plugins (uses stow for custom plugin)
     install_oh_my_zsh
     install_zsh_plugins
     configure_zshrc
 
-    # Setup tmux with Oh My Tmux
+    # Setup tmux with Oh My Tmux (uses stow for tmux.conf.local)
     install_oh_my_tmux
 
-    # Setup Neovim with LazyVim
+    # Setup Neovim with LazyVim (uses stow for custom plugins)
     install_lazyvim
 
-    # Configure Ghostty
+    # Configure Ghostty (uses stow)
     configure_ghostty
 
     echo ""
     echo "╔════════════════════════════════════════════════════════════════╗"
     echo "║         Installation Complete! 🎉                              ║"
     echo "╚════════════════════════════════════════════════════════════════╝"
+    echo ""
+    log_info "Dotfiles are managed via GNU Stow from: $DOTFILES_DIR"
+    log_info "To modify configs, edit files in the dotfiles directory and re-run stow."
     echo ""
     log_info "Please log out and back in for shell changes to take effect."
     log_info "Then run 'source ~/.zshrc' to apply Zsh configuration."

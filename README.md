@@ -2,13 +2,14 @@
 
 This repository provides a single-script, idempotent setup for a development environment on macOS and Ubuntu. Each platform has a dedicated installer and its own configuration subtree so you can run the installer for the platform you need. The goal is to get from a clean or newly installed OS to a fully functional developer environment with one command.
 
-This README explains how to use the scripts, what they install, where configuration files live, and tips for customization and troubleshooting.
+**Key Feature:** Dotfiles are managed using [GNU Stow](https://www.gnu.org/software/stow/), making it easy to modify configurations and keep them in sync.
 
 Table of contents
 
 - Quick start
 - What it installs (overview)
 - Installation details (macOS and Ubuntu)
+- Dotfiles management with GNU Stow
 - Post-install checks & steps
 - Customization & editing configs
 - Troubleshooting
@@ -18,7 +19,7 @@ Table of contents
 
 Clone the repository:
 
-```setup-config/README.md#L1-L3
+```
 git clone https://github.com/ZiedYousfi/myconfig.git
 cd setup-config
 ```
@@ -27,13 +28,13 @@ Choose the platform and run the installer script:
 
 - macOS
 
-```setup-config/macos/install.sh#L1-L3
+```
 bash macos/install.sh
 ```
 
 - Ubuntu
 
-```setup-config/ubuntu/install.sh#L1-L3
+```
 bash ubuntu/install.sh
 ```
 
@@ -55,95 +56,162 @@ The installers add and configure the following tools (platform differences noted
 - CLI tools: zoxide, eza, fd, fzf, ripgrep, bat, lazygit, btop, fastfetch
 - Development toolchain: Git, Go, LLVM/Clang
 - Optional: OpenCode / SST (opencode CLI)
-- Additional tools and packages necessary to build & run Ghostty (on Ubuntu)
+- GNU Stow for dotfiles management
 
 Important: The installers try to be minimally intrusive but they install software system-wide; read the script before running if you want to know the specifics.
 
 ## Installation details
 
-macOS
+### macOS
 
 - Path to macOS installer:
 
-```setup-config/macos/install.sh#L1-L3
+```
 bash macos/install.sh
 ```
 
 - What this macOS script does (high level):
   - Installs Homebrew (if missing)
-  - Uses `brew` to install packages and casks
+  - Uses `brew` to install packages and casks (including `stow`)
   - Installs Oh My Zsh, zsh plugins and sets up `.zshrc` (managed by the script)
+  - **Uses GNU Stow** to symlink custom Zsh plugin, Neovim plugins, and Ghostty config
   - Configures tmux using Oh My Tmux and XDG config paths
-  - Installs LazyVim and copies the platform-specific Neovim plugins
-  - Configures Ghostty using platform-specific paths (Ghostty cask or build)
+  - Installs LazyVim and stows the platform-specific Neovim plugins
+  - Configures Ghostty using stow for the config symlink
   - Applies macOS-specific settings (ex: disable press-and-hold for key repeats)
 
-Ubuntu
+### Ubuntu
 
 - Path to Ubuntu installer:
 
-```setup-config/ubuntu/install.sh#L1-L3
+```
 bash ubuntu/install.sh
 ```
 
 - What this Ubuntu script does (high level):
   - Updates and upgrades system packages via `apt`
-  - Installs default build tools and dependencies (`build-essential`, `zsh`, `tmux`, etc.)
-  - Installs Go and configures its PATH (if not present)
-  - Installs Clang/LLVM via `apt`
-  - Installs Neovim from official GitHub release
+  - Installs default build tools and dependencies (`build-essential`, `zsh`, `stow`, etc.)
+  - Installs Homebrew for Linux for additional package management
   - Installs modern CLI tools (zoxide, eza, fd, fzf, ripgrep, bat, lazygit, fastfetch)
-  - Builds Ghostty from source (Zig might be installed for this step)
-  - Installs Oh My Zsh and zsh plugins from the platform-specific config
-  - Sets up Oh My Tmux and LazyVim with the platform-specific Neovim plugins
+  - Installs Ghostty via community script
+  - Installs Oh My Zsh and **uses stow** for the custom zsh plugin
+  - Sets up Oh My Tmux and LazyVim, **using stow** for custom Neovim plugins
   - Configures French locale if not present
 
-## Configuration layout & per-platform files
+## Dotfiles management with GNU Stow
 
-Configuration files are grouped per-platform. You will find platform-specific plugin and configuration files here:
+This repository uses GNU Stow for managing dotfiles, which creates symlinks from your home directory to the actual config files in this repository. This approach offers several benefits:
+
+- **Easy modification:** Edit files directly in the `dotfiles/` directory
+- **Version control friendly:** All configs stay in the git repo
+- **Clean separation:** Each package (ghostty, nvim, zsh) is a separate stow package
+- **Idempotent:** Running stow multiple times is safe
+
+### Stow package structure
+
+Configuration files are organized per-platform in stow-compatible directories:
 
 - macOS:
 
 ```
-setup-config/macos/config/
-├── ghostty/config
-├── nvim/lua/plugins/
-│   ├── avante.lua
-│   ├── auto-save.lua
-│   └── colorscheme.lua
-└── zsh/zieds.plugin.zsh
+setup-config/macos/dotfiles/
+├── ghostty/
+│   └── .config/
+│       └── ghostty/
+│           └── config
+├── nvim/
+│   └── .config/
+│       └── nvim/
+│           └── lua/
+│               └── plugins/
+│                   ├── auto-save.lua
+│                   └── colorscheme.lua
+├── tmux/
+│   └── .config/
+│       └── tmux/
+│           └── tmux.conf.local
+└── zsh/
+    └── .oh-my-zsh/
+        └── custom/
+            └── plugins/
+                └── zieds/
+                    └── zieds.plugin.zsh
 ```
 
 - Ubuntu:
 
 ```
-setup-config/ubuntu/config/
-├── ghostty/config
-├── nvim/lua/plugins/
-│   ├── avante.lua
-│   ├── auto-save.lua
-│   └── colorscheme.lua
-└── zsh/zieds.plugin.zsh
+setup-config/ubuntu/dotfiles/
+├── ghostty/
+│   └── .config/
+│       └── ghostty/
+│           └── config
+├── nvim/
+│   └── .config/
+│       └── nvim/
+│           └── lua/
+│               └── plugins/
+│                   ├── auto-save.lua
+│                   └── colorscheme.lua
+├── tmux/
+│   └── .config/
+│       └── tmux/
+│           └── tmux.conf.local
+└── zsh/
+    └── .oh-my-zsh/
+        └── custom/
+            └── plugins/
+                └── zieds/
+                    └── zieds.plugin.zsh
 ```
 
-Notes:
+### How stow is used
 
-- Both installers use the `PLATFORM_CONFIG_DIR` in their `install.sh` to copy platform-specific configs into `$XDG_CONFIG_HOME` or `$HOME` as appropriate.
-- The Zsh plugin `zieds` is platform-specific. For example:
-  - macOS: `macos/config/zsh/zieds.plugin.zsh` (uses `brew` for update)
-  - Ubuntu: `ubuntu/config/zsh/zieds.plugin.zsh` (uses `apt` for update)
+The install scripts call stow with these flags:
+
+- `--restow`: Safely re-create symlinks (idempotent)
+- `--no-folding`: Create actual directories instead of symlinking entire directories
+- `--adopt`: If conflicts exist, adopt the existing file into the stow package
+
+### Manual stow commands
+
+After initial installation, you can manually manage dotfiles:
+
+```bash
+# Re-stow a package after editing (from the dotfiles directory)
+cd macos/dotfiles
+stow --target="$HOME" --restow ghostty
+
+# Unstow a package (remove symlinks)
+stow --target="$HOME" --delete nvim
+
+# Stow all packages
+for pkg in ghostty nvim zsh; do
+  stow --target="$HOME" --restow "$pkg"
+done
+```
+
+### How tmux works with stow
+
+Tmux configuration uses Oh My Tmux as a base framework:
+
+1. Oh My Tmux is cloned to `~/.oh-my-tmux/`
+2. The main `tmux.conf` is symlinked from Oh My Tmux to `~/.config/tmux/tmux.conf`
+3. Our custom `tmux.conf.local` is stowed to `~/.config/tmux/tmux.conf.local`
+
+This is similar to how LazyVim works - the framework is installed first, then our custom config is stowed on top.
 
 ## Post-install checks & steps
 
 - After installation, logout/login or run:
 
-```setup-config/README.md#L1-L3
+```
 source ~/.zshrc
 ```
 
 - Verify key tools:
 
-```setup-config/README.md#L1-L9
+```
 git --version
 zsh --version
 nvim --version
@@ -153,6 +221,7 @@ zoxide --version
 rg --version
 bat --version
 lazygit --version
+stow --version
 ```
 
 - LazyVim plugin management:
@@ -161,65 +230,110 @@ lazygit --version
 
 ## Customization
 
-- Set a custom `XDG_CONFIG_HOME` before running the installer if you want the config to go to a different directory:
+### Editing configs with stow
 
-```setup-config/README.md#L1-L2
+The main advantage of stow is that you can edit the config files directly in the repository:
+
+1. Edit files in `macos/dotfiles/` or `ubuntu/dotfiles/`
+2. The changes are immediately reflected in your home directory (they're symlinked!)
+3. Commit your changes to git
+
+### Adding new config files
+
+To add a new config file to an existing stow package:
+
+1. Create the file with the correct path structure under `dotfiles/<package>/`
+2. Run stow to create the symlink:
+
+```bash
+cd macos/dotfiles
+stow --target="$HOME" --restow <package>
+```
+
+### Creating a new stow package
+
+To add a new application's config:
+
+1. Create a new directory under `dotfiles/` named after the package
+2. Mirror the home directory structure inside it
+3. Add the stow command to `install.sh` or run manually
+
+Example for adding a hypothetical `starship` config:
+
+```
+dotfiles/
+└── starship/
+    └── .config/
+        └── starship.toml
+```
+
+### Environment variables
+
+Set a custom `XDG_CONFIG_HOME` before running the installer if you want the config to go to a different directory:
+
+```
 export XDG_CONFIG_HOME="$HOME/.config"
 bash ubuntu/install.sh
 ```
 
-- Edit plugins prior to installation:
-  - Edit `macos/config/nvim/lua/plugins/*.lua` for macOS
-  - Edit `ubuntu/config/nvim/lua/plugins/*.lua` for Ubuntu
-  - For Zsh plugin, edit:
-    - macOS: `macos/config/zsh/zieds.plugin.zsh`
-    - Ubuntu: `ubuntu/config/zsh/zieds.plugin.zsh`
-
-- If you want to skip some steps, read the script and comment or remove lines. Always review the script before running it in an unfamiliar environment.
-
 ## Troubleshooting & debugging
+
+### General issues
 
 - The scripts are intended to be idempotent, but if you run into issues:
   - Inspect the script to find the failing step:
 
-```setup-config/README.md#L1-L3
+```
 less ubuntu/install.sh
 ```
 
 - Re-run the script with verbose debugging:
 
-```setup-config/README.md#L1-L3
+```
 bash -x ubuntu/install.sh
 ```
 
-- Check the command exit code and logs for the problematic step.
-- Ensure `sudo` privileges are available when required.
-- For Ghostty build issues on Ubuntu, verify the Zig and GTK dependencies are installed (`zig`, `libgtk4`, `libadwaita`).
+### Stow conflicts
 
-- If parts of the environment are out of sync, remove old configuration and re-run:
+If stow reports conflicts, it usually means a file already exists that isn't a symlink:
 
-```setup-config/README.md#L1-L4
+```bash
+# Option 1: Let stow adopt the existing file
+stow --target="$HOME" --adopt <package>
+
+# Option 2: Manually remove the conflicting file first
+rm ~/.config/ghostty/config
+stow --target="$HOME" --restow ghostty
+```
+
+### Resetting configurations
+
+If parts of the environment are out of sync, remove old configuration and re-run:
+
+```
 rm -rf "$XDG_CONFIG_HOME/nvim"
 rm -rf "$XDG_CONFIG_HOME/tmux"
+rm -rf "$XDG_CONFIG_HOME/ghostty"
 bash macos/install.sh
 ```
 
-- If the default shell is not set to zsh after install:
-  - You may need to run:
+### Shell not set to zsh
 
-```setup-config/README.md#L1-L2
+If the default shell is not set to zsh after install:
+
+```
 chsh -s "$(which zsh)"
 ```
 
-- Log out and log back in for the change to take effect.
+Log out and log back in for the change to take effect.
 
 ## Known limitations & notes
 
-- Ghostty on Ubuntu builds from source and may require additional dependencies, including `zig`, `gtk4`, and `libadwaita`. The installer attempts to handle that but build systems and system packages can vary.
+- Tmux configuration is append-based rather than pure stow, because it extends Oh My Tmux's template.
 - The scripts assume `amd64` architecture; if you use an ARM Linux system, adjust the downloads accordingly.
-- The scripts will install system-wide software — if you are running on machines where you cannot use `sudo`, you may need to adapt the scripts for local installation (e.g., installing to `~/.local/bin` where appropriate).
-- Neovim will be installed to `/opt/nvim` on Linux from a release tarball (config copy is automated to `XDG_CONFIG_HOME`).
-- If you want to keep a shared central config, you can create a directory and symlink or copy the files into the platform-specific config directories.
+- The scripts will install system-wide software — if you are running on machines where you cannot use `sudo`, you may need to adapt the scripts for local installation.
+- Neovim will be installed via Homebrew (both platforms).
+- The Zsh plugin `zieds` is platform-specific (uses `brew` vs `apt` for updates).
 
 ## File reference
 
@@ -227,25 +341,51 @@ chsh -s "$(which zsh)"
   - macOS: `macos/install.sh`
   - Ubuntu: `ubuntu/install.sh`
 
-- Platform-specific config:
-  - macOS: `macos/config/*`
-  - Ubuntu: `ubuntu/config/*`
+- Platform-specific dotfiles (stow packages):
+  - macOS: `macos/dotfiles/*`
+  - Ubuntu: `ubuntu/dotfiles/*`
 
 - Specification: `SPECS.md` — contains the desired environment specification.
+
+- Uninstall scripts:
+  - macOS: `macos/uninstall.sh`
+  - Ubuntu: `ubuntu/uninstall.sh`
+
+## Uninstalling
+
+To remove everything installed by the setup scripts, run the uninstall script for your platform:
+
+**macOS:**
+
+```
+bash macos/uninstall.sh
+```
+
+**Ubuntu:**
+
+```
+bash ubuntu/uninstall.sh
+```
+
+The uninstall scripts will:
+
+1. Unstow all dotfiles (remove symlinks)
+2. Remove Oh My Zsh and plugins
+3. Remove Oh My Tmux
+4. Remove LazyVim/Neovim configuration and data
+5. Remove Ghostty configuration
+6. Remove Homebrew packages installed by the setup
+7. Optionally remove Homebrew itself
+8. Restore default system settings (macOS)
+
+**Note:** The scripts will ask for confirmation before proceeding and offer choices for optional removals (like Homebrew itself).
 
 ## Contributing
 
 If you want to improve, add, or remove packages or change configuration, please:
 
-1. Edit the appropriate `install.sh` or platform `config/*` files
+1. Edit the appropriate `install.sh` or `dotfiles/*` files
 2. Test your changes on a fresh VM or a disposable machine
 3. Raise a PR or commit changes into your forked repo
-
-If you want me to add:
-
-- A per-platform README as well (for deeper OS-specific details), or
-- A rollback/uninstall script,
-
-or anything more specific to the install, tell me which platform(s) and I’ll update the scripts and the README.
 
 Enjoy the setup!
