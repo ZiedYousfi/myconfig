@@ -31,6 +31,43 @@ use-tmux() { /bin/bash --noprofile --norc -c "/opt/homebrew/bin/tmux has-session
 
 reload-zsh() { source "$HOME/.zshrc" && echo "zsh reloaded"; }
 
+# Quickly create a new stow package directory inside ~/.dotfiles and stow it.
+# Usage: stowgo <package-name> [target]
+#   <package-name> : name of the new package (e.g., myapp)
+#   [target]       : optional target directory (default: $HOME)
+stowgo() {
+    # If no package name is supplied, infer it from the current directory name
+    local pkg="${1:-$(basename "$PWD")}"
+    local target="${2:-$HOME}"
+
+    # Ensure we are inside the ~/.dotfiles hierarchy
+    if [[ "$PWD" != "$HOME/.dotfiles"* ]]; then
+        echo "stowgo: please run this command from inside a package directory under $HOME/.dotfiles"
+        return 1
+    fi
+
+    local pkg_dir="$HOME/.dotfiles/$pkg"
+    if [[ -d "$pkg_dir" && "$PWD" != "$pkg_dir" ]]; then
+        echo "stowgo: package '$pkg' already exists at $pkg_dir"
+        return 1
+    fi
+
+    # If the directory does not exist, create it (useful when called from the parent dir)
+    if [[ ! -d "$pkg_dir" ]]; then
+        mkdir -p "$pkg_dir"
+        echo "# Managed by setup-config – stow package $pkg" > "$pkg_dir/README.md"
+        echo "Created package directory: $pkg_dir"
+    fi
+
+    # Change into the package directory (if not already there)
+    if [[ "$PWD" != "$pkg_dir" ]]; then
+        cd "$pkg_dir" || return 1
+    fi
+
+    # Run stow to link the package
+    stow --dir="$HOME/.dotfiles" --target="$target" --restow --no-folding "$pkg"
+}
+
 # Tool aliases
 alias ls='eza --icons --group-directories-first --git --color=always'
 alias find='fd'
