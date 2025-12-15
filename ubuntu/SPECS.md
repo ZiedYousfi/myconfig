@@ -60,10 +60,15 @@ Used for essential system packages required before Homebrew:
 
 ## Dotfiles Structure (Stow Packages)
 
-All configurations are managed via GNU Stow from `ubuntu/dotfiles/`:
+During installation, dotfiles are copied from `ubuntu/dotfiles/` to `~/.dotfiles` and stowed from there. This allows you to delete the repository after installation.
+
+**Source (in repo):** `ubuntu/dotfiles/`
+**Destination (on system):** `~/.dotfiles/`
+
+After installation, your `~/.dotfiles` contains:
 
 ```
-ubuntu/dotfiles/
+~/.dotfiles/
 ├── ghostty/
 │   └── .config/
 │       └── ghostty/
@@ -97,7 +102,7 @@ ubuntu/dotfiles/
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/mkasberg/ghostty-ubuntu/HEAD/install.sh)"
 ```
 
-**Location:** `~/.config/ghostty/config` (stowed)
+**Location:** `~/.config/ghostty/config` (symlinked from `~/.dotfiles/ghostty/`)
 
 ```
 fullscreen=true
@@ -119,7 +124,7 @@ Note: Uses `/usr/bin/tmux` path for system tmux or adjust to Homebrew path if ne
 
 ### Custom Plugin (`zieds.plugin.zsh`)
 
-**Location:** `~/.oh-my-zsh/custom/plugins/zieds/zieds.plugin.zsh` (stowed)
+**Location:** `~/.oh-my-zsh/custom/plugins/zieds/zieds.plugin.zsh` (symlinked from `~/.dotfiles/zsh/`)
 
 Ubuntu-specific features:
 
@@ -160,7 +165,7 @@ source $ZSH/oh-my-zsh.sh
 
 ### Custom tmux.conf.local
 
-**Location:** `~/.config/tmux/tmux.conf.local` (stowed)
+**Location:** `~/.config/tmux/tmux.conf.local` (symlinked from `~/.dotfiles/tmux/`)
 
 ```tmux
 # tmux.conf.local - Custom configuration for Oh My Tmux
@@ -262,6 +267,7 @@ The script is idempotent - running it multiple times is safe.
 1. Log out and back in for shell changes to take effect
 2. Run `source ~/.zshrc` to apply Zsh configuration
 3. Open Neovim and run `:Lazy sync` to install plugins
+4. You can now safely delete the `setup-config` repository — dotfiles are in `~/.dotfiles`
 
 ---
 
@@ -282,6 +288,7 @@ The uninstall script will:
 5. **Remove Ghostty configuration** - Note: Ghostty binary may need manual removal
 6. **Remove Homebrew packages** - All packages installed by the setup (except git/zsh/stow)
 7. **Optionally remove Homebrew** - Including Linuxbrew directories
-8. **Optionally remove apt packages** - stow package
+8. **Optionally remove apt packages** - stow and rsync packages
+9. **Optionally remove ~/.dotfiles** - Remove the dotfiles directory
 
 **Note:** The script will ask for confirmation before proceeding.

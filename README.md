@@ -2,7 +2,7 @@
 
 This repository provides a single-script, idempotent setup for a development environment on macOS and Ubuntu. Each platform has a dedicated installer and its own configuration subtree so you can run the installer for the platform you need. The goal is to get from a clean or newly installed OS to a fully functional developer environment with one command.
 
-**Key Feature:** Dotfiles are managed using [GNU Stow](https://www.gnu.org/software/stow/), making it easy to modify configurations and keep them in sync.
+**Key Feature:** Dotfiles are copied to `~/.dotfiles` and managed using [GNU Stow](https://www.gnu.org/software/stow/). After installation, you can safely delete this repository — your dotfiles live in your home directory.
 
 Table of contents
 
@@ -13,6 +13,7 @@ Table of contents
 - Post-install checks & steps
 - Customization & editing configs
 - Troubleshooting
+- Uninstalling
 - File and config reference
 
 ## Quick start
@@ -37,6 +38,15 @@ bash macos/install.sh
 ```
 bash ubuntu/install.sh
 ```
+
+After installation completes, you can delete this repository:
+
+```
+cd ..
+rm -rf setup-config
+```
+
+Your dotfiles are now in `~/.dotfiles` and symlinked to the appropriate locations.
 
 Notes:
 
@@ -73,11 +83,11 @@ bash macos/install.sh
 - What this macOS script does (high level):
   - Installs Homebrew (if missing)
   - Uses `brew` to install packages and casks (including `stow`)
+  - **Copies dotfiles to `~/.dotfiles`**
   - Installs Oh My Zsh, zsh plugins and sets up `.zshrc` (managed by the script)
-  - **Uses GNU Stow** to symlink custom Zsh plugin, Neovim plugins, and Ghostty config
+  - **Uses GNU Stow** to symlink custom Zsh plugin, Neovim plugins, Ghostty config, and tmux config from `~/.dotfiles`
   - Configures tmux using Oh My Tmux and XDG config paths
   - Installs LazyVim and stows the platform-specific Neovim plugins
-  - Configures Ghostty using stow for the config symlink
   - Applies macOS-specific settings (ex: disable press-and-hold for key repeats)
 
 ### Ubuntu
@@ -90,31 +100,37 @@ bash ubuntu/install.sh
 
 - What this Ubuntu script does (high level):
   - Updates and upgrades system packages via `apt`
-  - Installs default build tools and dependencies (`build-essential`, `zsh`, `stow`, etc.)
+  - Installs default build tools and dependencies (`build-essential`, `zsh`, `stow`, `rsync`, etc.)
   - Installs Homebrew for Linux for additional package management
+  - **Copies dotfiles to `~/.dotfiles`**
   - Installs modern CLI tools (zoxide, eza, fd, fzf, ripgrep, bat, lazygit, fastfetch)
   - Installs Ghostty via community script
-  - Installs Oh My Zsh and **uses stow** for the custom zsh plugin
-  - Sets up Oh My Tmux and LazyVim, **using stow** for custom Neovim plugins
+  - Installs Oh My Zsh and **uses stow** for the custom zsh plugin from `~/.dotfiles`
+  - Sets up Oh My Tmux and LazyVim, **using stow** for custom configs
   - Configures French locale if not present
 
 ## Dotfiles management with GNU Stow
 
-This repository uses GNU Stow for managing dotfiles, which creates symlinks from your home directory to the actual config files in this repository. This approach offers several benefits:
+### How it works
 
-- **Easy modification:** Edit files directly in the `dotfiles/` directory
-- **Version control friendly:** All configs stay in the git repo
-- **Clean separation:** Each package (ghostty, nvim, zsh) is a separate stow package
-- **Idempotent:** Running stow multiple times is safe
+During installation, dotfiles are:
 
-### Stow package structure
+1. **Copied** from `<repo>/macos/dotfiles/` (or `ubuntu/dotfiles/`) to `~/.dotfiles`
+2. **Stowed** from `~/.dotfiles` to create symlinks in your home directory
 
-Configuration files are organized per-platform in stow-compatible directories:
+This means:
 
-- macOS:
+- ✅ You can delete the cloned repository after installation
+- ✅ Your dotfiles live permanently in `~/.dotfiles`
+- ✅ Symlinks point to `~/.dotfiles`, not the repo
+- ✅ Easy to modify — edit files in `~/.dotfiles` and changes apply immediately
+
+### Dotfiles structure in ~/.dotfiles
+
+After installation, your `~/.dotfiles` directory contains:
 
 ```
-setup-config/macos/dotfiles/
+~/.dotfiles/
 ├── ghostty/
 │   └── .config/
 │       └── ghostty/
@@ -137,56 +153,22 @@ setup-config/macos/dotfiles/
                 └── zieds/
                     └── zieds.plugin.zsh
 ```
-
-- Ubuntu:
-
-```
-setup-config/ubuntu/dotfiles/
-├── ghostty/
-│   └── .config/
-│       └── ghostty/
-│           └── config
-├── nvim/
-│   └── .config/
-│       └── nvim/
-│           └── lua/
-│               └── plugins/
-│                   ├── auto-save.lua
-│                   └── colorscheme.lua
-├── tmux/
-│   └── .config/
-│       └── tmux/
-│           └── tmux.conf.local
-└── zsh/
-    └── .oh-my-zsh/
-        └── custom/
-            └── plugins/
-                └── zieds/
-                    └── zieds.plugin.zsh
-```
-
-### How stow is used
-
-The install scripts call stow with these flags:
-
-- `--restow`: Safely re-create symlinks (idempotent)
-- `--no-folding`: Create actual directories instead of symlinking entire directories
-- `--adopt`: If conflicts exist, adopt the existing file into the stow package
 
 ### Manual stow commands
 
-After initial installation, you can manually manage dotfiles:
+After installation, you can manually manage dotfiles from `~/.dotfiles`:
 
 ```bash
-# Re-stow a package after editing (from the dotfiles directory)
-cd macos/dotfiles
+cd ~/.dotfiles
+
+# Re-stow a package after editing
 stow --target="$HOME" --restow ghostty
 
 # Unstow a package (remove symlinks)
 stow --target="$HOME" --delete nvim
 
 # Stow all packages
-for pkg in ghostty nvim zsh; do
+for pkg in ghostty nvim tmux zsh; do
   stow --target="$HOME" --restow "$pkg"
 done
 ```
@@ -197,9 +179,9 @@ Tmux configuration uses Oh My Tmux as a base framework:
 
 1. Oh My Tmux is cloned to `~/.oh-my-tmux/`
 2. The main `tmux.conf` is symlinked from Oh My Tmux to `~/.config/tmux/tmux.conf`
-3. Our custom `tmux.conf.local` is stowed to `~/.config/tmux/tmux.conf.local`
+3. Our custom `tmux.conf.local` is stowed from `~/.dotfiles/tmux/` to `~/.config/tmux/tmux.conf.local`
 
-This is similar to how LazyVim works - the framework is installed first, then our custom config is stowed on top.
+This is similar to how LazyVim works — the framework is installed first, then our custom config is stowed on top.
 
 ## Post-install checks & steps
 
@@ -230,23 +212,32 @@ stow --version
 
 ## Customization
 
-### Editing configs with stow
+### Editing configs after installation
 
-The main advantage of stow is that you can edit the config files directly in the repository:
+Since dotfiles are in `~/.dotfiles` and symlinked:
 
-1. Edit files in `macos/dotfiles/` or `ubuntu/dotfiles/`
-2. The changes are immediately reflected in your home directory (they're symlinked!)
-3. Commit your changes to git
+1. Edit files directly in `~/.dotfiles/`
+2. Changes are immediately reflected (they're symlinked!)
+3. No need to re-run stow unless you add new files
+
+Example:
+
+```bash
+# Edit Ghostty config
+nvim ~/.dotfiles/ghostty/.config/ghostty/config
+
+# Changes apply immediately — Ghostty reads from the symlink
+```
 
 ### Adding new config files
 
 To add a new config file to an existing stow package:
 
-1. Create the file with the correct path structure under `dotfiles/<package>/`
+1. Create the file with the correct path structure under `~/.dotfiles/<package>/`
 2. Run stow to create the symlink:
 
 ```bash
-cd macos/dotfiles
+cd ~/.dotfiles
 stow --target="$HOME" --restow <package>
 ```
 
@@ -254,17 +245,17 @@ stow --target="$HOME" --restow <package>
 
 To add a new application's config:
 
-1. Create a new directory under `dotfiles/` named after the package
+1. Create a new directory under `~/.dotfiles/` named after the package
 2. Mirror the home directory structure inside it
-3. Add the stow command to `install.sh` or run manually
+3. Run stow manually
 
 Example for adding a hypothetical `starship` config:
 
-```
-dotfiles/
-└── starship/
-    └── .config/
-        └── starship.toml
+```bash
+mkdir -p ~/.dotfiles/starship/.config
+echo 'format = "🚀 $all"' > ~/.dotfiles/starship/.config/starship.toml
+cd ~/.dotfiles
+stow --target="$HOME" --restow starship
 ```
 
 ### Environment variables
@@ -298,6 +289,8 @@ bash -x ubuntu/install.sh
 If stow reports conflicts, it usually means a file already exists that isn't a symlink:
 
 ```bash
+cd ~/.dotfiles
+
 # Option 1: Let stow adopt the existing file
 stow --target="$HOME" --adopt <package>
 
@@ -327,30 +320,6 @@ chsh -s "$(which zsh)"
 
 Log out and log back in for the change to take effect.
 
-## Known limitations & notes
-
-- Tmux configuration is append-based rather than pure stow, because it extends Oh My Tmux's template.
-- The scripts assume `amd64` architecture; if you use an ARM Linux system, adjust the downloads accordingly.
-- The scripts will install system-wide software — if you are running on machines where you cannot use `sudo`, you may need to adapt the scripts for local installation.
-- Neovim will be installed via Homebrew (both platforms).
-- The Zsh plugin `zieds` is platform-specific (uses `brew` vs `apt` for updates).
-
-## File reference
-
-- Platform installers:
-  - macOS: `macos/install.sh`
-  - Ubuntu: `ubuntu/install.sh`
-
-- Platform-specific dotfiles (stow packages):
-  - macOS: `macos/dotfiles/*`
-  - Ubuntu: `ubuntu/dotfiles/*`
-
-- Specification: `SPECS.md` — contains the desired environment specification.
-
-- Uninstall scripts:
-  - macOS: `macos/uninstall.sh`
-  - Ubuntu: `ubuntu/uninstall.sh`
-
 ## Uninstalling
 
 To remove everything installed by the setup scripts, run the uninstall script for your platform:
@@ -369,16 +338,44 @@ bash ubuntu/uninstall.sh
 
 The uninstall scripts will:
 
-1. Unstow all dotfiles (remove symlinks)
+1. Unstow all dotfiles from `~/.dotfiles` (remove symlinks)
 2. Remove Oh My Zsh and plugins
 3. Remove Oh My Tmux
 4. Remove LazyVim/Neovim configuration and data
 5. Remove Ghostty configuration
 6. Remove Homebrew packages installed by the setup
 7. Optionally remove Homebrew itself
-8. Restore default system settings (macOS)
+8. Optionally remove `~/.dotfiles` directory
+9. Restore default system settings (macOS)
 
-**Note:** The scripts will ask for confirmation before proceeding and offer choices for optional removals (like Homebrew itself).
+**Note:** The scripts will ask for confirmation before proceeding and offer choices for optional removals.
+
+## Known limitations & notes
+
+- The scripts assume `amd64` architecture; if you use an ARM Linux system, adjust the downloads accordingly.
+- The scripts will install system-wide software — if you are running on machines where you cannot use `sudo`, you may need to adapt the scripts for local installation.
+- Neovim will be installed via Homebrew (both platforms).
+- The Zsh plugin `zieds` is platform-specific (uses `brew` vs `apt` for updates).
+
+## File reference
+
+- Platform installers:
+  - macOS: `macos/install.sh`
+  - Ubuntu: `ubuntu/install.sh`
+
+- Platform-specific dotfiles (source, copied to ~/.dotfiles):
+  - macOS: `macos/dotfiles/*`
+  - Ubuntu: `ubuntu/dotfiles/*`
+
+- Platform-specific specifications:
+  - macOS: `macos/SPECS.md`
+  - Ubuntu: `ubuntu/SPECS.md`
+
+- Uninstall scripts:
+  - macOS: `macos/uninstall.sh`
+  - Ubuntu: `ubuntu/uninstall.sh`
+
+- Specification: `SPECS.md` — contains the desired environment specification (high-level overview).
 
 ## Contributing
 

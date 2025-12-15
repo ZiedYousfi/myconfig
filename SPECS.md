@@ -19,18 +19,24 @@ Running the setup multiple times must be safe and produce the same result. Tools
 
 ### Dotfiles Management with GNU Stow
 
-All configuration files are managed using [GNU Stow](https://www.gnu.org/software/stow/), which creates symlinks from your home directory to the actual config files in this repository. This enables:
+All configuration files are managed using [GNU Stow](https://www.gnu.org/software/stow/). During installation:
 
-- **Easy modification:** Edit files directly in the repository
-- **Version control:** All configs stay in git
+1. Dotfiles are **copied** from the repository to `~/.dotfiles`
+2. Stow creates **symlinks** from your home directory to `~/.dotfiles`
+
+This enables:
+
+- **Repository independence:** Delete the cloned repo after installation
+- **Easy modification:** Edit files in `~/.dotfiles` and changes apply immediately
+- **Version control:** Back up `~/.dotfiles` to your own git repo
 - **Clean separation:** Each application is a separate stow package
-- **Portability:** Clone the repo and stow on any machine
+- **Portability:** Copy `~/.dotfiles` to any machine and stow
 
 ---
 
 ## Stow Package Structure
 
-Each platform has a `dotfiles/` directory containing stow packages:
+After installation, `~/.dotfiles` contains:
 
 | Package   | Target                               | Contents                        |
 | --------- | ------------------------------------ | ------------------------------- |
@@ -38,6 +44,31 @@ Each platform has a `dotfiles/` directory containing stow packages:
 | `nvim`    | `~/.config/nvim/lua/plugins/`        | Custom Neovim plugins           |
 | `tmux`    | `~/.config/tmux/`                    | Custom tmux configuration       |
 | `zsh`     | `~/.oh-my-zsh/custom/plugins/zieds/` | Custom Zsh plugin               |
+
+```
+~/.dotfiles/
+├── ghostty/
+│   └── .config/
+│       └── ghostty/
+│           └── config
+├── nvim/
+│   └── .config/
+│       └── nvim/
+│           └── lua/
+│               └── plugins/
+│                   ├── auto-save.lua
+│                   └── colorscheme.lua
+├── tmux/
+│   └── .config/
+│       └── tmux/
+│           └── tmux.conf.local
+└── zsh/
+    └── .oh-my-zsh/
+        └── custom/
+            └── plugins/
+                └── zieds/
+                    └── zieds.plugin.zsh
+```
 
 ---
 
@@ -59,13 +90,13 @@ Each platform has a `dotfiles/` directory containing stow packages:
 ### Multiplexer: tmux + Oh My Tmux
 
 - **Framework:** Oh My Tmux (`https://github.com/gpakosz/.tmux.git`)
-- **Setup:** Clone to `~/.oh-my-tmux/`, symlink main config, stow custom config
+- **Setup:** Clone to `~/.oh-my-tmux/`, symlink main config, stow custom config from `~/.dotfiles`
 - **Custom Config:** Sets Zsh as default shell
 
 ### Editor: Neovim + LazyVim
 
 - **Distribution:** LazyVim (`https://github.com/LazyVim/starter`)
-- **Custom Plugins (stowed):**
+- **Custom Plugins (stowed from ~/.dotfiles):**
   - `auto-save.lua` - Automatic file saving
   - `colorscheme.lua` - Monokai color scheme
 
@@ -156,6 +187,8 @@ See the platform-specific SPECS for complete details.
 
 ## Directory Structure
 
+### Repository (before installation)
+
 ```
 setup-config/
 ├── README.md           # Usage documentation
@@ -164,7 +197,7 @@ setup-config/
 │   ├── SPECS.md        # macOS-specific specification
 │   ├── install.sh      # macOS installation script
 │   ├── uninstall.sh    # macOS uninstall script
-│   └── dotfiles/       # Stow packages for macOS
+│   └── dotfiles/       # Source dotfiles (copied to ~/.dotfiles)
 │       ├── ghostty/
 │       ├── nvim/
 │       ├── tmux/
@@ -173,12 +206,26 @@ setup-config/
     ├── SPECS.md        # Ubuntu-specific specification
     ├── install.sh      # Ubuntu installation script
     ├── uninstall.sh    # Ubuntu uninstall script
-    └── dotfiles/       # Stow packages for Ubuntu
+    └── dotfiles/       # Source dotfiles (copied to ~/.dotfiles)
         ├── ghostty/
         ├── nvim/
         ├── tmux/
         └── zsh/
 ```
+
+### After Installation
+
+The repository can be deleted. Your dotfiles live in:
+
+```
+~/.dotfiles/           # Your dotfiles (stow source)
+├── ghostty/
+├── nvim/
+├── tmux/
+└── zsh/
+```
+
+Symlinks point from your home directory to `~/.dotfiles`.
 
 ---
 
@@ -196,13 +243,14 @@ bash ubuntu/uninstall.sh
 
 The uninstall scripts will:
 
-1. Unstow all dotfiles (remove symlinks)
+1. Unstow all dotfiles from `~/.dotfiles` (remove symlinks)
 2. Remove Oh My Zsh and all plugins
 3. Remove Oh My Tmux and tmux configuration
 4. Remove LazyVim/Neovim configuration, data, and cache
 5. Remove Ghostty configuration
 6. Remove Homebrew packages installed by setup
 7. Optionally remove Homebrew itself
-8. Clean up empty directories
+8. Optionally remove `~/.dotfiles` directory
+9. Clean up empty directories
 
 The scripts are interactive and will ask for confirmation before proceeding.

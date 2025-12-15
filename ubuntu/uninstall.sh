@@ -13,6 +13,9 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# User dotfiles directory (where dotfiles were copied during install)
+USER_DOTFILES_DIR="$HOME/.dotfiles"
+
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -50,6 +53,7 @@ confirm_uninstall() {
     echo "  - LazyVim configuration"
     echo "  - Ghostty and its configuration"
     echo "  - Stowed dotfiles symlinks"
+    echo "  - ~/.dotfiles directory (optionally)"
     echo "  - Homebrew packages installed by the setup"
     echo "  - (Optionally) Homebrew itself"
     echo ""
@@ -66,22 +70,32 @@ confirm_uninstall() {
 # ============================================================================
 
 unstow_dotfiles() {
-    local SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local DOTFILES_DIR="$SCRIPT_DIR/dotfiles"
-
-    if command -v stow &>/dev/null && [ -d "$DOTFILES_DIR" ]; then
-        log_info "Unstowing dotfiles..."
+    if command -v stow &>/dev/null && [ -d "$USER_DOTFILES_DIR" ]; then
+        log_info "Unstowing dotfiles from $USER_DOTFILES_DIR..."
 
         for package in ghostty nvim tmux zsh; do
-            if [ -d "$DOTFILES_DIR/$package" ]; then
+            if [ -d "$USER_DOTFILES_DIR/$package" ]; then
                 log_info "Unstowing $package..."
-                stow --dir="$DOTFILES_DIR" --target="$HOME" --delete "$package" 2>/dev/null || true
+                stow --dir="$USER_DOTFILES_DIR" --target="$HOME" --delete "$package" 2>/dev/null || true
             fi
         done
 
         log_success "Dotfiles unstowed"
     else
-        log_warning "Stow not found or dotfiles directory missing, skipping unstow"
+        log_warning "Stow not found or ~/.dotfiles directory missing, skipping unstow"
+    fi
+}
+
+remove_user_dotfiles() {
+    if [ -d "$USER_DOTFILES_DIR" ]; then
+        read -p "Do you want to remove the ~/.dotfiles directory? (yes/no): " remove_dotfiles
+        if [[ "$remove_dotfiles" == "yes" ]]; then
+            log_info "Removing $USER_DOTFILES_DIR..."
+            rm -rf "$USER_DOTFILES_DIR"
+            log_success "~/.dotfiles directory removed"
+        else
+            log_info "Keeping ~/.dotfiles directory"
+        fi
     fi
 }
 
@@ -274,10 +288,10 @@ remove_homebrew() {
 # ============================================================================
 
 remove_apt_packages() {
-    read -p "Do you want to remove apt packages (stow)? (yes/no): " remove_apt
+    read -p "Do you want to remove apt packages (stow, rsync)? (yes/no): " remove_apt
     if [[ "$remove_apt" == "yes" ]]; then
         log_info "Removing apt packages..."
-        sudo apt remove -y stow || true
+        sudo apt remove -y stow rsync || true
         sudo apt autoremove -y
         log_success "apt packages removed"
     else
@@ -337,6 +351,9 @@ main() {
 
     # Optionally remove apt packages
     remove_apt_packages
+
+    # Optionally remove ~/.dotfiles directory
+    remove_user_dotfiles
 
     # Clean up empty directories
     cleanup_empty_dirs

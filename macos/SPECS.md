@@ -38,10 +38,15 @@ This document describes the macOS-specific development environment configuration
 
 ## Dotfiles Structure (Stow Packages)
 
-All configurations are managed via GNU Stow from `macos/dotfiles/`:
+During installation, dotfiles are copied from `macos/dotfiles/` to `~/.dotfiles` and stowed from there. This allows you to delete the repository after installation.
+
+**Source (in repo):** `macos/dotfiles/`
+**Destination (on system):** `~/.dotfiles/`
+
+After installation, your `~/.dotfiles` contains:
 
 ```
-macos/dotfiles/
+~/.dotfiles/
 ├── ghostty/
 │   └── .config/
 │       └── ghostty/
@@ -69,7 +74,7 @@ macos/dotfiles/
 
 ## Ghostty Configuration
 
-**Location:** `~/.config/ghostty/config` (stowed)
+**Location:** `~/.config/ghostty/config` (symlinked from `~/.dotfiles/ghostty/`)
 
 ```
 fullscreen=true
@@ -91,7 +96,7 @@ Note: Uses `/opt/homebrew/bin/tmux` path for Apple Silicon Macs.
 
 ### Custom Plugin (`zieds.plugin.zsh`)
 
-**Location:** `~/.oh-my-zsh/custom/plugins/zieds/zieds.plugin.zsh` (stowed)
+**Location:** `~/.oh-my-zsh/custom/plugins/zieds/zieds.plugin.zsh` (symlinked from `~/.dotfiles/zsh/`)
 
 macOS-specific features:
 
@@ -124,7 +129,7 @@ source $ZSH/oh-my-zsh.sh
 
 ### Custom tmux.conf.local
 
-**Location:** `~/.config/tmux/tmux.conf.local` (stowed)
+**Location:** `~/.config/tmux/tmux.conf.local` (symlinked from `~/.dotfiles/tmux/`)
 
 ```tmux
 # tmux.conf.local - Custom configuration for Oh My Tmux
@@ -219,6 +224,7 @@ The script is idempotent - running it multiple times is safe.
 1. Restart terminal or run `source ~/.zshrc`
 2. Open Neovim and run `:Lazy sync` to install plugins
 3. Log out and back in for macOS settings to take effect
+4. You can now safely delete the `setup-config` repository — dotfiles are in `~/.dotfiles`
 
 ---
 
@@ -240,5 +246,6 @@ The uninstall script will:
 6. **Remove Homebrew packages** - All packages installed by the setup (except git/zsh)
 7. **Restore macOS settings** - Re-enable press-and-hold for key repeat
 8. **Optionally remove Homebrew** - If you want a complete cleanup
+9. **Optionally remove ~/.dotfiles** - Remove the dotfiles directory
 
 **Note:** The script will ask for confirmation before proceeding.

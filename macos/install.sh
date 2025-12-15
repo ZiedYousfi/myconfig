@@ -3,11 +3,13 @@
 # macOS Development Environment Setup Script
 # This script is idempotent - running it multiple times is safe
 # Uses GNU Stow for dotfiles management
+# Dotfiles are copied to ~/.dotfiles and stowed from there
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DOTFILES_DIR="$SCRIPT_DIR/dotfiles"
+REPO_DOTFILES_DIR="$SCRIPT_DIR/dotfiles"
+USER_DOTFILES_DIR="$HOME/.dotfiles"
 
 # Colors for output
 RED='\033[0;31m'
@@ -122,6 +124,28 @@ install_packages() {
 }
 
 # ============================================================================
+# Dotfiles Setup - Copy to ~/.dotfiles
+# ============================================================================
+
+setup_user_dotfiles() {
+    log_info "Setting up dotfiles in $USER_DOTFILES_DIR..."
+
+    # Create the user dotfiles directory if it doesn't exist
+    mkdir -p "$USER_DOTFILES_DIR"
+
+    # Copy each stow package from repo to user dotfiles directory
+    for package in ghostty nvim tmux zsh; do
+        if [ -d "$REPO_DOTFILES_DIR/$package" ]; then
+            log_info "Copying $package to $USER_DOTFILES_DIR..."
+            # Use rsync to copy, preserving structure and updating only if newer
+            rsync -a --update "$REPO_DOTFILES_DIR/$package/" "$USER_DOTFILES_DIR/$package/"
+        fi
+    done
+
+    log_success "Dotfiles copied to $USER_DOTFILES_DIR"
+}
+
+# ============================================================================
 # Stow Helper Functions
 # ============================================================================
 
@@ -133,13 +157,13 @@ stow_package() {
 
     # Use --restow to handle already stowed packages gracefully
     # Use --no-folding to create directories instead of symlinking them
-    if stow --dir="$DOTFILES_DIR" --target="$target" --restow --no-folding "$package" 2>/dev/null; then
+    if stow --dir="$USER_DOTFILES_DIR" --target="$target" --restow --no-folding "$package" 2>/dev/null; then
         log_success "$package stowed successfully"
     else
         # If restow fails, try to adopt existing files and restow
         log_warning "$package has conflicts, attempting to adopt and restow..."
-        stow --dir="$DOTFILES_DIR" --target="$target" --adopt "$package"
-        stow --dir="$DOTFILES_DIR" --target="$target" --restow --no-folding "$package"
+        stow --dir="$USER_DOTFILES_DIR" --target="$target" --adopt "$package"
+        stow --dir="$USER_DOTFILES_DIR" --target="$target" --restow --no-folding "$package"
         log_success "$package adopted and restowed successfully"
     fi
 }
@@ -328,6 +352,9 @@ main() {
     # Install all packages (including stow)
     install_packages
 
+    # Copy dotfiles to ~/.dotfiles (before stowing)
+    setup_user_dotfiles
+
     # Setup Oh My Zsh and plugins (uses stow for custom plugin)
     install_oh_my_zsh
     install_zsh_plugins
@@ -350,8 +377,10 @@ main() {
     echo "║         Installation Complete! 🎉                              ║"
     echo "╚════════════════════════════════════════════════════════════════╝"
     echo ""
-    log_info "Dotfiles are managed via GNU Stow from: $DOTFILES_DIR"
-    log_info "To modify configs, edit files in the dotfiles directory and re-run stow."
+    log_info "Dotfiles are stored in: $USER_DOTFILES_DIR"
+    log_info "Dotfiles are managed via GNU Stow from ~/.dotfiles"
+    log_info "You can now safely delete the setup-config repository."
+    log_info "To modify configs, edit files in ~/.dotfiles and re-run stow."
     echo ""
     log_info "Please restart your terminal or run 'source ~/.zshrc' to apply changes."
     log_info "You may also need to log out and back in for some macOS settings to take effect."
