@@ -54,7 +54,7 @@ pf() {
 # Update packages (Ubuntu implementation)
 update() {
   echo "Updating packages..."
-  sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y && sudo apt autoclean
+  sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y && sudo apt autoclean && sudo apt clean && brew update && brew upgrade && brew cleanup
   echo "Packages updated successfully."
 }
 
