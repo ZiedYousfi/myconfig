@@ -85,10 +85,14 @@ pf() {
   [ -n "$file" ] && nvim "$file"
 }
 
-# Update packages (Arch Linux implementation using yay for AUR support)
+# Update packages (Arch Linux implementation using paru only)
 update() {
   echo "Updating packages..."
-  yay -Syu --noconfirm
+  if command -v paru &>/dev/null; then
+    paru -Syu --noconfirm
+  else
+    sudo pacman -Syu --noconfirm
+  fi
   echo "Packages updated successfully."
 }
 

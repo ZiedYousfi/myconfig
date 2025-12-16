@@ -3,6 +3,7 @@
 # Arch Linux Development Environment Uninstall Script
 # This script removes everything installed by install.sh
 # Interactive - will ask for confirmation before proceeding
+# This variant now assumes paru is the only AUR helper in use.
 
 set -e
 
@@ -206,8 +207,15 @@ remove_waybar_config() {
 # Remove AUR Packages
 # ============================================================================
 
+# Detect which AUR helper is available (paru only)
+get_aur_helper() {
+    echo "paru"
+}
+
 remove_aur_packages() {
     log_info "Removing AUR packages installed by setup..."
+    local AUR_HELPER="paru"
+    log_info "Using AUR helper: $AUR_HELPER"
 
     local AUR_PACKAGES=(
         "ghostty"
@@ -216,9 +224,9 @@ remove_aur_packages() {
     )
 
     for pkg in "${AUR_PACKAGES[@]}"; do
-        if yay -Qi "$pkg" &>/dev/null; then
+        if paru -Qi "$pkg" &>/dev/null; then
             log_info "Removing $pkg..."
-            yay -Rns --noconfirm "$pkg" 2>/dev/null || true
+            paru -Rns --noconfirm "$pkg" 2>/dev/null || true
         fi
     done
 

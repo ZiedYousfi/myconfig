@@ -127,8 +127,8 @@ bash archlinux/install.sh
 ```
 
 - What this Arch Linux script does (high level):
-  - Installs `yay` (AUR helper) if not present
-  - Uses `pacman` and `yay` to install packages
+  - Installs `paru` (required) as the AUR helper
+  - Uses `pacman` and `paru` to install packages
   - **Copies dotfiles to `~/.dotfiles`**
   - Installs modern CLI tools via pacman
   - Installs Ghostty and Zed via AUR
@@ -414,7 +414,7 @@ The uninstall scripts will:
 - The scripts assume `amd64` architecture; if you use an ARM Linux system, adjust the downloads accordingly.
 - The scripts will install system-wide software — if you are running on machines where you cannot use `sudo`, you may need to adapt the scripts for local installation.
 - Neovim will be installed via Homebrew (both platforms).
-- The Zsh plugin `zieds` is platform-specific (uses `brew` vs `apt` vs `yay` for updates).
+- The Zsh plugin `zieds` is platform-specific (uses `brew` vs `apt` vs `paru`/`yay` for updates).
 
 ## File reference
 
@@ -426,7 +426,7 @@ The uninstall scripts will:
 - Platform-specific dotfiles (source, copied to ~/.dotfiles):
   - macOS: `macos/dotfiles/*` (includes sketchybar, yabai)
   - Ubuntu: `ubuntu/dotfiles/*`
-  - Arch Linux: `archlinux/dotfiles/*` (includes niri, waybar)
+  - Arch Linux: `archlinux/dotfiles/*` (includes niri, waybar, uses paru/yay)
 
 - Platform-specific specifications:
   - macOS: `macos/SPECS.md`

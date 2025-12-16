@@ -222,15 +222,15 @@ After installation, `~/.dotfiles` contains:
 
 ## Platform Differences
 
-| Aspect          | macOS                                  | Ubuntu                      | Arch Linux             |
-| --------------- | -------------------------------------- | --------------------------- | ---------------------- |
-| Package Manager | Homebrew                               | apt + Homebrew (Linuxbrew)  | pacman + yay (AUR)     |
-| Ghostty Install | Homebrew cask                          | Community script            | AUR (`yay -S ghostty`) |
-| Tiling WM       | Yabai                                  | —                           | Niri                   |
-| Status Bar      | Sketchybar                             | —                           | Waybar                 |
-| tmux Path       | `/opt/homebrew/bin/tmux`               | `/usr/bin/tmux`             | `/usr/bin/tmux`        |
-| Update Command  | `brew update && brew upgrade`          | `apt update && apt upgrade` | `yay -Syu`             |
-| Extra Features  | `bootout-gui` function, key repeat fix | French locale generation    | `reload-niri` function |
+| Aspect          | macOS                                  | Ubuntu                      | Arch Linux              |
+| --------------- | -------------------------------------- | --------------------------- | ----------------------- |
+| Package Manager | Homebrew                               | apt + Homebrew (Linuxbrew)  | pacman + paru/yay (AUR) |
+| Ghostty Install | Homebrew cask                          | Community script            | AUR (`yay -S ghostty`)  |
+| Tiling WM       | Yabai                                  | —                           | Niri                    |
+| Status Bar      | Sketchybar                             | —                           | Waybar                  |
+| tmux Path       | `/opt/homebrew/bin/tmux`               | `/usr/bin/tmux`             | `/usr/bin/tmux`         |
+| Update Command  | `brew update && brew upgrade`          | `apt update && apt upgrade` | `paru -Syu`             |
+| Extra Features  | `bootout-gui` function, key repeat fix | French locale generation    | `reload-niri` function  |
 
 See the platform-specific SPECS for complete details.
 

@@ -6,41 +6,43 @@ This document describes the Arch Linux-specific development environment configur
 
 ## Package Manager
 
-**pacman** is the primary package manager for Arch Linux, with **yay** (AUR helper) for community packages.
+**pacman** is the primary package manager for Arch Linux, with **paru** (preferred) or **yay** as AUR helpers for community packages.
+
+The install script will automatically install **paru** if no AUR helper is present. If paru installation fails, it falls back to **yay**.
 
 ### Packages Installed via pacman
 
-| Package     | Description              |
-| ----------- | ------------------------ |
-| base-devel  | Build tools              |
-| git         | Version control          |
-| stow        | Dotfiles symlink manager |
-| zsh         | Shell                    |
-| tmux        | Terminal multiplexer     |
-| neovim      | Text editor              |
-| go          | Go programming language  |
-| clang       | C/C++ toolchain          |
-| zoxide      | Smart directory jumping  |
-| eza         | Modern ls replacement    |
-| fd          | Modern find replacement  |
-| fzf         | Fuzzy finder             |
-| ripgrep     | Modern grep replacement  |
-| bat         | Modern cat replacement   |
-| lazygit     | Git TUI                  |
-| btop        | Resource monitor         |
-| fastfetch   | System info display      |
-| niri        | Scrollable tiling WM     |
-| waybar      | Wayland status bar       |
-| ttf-hack-nerd | Hack Nerd Font         |
-| wireplumber | Audio session manager    |
-| pipewire-pulse | PipeWire PulseAudio  |
+| Package        | Description              |
+| -------------- | ------------------------ |
+| base-devel     | Build tools              |
+| git            | Version control          |
+| stow           | Dotfiles symlink manager |
+| zsh            | Shell                    |
+| tmux           | Terminal multiplexer     |
+| neovim         | Text editor              |
+| go             | Go programming language  |
+| clang          | C/C++ toolchain          |
+| zoxide         | Smart directory jumping  |
+| eza            | Modern ls replacement    |
+| fd             | Modern find replacement  |
+| fzf            | Fuzzy finder             |
+| ripgrep        | Modern grep replacement  |
+| bat            | Modern cat replacement   |
+| lazygit        | Git TUI                  |
+| btop           | Resource monitor         |
+| fastfetch      | System info display      |
+| niri           | Scrollable tiling WM     |
+| waybar         | Wayland status bar       |
+| ttf-hack-nerd  | Hack Nerd Font           |
+| wireplumber    | Audio session manager    |
+| pipewire-pulse | PipeWire PulseAudio      |
 
-### Packages Installed via yay (AUR)
+### Packages Installed via paru/yay (AUR)
 
-| Package   | Description           |
-| --------- | --------------------- |
-| ghostty   | Terminal emulator     |
-| zed-editor | Modern code editor   |
+| Package      | Description         |
+| ------------ | ------------------- |
+| ghostty      | Terminal emulator   |
+| zed-editor   | Modern code editor  |
 | opencode-bin | AI coding assistant |
 
 ---
@@ -53,36 +55,36 @@ Niri is a scrollable-tiling Wayland compositor. Our configuration mirrors the Ya
 
 ### Layout Settings
 
-| Setting              | Value     | Description                        |
-| -------------------- | --------- | ---------------------------------- |
-| `gaps`               | `12`      | Gap between windows in pixels      |
-| `struts.top`         | `32`      | Reserve space for Waybar           |
-| `focus-follows-mouse`| `true`    | Focus window under cursor          |
-| `default-column-width` | `proportion 0.5` | Default window width      |
+| Setting                | Value            | Description                   |
+| ---------------------- | ---------------- | ----------------------------- |
+| `gaps`                 | `12`             | Gap between windows in pixels |
+| `struts.top`           | `32`             | Reserve space for Waybar      |
+| `focus-follows-mouse`  | `true`           | Focus window under cursor     |
+| `default-column-width` | `proportion 0.5` | Default window width          |
 
 ### Window Appearance
 
-| Setting                    | Value   | Description                      |
-| -------------------------- | ------- | -------------------------------- |
-| `border.width`             | `2`     | Border width in pixels           |
-| `border.active.color`      | `#f92672` | Monokai pink for focused       |
-| `border.inactive.color`    | `#272822` | Monokai background for unfocused |
-| `inactive-window-opacity`  | `0.9`   | Unfocused windows at 90% opacity |
+| Setting                   | Value     | Description                      |
+| ------------------------- | --------- | -------------------------------- |
+| `border.width`            | `2`       | Border width in pixels           |
+| `border.active.color`     | `#f92672` | Monokai pink for focused         |
+| `border.inactive.color`   | `#272822` | Monokai background for unfocused |
+| `inactive-window-opacity` | `0.9`     | Unfocused windows at 90% opacity |
 
 ### Key Bindings
 
-| Binding          | Action                    |
-| ---------------- | ------------------------- |
-| `Super+Return`   | Spawn terminal (Ghostty)  |
-| `Super+D`        | Spawn launcher (fuzzel)   |
-| `Super+Q`        | Close focused window      |
-| `Super+H/J/K/L`  | Focus left/down/up/right  |
-| `Super+Shift+H/J/K/L` | Move window          |
-| `Super+1-9`      | Switch to workspace       |
-| `Super+Shift+1-9`| Move window to workspace  |
-| `Super+F`        | Toggle fullscreen         |
-| `Super+Space`    | Toggle floating           |
-| `Super+Shift+E`  | Exit Niri                 |
+| Binding               | Action                   |
+| --------------------- | ------------------------ |
+| `Super+Return`        | Spawn terminal (Ghostty) |
+| `Super+D`             | Spawn launcher (fuzzel)  |
+| `Super+Q`             | Close focused window     |
+| `Super+H/J/K/L`       | Focus left/down/up/right |
+| `Super+Shift+H/J/K/L` | Move window              |
+| `Super+1-9`           | Switch to workspace      |
+| `Super+Shift+1-9`     | Move window to workspace |
+| `Super+F`             | Toggle fullscreen        |
+| `Super+Space`         | Toggle floating          |
+| `Super+Shift+E`       | Exit Niri                |
 
 ---
 
@@ -94,11 +96,11 @@ Waybar is a highly customizable Wayland bar. Our configuration uses the Monokai 
 
 ### Bar Settings
 
-| Setting       | Value        | Description                   |
-| ------------- | ------------ | ----------------------------- |
-| `position`    | `top`        | Bar at top of screen          |
-| `height`      | `28`         | Bar height in pixels          |
-| `layer`       | `top`        | Render above windows          |
+| Setting    | Value | Description          |
+| ---------- | ----- | -------------------- |
+| `position` | `top` | Bar at top of screen |
+| `height`   | `28`  | Bar height in pixels |
+| `layer`    | `top` | Render above windows |
 
 ### Color Scheme (Monokai Classic)
 
@@ -113,13 +115,13 @@ Waybar is a highly customizable Wayland bar. Our configuration uses the Monokai 
 
 ### Bar Modules
 
-| Position | Module          | Description                           |
-| -------- | --------------- | ------------------------------------- |
-| Left     | `niri/workspaces` | Workspace indicators                |
-| Left     | `niri/window`   | Currently focused window (green)      |
-| Center   | `clock`         | Time display with icon (cyan)         |
-| Right    | `pulseaudio`    | System volume (green icon)            |
-| Right    | `battery`       | Battery status (orange icon)          |
+| Position | Module            | Description                      |
+| -------- | ----------------- | -------------------------------- |
+| Left     | `niri/workspaces` | Workspace indicators             |
+| Left     | `niri/window`     | Currently focused window (green) |
+| Center   | `clock`           | Time display with icon (cyan)    |
+| Right    | `pulseaudio`      | System volume (green icon)       |
+| Right    | `battery`         | Battery status (orange icon)     |
 
 ---
 
@@ -127,10 +129,10 @@ Waybar is a highly customizable Wayland bar. Our configuration uses the Monokai 
 
 During installation, dotfiles are copied from `archlinux/dotfiles/` to `~/.dotfiles` and stowed from there. This allows you to delete the repository after installation.
 
-| Package   | Target                  | Contents                    |
-| --------- | ----------------------- | --------------------------- |
-| `niri`    | `~/.config/niri/`       | Window manager config       |
-| `waybar`  | `~/.config/waybar/`     | Status bar config & styles  |
+| Package  | Target              | Contents                   |
+| -------- | ------------------- | -------------------------- |
+| `niri`   | `~/.config/niri/`   | Window manager config      |
+| `waybar` | `~/.config/waybar/` | Status bar config & styles |
 
 **Source (in repo):** `archlinux/dotfiles/`
 **Destination (on system):** `~/.dotfiles/`
@@ -227,7 +229,8 @@ Zed is a modern, high-performance code editor. Key settings include:
 Arch Linux-specific features:
 
 - `use-tmux()` uses `/usr/bin/tmux`
-- `update()` runs `yay -Syu` for full system upgrade including AUR
+- `update()` runs `paru -Syu` or `yay -Syu` (auto-detects available AUR helper) for full system upgrade including AUR
+- `reload-niri()` reloads Niri configuration
 - PATH includes Go binaries
 
 ### .zshrc
@@ -325,6 +328,7 @@ sudo locale-gen fr_FR.UTF-8
 ```
 
 Ensure `/etc/locale.gen` contains:
+
 ```
 fr_FR.UTF-8 UTF-8
 ```
@@ -382,7 +386,7 @@ The uninstall script will:
 5. **Remove Ghostty configuration**
 6. **Remove Niri configuration**
 7. **Remove Waybar configuration**
-8. **Optionally remove AUR packages** - ghostty, zed-editor, opencode-bin
+8. **Optionally remove AUR packages** - ghostty, zed-editor, opencode-bin (uses paru or yay)
 9. **Optionally remove ~/.dotfiles** - Remove the dotfiles directory
 
 **Note:** The script will ask for confirmation before proceeding.
