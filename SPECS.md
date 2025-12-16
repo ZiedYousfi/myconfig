@@ -17,6 +17,35 @@ The entire setup should be installable by running **a single script**. The goal 
 
 Running the setup multiple times must be safe and produce the same result. Tools already installed should be skipped.
 
+### Tiling Window Manager & Status Bar
+
+The environment uses a **tiling window manager** for efficient window organization and a **status bar** at the top of the screen for system information and workspace indicators. Platform-specific implementations:
+
+- **macOS:** Yabai (tiling WM) + Sketchybar (status bar)
+- **Linux:** (to be configured)
+
+### Monokai Classic Color Theme
+
+All visual components use the **Monokai Classic** color palette for a consistent aesthetic:
+
+| Color      | Hex       | RGB             | Usage                          |
+| ---------- | --------- | --------------- | ------------------------------ |
+| Background | `#272822` | (39, 40, 34)    | Primary background             |
+| Foreground | `#f8f8f2` | (248, 248, 242) | Primary text                   |
+| Pink       | `#f92672` | (249, 38, 114)  | Keywords, highlights, active   |
+| Orange     | `#fd971f` | (253, 151, 31)  | Warnings, secondary highlights |
+| Yellow     | `#e6db74` | (230, 219, 116) | Strings                        |
+| Green      | `#a6e22e` | (166, 226, 46)  | Success, strings, functions    |
+| Cyan       | `#66d9ef` | (102, 217, 239) | Types, info, accents           |
+| Purple     | `#ae81ff` | (174, 129, 255) | Numbers, constants             |
+
+This theme is applied to:
+
+- Neovim (via `monokai.nvim`)
+- Zed (via Zedokai Darker Classic)
+- Status bar (Sketchybar on macOS)
+- Terminal applications
+
 ### Dotfiles Management with GNU Stow
 
 All configuration files are managed using [GNU Stow](https://www.gnu.org/software/stow/). During installation:
@@ -194,6 +223,8 @@ After installation, `~/.dotfiles` contains:
 | --------------- | -------------------------------------- | --------------------------- |
 | Package Manager | Homebrew                               | apt + Homebrew (Linuxbrew)  |
 | Ghostty Install | Homebrew cask                          | Community script            |
+| Tiling WM       | Yabai                                  | X                           |
+| Status Bar      | Sketchybar                             | X                           |
 | tmux Path       | `/opt/homebrew/bin/tmux`               | `/usr/bin/tmux`             |
 | Update Command  | `brew update && brew upgrade`          | `apt update && apt upgrade` |
 | Extra Features  | `bootout-gui` function, key repeat fix | French locale generation    |

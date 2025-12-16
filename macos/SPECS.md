@@ -34,12 +34,19 @@ This document describes the macOS-specific development environment configuration
 | ghostty          | cask    | Terminal emulator        |
 | zed              | cask    | Modern code editor       |
 | sst/tap/opencode | formula | AI coding assistant      |
+| yabai            | formula | Tiling window manager    |
+| sketchybar       | formula | Custom macOS menu bar    |
 
 ---
 
 ## Dotfiles Structure (Stow Packages)
 
 During installation, dotfiles are copied from `macos/dotfiles/` to `~/.dotfiles` and stowed from there. This allows you to delete the repository after installation.
+
+| Package      | Target                  | Contents                    |
+| ------------ | ----------------------- | --------------------------- |
+| `sketchybar` | `~/.config/sketchybar/` | Bar configuration & plugins |
+| `yabai`      | `~/.config/yabai/`      | Window manager config       |
 
 **Source (in repo):** `macos/dotfiles/`
 **Destination (on system):** `~/.dotfiles/`
@@ -59,10 +66,25 @@ After installation, your `~/.dotfiles` contains:
 │               └── plugins/
 │                   ├── auto-save.lua
 │                   └── colorscheme.lua
+├── sketchybar/
+│   └── .config/
+│       └── sketchybar/
+│           ├── sketchybarrc
+│           └── plugins/
+│               ├── battery.sh
+│               ├── clock.sh
+│               ├── front_app.sh
+│               ├── space.sh
+│               ├── switch_space.sh
+│               └── volume.sh
 ├── tmux/
 │   └── .config/
 │       └── tmux/
 │           └── tmux.conf.local
+├── yabai/
+│   └── .config/
+│       └── yabai/
+│           └── yabairc
 ├── zed/
 │   └── .config/
 │       └── zed/
@@ -74,6 +96,99 @@ After installation, your `~/.dotfiles` contains:
                 └── zieds/
                     └── zieds.plugin.zsh
 ```
+
+---
+
+## Yabai Configuration (Tiling Window Manager)
+
+**Location:** `~/.config/yabai/yabairc` (symlinked from `~/.dotfiles/yabai/`)
+
+Yabai is a tiling window manager for macOS that provides automatic window arrangement using binary space partitioning (BSP).
+
+### Layout Settings
+
+| Setting            | Value          | Description                        |
+| ------------------ | -------------- | ---------------------------------- |
+| `layout`           | `bsp`          | Binary space partitioning layout   |
+| `window_gap`       | `12`           | Gap between windows in pixels      |
+| `top_padding`      | `12`           | Padding from top edge              |
+| `bottom_padding`   | `12`           | Padding from bottom edge           |
+| `left_padding`     | `12`           | Padding from left edge             |
+| `right_padding`    | `12`           | Padding from right edge            |
+| `external_bar`     | `all:25:0`     | Reserve 25px at top for Sketchybar |
+| `window_placement` | `second_child` | New windows spawn as second child  |
+
+### Window Appearance
+
+| Setting                 | Value   | Description                      |
+| ----------------------- | ------- | -------------------------------- |
+| `window_shadow`         | `float` | Shadows only on floating windows |
+| `window_opacity`        | `on`    | Enable window transparency       |
+| `active_window_opacity` | `1.0`   | Focused window fully opaque      |
+| `normal_window_opacity` | `0.9`   | Unfocused windows at 90% opacity |
+
+### Mouse Settings
+
+| Setting          | Value | Description                       |
+| ---------------- | ----- | --------------------------------- |
+| `mouse_modifier` | `alt` | Hold Alt to interact with windows |
+
+---
+
+## Sketchybar Configuration (Menu Bar)
+
+**Location:** `~/.config/sketchybar/` (symlinked from `~/.dotfiles/sketchybar/`)
+
+Sketchybar is a highly customizable macOS menu bar replacement. Our configuration uses the Monokai Classic color theme.
+
+### Bar Settings
+
+| Setting       | Value        | Description                   |
+| ------------- | ------------ | ----------------------------- |
+| `position`    | `top`        | Bar at top of screen          |
+| `height`      | `28`         | Bar height in pixels          |
+| `blur_radius` | `30`         | Background blur effect        |
+| `color`       | `0xf0272822` | Monokai background with alpha |
+
+### Font Configuration
+
+| Element | Font                | Size |
+| ------- | ------------------- | ---- |
+| Icons   | Hack Nerd Font Bold | 14.0 |
+| Labels  | Hack Nerd Font Bold | 12.0 |
+
+### Color Scheme (Monokai Classic)
+
+| Color      | Hex       | ARGB         | Usage                        |
+| ---------- | --------- | ------------ | ---------------------------- |
+| Background | `#272822` | `0xf0272822` | Bar background               |
+| Foreground | `#ffffff` | `0xffffffff` | Default text                 |
+| Pink       | `#f92672` | `0xfff92672` | Active space, highlights     |
+| Orange     | `#fd971f` | `0xfffd971f` | Battery icon                 |
+| Green      | `#a6e22e` | `0xffa6e22e` | Front app label, volume icon |
+| Cyan       | `#66d9ef` | `0xff66d9ef` | Chevron, clock icon          |
+
+### Bar Items
+
+| Position | Item        | Description                           |
+| -------- | ----------- | ------------------------------------- |
+| Left     | Spaces 1-10 | Mission Control space indicators      |
+| Left     | Chevron     | Separator icon (cyan)                 |
+| Left     | Front App   | Currently focused application (green) |
+| Center   | Clock       | Time display with icon (cyan)         |
+| Right    | Volume      | System volume (green icon)            |
+| Right    | Battery     | Battery status (orange icon)          |
+
+### Plugin Scripts
+
+| Script            | Purpose                        |
+| ----------------- | ------------------------------ |
+| `space.sh`        | Handle space indicator updates |
+| `switch_space.sh` | Switch to clicked space        |
+| `front_app.sh`    | Update front app display       |
+| `clock.sh`        | Update time display            |
+| `volume.sh`       | Handle volume changes          |
+| `battery.sh`      | Update battery status          |
 
 ---
 
