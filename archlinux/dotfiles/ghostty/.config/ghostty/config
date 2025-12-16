@@ -1,0 +1,4 @@
+fullscreen=true
+background = #000000
+font-size = 18
+command = /bin/bash --noprofile --norc -c "/usr/bin/tmux has-session 2>/dev/null && /usr/bin/tmux attach-session -d || /usr/bin/tmux new-session"

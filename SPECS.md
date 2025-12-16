@@ -4,6 +4,7 @@ This document describes the desired development environment in a declarative, pl
 
 - [macOS Specification](macos/SPECS.md)
 - [Ubuntu Specification](ubuntu/SPECS.md)
+- [Arch Linux Specification](archlinux/SPECS.md)
 
 ---
 
@@ -22,7 +23,8 @@ Running the setup multiple times must be safe and produce the same result. Tools
 The environment uses a **tiling window manager** for efficient window organization and a **status bar** at the top of the screen for system information and workspace indicators. Platform-specific implementations:
 
 - **macOS:** Yabai (tiling WM) + Sketchybar (status bar)
-- **Linux:** (to be configured)
+- **Arch Linux:** Niri (scrollable tiling Wayland compositor) + Waybar (status bar)
+- **Ubuntu:** (not yet configured)
 
 ### Monokai Classic Color Theme
 
@@ -43,7 +45,8 @@ This theme is applied to:
 
 - Neovim (via `monokai.nvim`)
 - Zed (via Zedokai Darker Classic)
-- Status bar (Sketchybar on macOS)
+- Status bar (Sketchybar on macOS, Waybar on Arch Linux)
+- Window manager borders (Niri on Arch Linux)
 - Terminal applications
 
 ### Dotfiles Management with GNU Stow
@@ -219,15 +222,15 @@ After installation, `~/.dotfiles` contains:
 
 ## Platform Differences
 
-| Aspect          | macOS                                  | Ubuntu                      |
-| --------------- | -------------------------------------- | --------------------------- |
-| Package Manager | Homebrew                               | apt + Homebrew (Linuxbrew)  |
-| Ghostty Install | Homebrew cask                          | Community script            |
-| Tiling WM       | Yabai                                  | X                           |
-| Status Bar      | Sketchybar                             | X                           |
-| tmux Path       | `/opt/homebrew/bin/tmux`               | `/usr/bin/tmux`             |
-| Update Command  | `brew update && brew upgrade`          | `apt update && apt upgrade` |
-| Extra Features  | `bootout-gui` function, key repeat fix | French locale generation    |
+| Aspect          | macOS                                  | Ubuntu                      | Arch Linux             |
+| --------------- | -------------------------------------- | --------------------------- | ---------------------- |
+| Package Manager | Homebrew                               | apt + Homebrew (Linuxbrew)  | pacman + yay (AUR)     |
+| Ghostty Install | Homebrew cask                          | Community script            | AUR (`yay -S ghostty`) |
+| Tiling WM       | Yabai                                  | —                           | Niri                   |
+| Status Bar      | Sketchybar                             | —                           | Waybar                 |
+| tmux Path       | `/opt/homebrew/bin/tmux`               | `/usr/bin/tmux`             | `/usr/bin/tmux`        |
+| Update Command  | `brew update && brew upgrade`          | `apt update && apt upgrade` | `yay -Syu`             |
+| Extra Features  | `bootout-gui` function, key repeat fix | French locale generation    | `reload-niri` function |
 
 See the platform-specific SPECS for complete details.
 
@@ -248,16 +251,32 @@ setup-config/
 │   └── dotfiles/       # Source dotfiles (copied to ~/.dotfiles)
 │       ├── ghostty/
 │       ├── nvim/
+│       ├── sketchybar/
 │       ├── tmux/
+│       ├── yabai/
+│       ├── zed/
 │       └── zsh/
-└── ubuntu/
-    ├── SPECS.md        # Ubuntu-specific specification
-    ├── install.sh      # Ubuntu installation script
-    ├── uninstall.sh    # Ubuntu uninstall script
+├── ubuntu/
+│   ├── SPECS.md        # Ubuntu-specific specification
+│   ├── install.sh      # Ubuntu installation script
+│   ├── uninstall.sh    # Ubuntu uninstall script
+│   └── dotfiles/       # Source dotfiles (copied to ~/.dotfiles)
+│       ├── ghostty/
+│       ├── nvim/
+│       ├── tmux/
+│       ├── zed/
+│       └── zsh/
+└── archlinux/
+    ├── SPECS.md        # Arch Linux-specific specification
+    ├── install.sh      # Arch Linux installation script
+    ├── uninstall.sh    # Arch Linux uninstall script
     └── dotfiles/       # Source dotfiles (copied to ~/.dotfiles)
         ├── ghostty/
+        ├── niri/
         ├── nvim/
         ├── tmux/
+        ├── waybar/
+        ├── zed/
         └── zsh/
 ```
 
@@ -268,8 +287,12 @@ The repository can be deleted. Your dotfiles live in:
 ```
 ~/.dotfiles/           # Your dotfiles (stow source)
 ├── ghostty/
+├── niri/              # Arch Linux only
 ├── nvim/
+├── sketchybar/        # macOS only
 ├── tmux/
+├── waybar/            # Arch Linux only
+├── yabai/             # macOS only
 ├── zed/
 └── zsh/
 ```
@@ -288,6 +311,9 @@ bash macos/uninstall.sh
 
 # Ubuntu
 bash ubuntu/uninstall.sh
+
+# Arch Linux
+bash archlinux/uninstall.sh
 ```
 
 The uninstall scripts will:

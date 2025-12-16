@@ -1,6 +1,6 @@
 # Setup Config — Development Environment
 
-This repository provides a single-script, idempotent setup for a development environment on macOS and Ubuntu. Each platform has a dedicated installer and its own configuration subtree so you can run the installer for the platform you need. The goal is to get from a clean or newly installed OS to a fully functional developer environment with one command.
+This repository provides a single-script, idempotent setup for a development environment on macOS, Ubuntu, and Arch Linux. Each platform has a dedicated installer and its own configuration subtree so you can run the installer for the platform you need. The goal is to get from a clean or newly installed OS to a fully functional developer environment with one command.
 
 **Key Feature:** Dotfiles are copied to `~/.dotfiles` and managed using [GNU Stow](https://www.gnu.org/software/stow/). After installation, you can safely delete this repository — your dotfiles live in your home directory.
 
@@ -39,6 +39,12 @@ bash macos/install.sh
 bash ubuntu/install.sh
 ```
 
+- Arch Linux (with Niri + Waybar already installed via archinstall)
+
+```
+bash archlinux/install.sh
+```
+
 After installation completes, you can delete this repository:
 
 ```
@@ -67,6 +73,9 @@ The installers add and configure the following tools (platform differences noted
 - Development toolchain: Git, Go, LLVM/Clang
 - Optional: OpenCode / SST (opencode CLI)
 - GNU Stow for dotfiles management
+- Tiling window manager & status bar:
+  - macOS: Yabai + Sketchybar
+  - Arch Linux: Niri + Waybar (Monokai theme)
 
 Important: The installers try to be minimally intrusive but they install software system-wide; read the script before running if you want to know the specifics.
 
@@ -109,6 +118,26 @@ bash ubuntu/install.sh
   - Sets up Oh My Tmux and LazyVim, **using stow** for custom configs
   - Configures French locale if not present
 
+### Arch Linux
+
+- Path to Arch Linux installer:
+
+```
+bash archlinux/install.sh
+```
+
+- What this Arch Linux script does (high level):
+  - Installs `yay` (AUR helper) if not present
+  - Uses `pacman` and `yay` to install packages
+  - **Copies dotfiles to `~/.dotfiles`**
+  - Installs modern CLI tools via pacman
+  - Installs Ghostty and Zed via AUR
+  - Configures **Niri** (scrollable tiling Wayland compositor) with Monokai-themed borders
+  - Configures **Waybar** status bar with Monokai theme matching Sketchybar on macOS
+  - Installs Oh My Zsh and **uses stow** for the custom zsh plugin from `~/.dotfiles`
+  - Sets up Oh My Tmux and LazyVim, **using stow** for custom configs
+  - Configures French locale if not present
+
 ## Dotfiles management with GNU Stow
 
 ### How it works
@@ -135,6 +164,10 @@ After installation, your `~/.dotfiles` directory contains:
 │   └── .config/
 │       └── ghostty/
 │           └── config
+├── niri/                    # Arch Linux only
+│   └── .config/
+│       └── niri/
+│           └── config.kdl
 ├── nvim/
 │   └── .config/
 │       └── nvim/
@@ -142,10 +175,27 @@ After installation, your `~/.dotfiles` directory contains:
 │               └── plugins/
 │                   ├── auto-save.lua
 │                   └── colorscheme.lua
+├── sketchybar/              # macOS only
+│   └── .config/
+│       └── sketchybar/
+│           └── ...
 ├── tmux/
 │   └── .config/
 │       └── tmux/
 │           └── tmux.conf.local
+├── waybar/                  # Arch Linux only
+│   └── .config/
+│       └── waybar/
+│           ├── config
+│           └── style.css
+├── yabai/                   # macOS only
+│   └── .config/
+│       └── yabai/
+│           └── yabairc
+├── zed/
+│   └── .config/
+│       └── zed/
+│           └── settings.json
 └── zsh/
     └── .oh-my-zsh/
         └── custom/
@@ -336,6 +386,12 @@ bash macos/uninstall.sh
 bash ubuntu/uninstall.sh
 ```
 
+**Arch Linux:**
+
+```
+bash archlinux/uninstall.sh
+```
+
 The uninstall scripts will:
 
 1. Unstow all dotfiles from `~/.dotfiles` (remove symlinks)
@@ -343,10 +399,13 @@ The uninstall scripts will:
 3. Remove Oh My Tmux
 4. Remove LazyVim/Neovim configuration and data
 5. Remove Ghostty configuration
-6. Remove Homebrew packages installed by the setup
-7. Optionally remove Homebrew itself
-8. Optionally remove `~/.dotfiles` directory
-9. Restore default system settings (macOS)
+6. Remove Niri/Waybar configuration (Arch Linux)
+7. Remove Sketchybar/Yabai configuration (macOS)
+8. Remove Homebrew packages installed by the setup (macOS/Ubuntu)
+9. Optionally remove AUR packages (Arch Linux)
+10. Optionally remove Homebrew itself (macOS/Ubuntu)
+11. Optionally remove `~/.dotfiles` directory
+12. Restore default system settings (macOS)
 
 **Note:** The scripts will ask for confirmation before proceeding and offer choices for optional removals.
 
@@ -355,25 +414,29 @@ The uninstall scripts will:
 - The scripts assume `amd64` architecture; if you use an ARM Linux system, adjust the downloads accordingly.
 - The scripts will install system-wide software — if you are running on machines where you cannot use `sudo`, you may need to adapt the scripts for local installation.
 - Neovim will be installed via Homebrew (both platforms).
-- The Zsh plugin `zieds` is platform-specific (uses `brew` vs `apt` for updates).
+- The Zsh plugin `zieds` is platform-specific (uses `brew` vs `apt` vs `yay` for updates).
 
 ## File reference
 
 - Platform installers:
   - macOS: `macos/install.sh`
   - Ubuntu: `ubuntu/install.sh`
+  - Arch Linux: `archlinux/install.sh`
 
 - Platform-specific dotfiles (source, copied to ~/.dotfiles):
-  - macOS: `macos/dotfiles/*`
+  - macOS: `macos/dotfiles/*` (includes sketchybar, yabai)
   - Ubuntu: `ubuntu/dotfiles/*`
+  - Arch Linux: `archlinux/dotfiles/*` (includes niri, waybar)
 
 - Platform-specific specifications:
   - macOS: `macos/SPECS.md`
   - Ubuntu: `ubuntu/SPECS.md`
+  - Arch Linux: `archlinux/SPECS.md`
 
 - Uninstall scripts:
   - macOS: `macos/uninstall.sh`
   - Ubuntu: `ubuntu/uninstall.sh`
+  - Arch Linux: `archlinux/uninstall.sh`
 
 - Specification: `SPECS.md` — contains the desired environment specification (high-level overview).
 
