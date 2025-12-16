@@ -63,6 +63,15 @@ check_internet() {
   log_success "Internet connection available"
 }
 
+# Ensure required tools exist in the live environment
+ensure_tools() {
+  log_info "Ensuring required tools are installed (git)..."
+  if ! command -v git &>/dev/null; then
+    pacman -Sy --noconfirm --needed git ca-certificates
+  fi
+  log_success "Tools ready"
+}
+
 # Update system clock
 sync_time() {
   log_info "Synchronizing system clock..."
@@ -169,7 +178,8 @@ done
 
 # Clone the setup repository
 if [[ ! -d "/home/$USERNAME/setup-config" ]]; then
-  sudo -u "$USERNAME" git clone --depth 1 "$REPO_URL" "/home/$USERNAME/setup-config"
+  sudo -u "$USERNAME" git clone --depth 1 "$REPO_URL" \
+    "/home/$USERNAME/setup-config"
 fi
 
 # Run the install script as the user
@@ -278,6 +288,7 @@ main() {
   check_live_environment
   check_internet
   sync_time
+  ensure_tools
   ensure_repo
   select_disk
   update_config_disk
