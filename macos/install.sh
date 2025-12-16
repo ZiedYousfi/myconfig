@@ -111,6 +111,26 @@ install_packages() {
     # Cask applications
     install_brew_package "ghostty" "true"
 
+    # Window management (macOS)
+    # Yabai from asmvik tap
+    if brew list "asmvik/formulae/yabai" &>/dev/null; then
+        log_success "yabai is already installed"
+    else
+        log_info "Installing yabai..."
+        brew install asmvik/formulae/yabai
+        log_success "yabai installed"
+    fi
+
+    # Sketchybar from FelixKratz tap
+    if brew list "FelixKratz/formulae/sketchybar" &>/dev/null; then
+        log_success "sketchybar is already installed"
+    else
+        log_info "Installing sketchybar..."
+        brew tap FelixKratz/formulae
+        brew install sketchybar
+        log_success "sketchybar installed"
+    fi
+
     # opencode (install SST version from sst/tap)
     if brew list "sst/tap/opencode" &>/dev/null; then
         log_success "SST opencode is already installed"
@@ -134,7 +154,7 @@ setup_user_dotfiles() {
     mkdir -p "$USER_DOTFILES_DIR"
 
     # Copy each stow package from repo to user dotfiles directory
-    for package in ghostty nvim tmux zsh; do
+    for package in ghostty nvim tmux zsh sketchybar yabai; do
         if [ -d "$REPO_DOTFILES_DIR/$package" ]; then
             log_info "Copying $package to $USER_DOTFILES_DIR..."
             # Use rsync to copy, preserving structure and updating only if newer
@@ -366,6 +386,65 @@ configure_ghostty() {
 }
 
 # ============================================================================
+# Yabai Configuration
+# ============================================================================
+
+configure_yabai() {
+    log_info "Configuring Yabai via stow..."
+    stow_package "yabai"
+
+    # Make yabairc executable
+    local YABAIRC="$XDG_CONFIG_HOME/yabai/yabairc"
+    if [ -f "$YABAIRC" ]; then
+        chmod +x "$YABAIRC"
+    fi
+
+    # Start yabai service if not running
+    if ! pgrep -x "yabai" > /dev/null; then
+        log_info "Starting yabai service..."
+        yabai --start-service 2>/dev/null || true
+    else
+        log_info "Restarting yabai to apply configuration..."
+        yabai --restart-service 2>/dev/null || true
+    fi
+
+    log_success "Yabai configured"
+    log_warning "Note: Yabai requires accessibility permissions and SIP configuration for full functionality."
+    log_warning "See: https://github.com/koekeishiya/yabai/wiki/Disabling-System-Integrity-Protection"
+}
+
+# ============================================================================
+# Sketchybar Configuration
+# ============================================================================
+
+configure_sketchybar() {
+    log_info "Configuring Sketchybar via stow..."
+    stow_package "sketchybar"
+
+    # Make sketchybarrc and plugins executable
+    local SKETCHYBAR_CONFIG="$XDG_CONFIG_HOME/sketchybar"
+    if [ -f "$SKETCHYBAR_CONFIG/sketchybarrc" ]; then
+        chmod +x "$SKETCHYBAR_CONFIG/sketchybarrc"
+    fi
+
+    # Make all plugin scripts executable
+    if [ -d "$SKETCHYBAR_CONFIG/plugins" ]; then
+        find "$SKETCHYBAR_CONFIG/plugins" -type f -name "*.sh" -exec chmod +x {} \;
+    fi
+
+    # Start sketchybar service if not running
+    if ! pgrep -x "sketchybar" > /dev/null; then
+        log_info "Starting sketchybar service..."
+        brew services start sketchybar 2>/dev/null || true
+    else
+        log_info "Restarting sketchybar to apply configuration..."
+        brew services restart sketchybar 2>/dev/null || true
+    fi
+
+    log_success "Sketchybar configured"
+}
+
+# ============================================================================
 # macOS System Settings
 # ============================================================================
 
@@ -422,6 +501,12 @@ main() {
 
     # Configure Ghostty (uses stow)
     configure_ghostty
+
+    # Setup Yabai window manager
+    configure_yabai
+
+    # Setup Sketchybar status bar
+    configure_sketchybar
 
     # Configure macOS-specific settings
     configure_macos_settings
