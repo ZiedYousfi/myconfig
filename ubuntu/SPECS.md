@@ -115,13 +115,27 @@ After installation, your `~/.dotfiles` contains:
 
 **Location:** `~/.config/ghostty/config` (symlinked from `~/.dotfiles/ghostty/`)
 
+### Settings
+
+| Setting              | Value             | Description                           |
+| -------------------- | ----------------- | ------------------------------------- |
+| `fullscreen`         | `true`            | Start in fullscreen mode              |
+| `background`         | `#000000`         | Black background                      |
+| `background-opacity` | `0.75`            | 75% window opacity                    |
+| `background-blur`    | `true`            | Enable background blur (Linux)        |
+| `command`            | (tmux attach/new) | Auto-attach to or create tmux session |
+
+### Config File
+
 ```
 fullscreen=true
 background = #000000
+background-opacity = 0.75
+background-blur = true
 command = /bin/bash --noprofile --norc -c "/usr/bin/tmux has-session 2>/dev/null && /usr/bin/tmux attach-session -d || /usr/bin/tmux new-session"
 ```
 
-Note: Uses `/usr/bin/tmux` path for system tmux or adjust to Homebrew path if needed.
+Note: Uses `/usr/bin/tmux` path for system tmux or adjust to Homebrew path if needed. The `background-blur = true` setting enables background blur on Linux (compositor support required).
 
 ---
 

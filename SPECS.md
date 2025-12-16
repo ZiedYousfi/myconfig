@@ -123,6 +123,10 @@ After installation, `~/.dotfiles` contains:
 - Starts in fullscreen mode
 - Black background
 - Automatically attaches to or creates a tmux session
+- **Opacity:** 75% (`background-opacity = 0.75`)
+- **Background Blur:**
+  - macOS: `background-blur = macos-glass-regular` (native glass effect)
+  - Other platforms (Linux): `background-blur = true`
 
 ### Multiplexer: tmux + Oh My Tmux
 

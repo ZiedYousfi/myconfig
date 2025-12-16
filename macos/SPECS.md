@@ -196,13 +196,27 @@ Sketchybar is a highly customizable macOS menu bar replacement. Our configuratio
 
 **Location:** `~/.config/ghostty/config` (symlinked from `~/.dotfiles/ghostty/`)
 
+### Settings
+
+| Setting              | Value                 | Description                           |
+| -------------------- | --------------------- | ------------------------------------- |
+| `fullscreen`         | `true`                | Start in fullscreen mode              |
+| `background`         | `#000000`             | Black background                      |
+| `background-opacity` | `0.75`                | 75% window opacity                    |
+| `background-blur`    | `macos-glass-regular` | macOS native glass blur effect        |
+| `command`            | (tmux attach/new)     | Auto-attach to or create tmux session |
+
+### Config File
+
 ```
 fullscreen=true
 background = #000000
+background-opacity = 0.75
+background-blur = macos-glass-regular
 command = /bin/bash --noprofile --norc -c "/opt/homebrew/bin/tmux has-session 2>/dev/null && /opt/homebrew/bin/tmux attach-session -d || /opt/homebrew/bin/tmux new-session"
 ```
 
-Note: Uses `/opt/homebrew/bin/tmux` path for Apple Silicon Macs.
+Note: Uses `/opt/homebrew/bin/tmux` path for Apple Silicon Macs. The `background-blur = macos-glass-regular` setting is macOS-specific and provides native glass blur effects.
 
 ---
 
