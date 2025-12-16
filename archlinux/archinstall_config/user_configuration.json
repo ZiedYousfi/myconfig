@@ -1,142 +1,139 @@
 {
-    "app_config": {
-        "audio_config": {
-            "audio": "pipewire"
-        }
+  "app_config": {
+    "audio_config": {
+      "audio": "pipewire"
+    }
+  },
+  "archinstall-language": "English",
+  "auth_config": {},
+  "bootloader_config": {
+    "bootloader": "Systemd-boot",
+    "removable": false,
+    "uki": false
+  },
+  "custom_commands": [],
+  "disk_config": {
+    "btrfs_options": {
+      "snapshot_config": {
+        "type": "Snapper"
+      }
     },
-    "archinstall-language": "English",
-    "auth_config": {},
-    "bootloader_config": {
-        "bootloader": "Systemd-boot",
-        "removable": false,
-        "uki": false
-    },
-    "custom_commands": [],
-    "disk_config": {
-        "btrfs_options": {
-            "snapshot_config": {
-                "type": "Snapper"
-            }
-        },
-        "config_type": "default_layout",
-        "device_modifications": [
-            {
-                "device": "/dev/sda",
-                "partitions": [
-                    {
-                        "btrfs": [],
-                        "dev_path": null,
-                        "flags": [
-                            "boot",
-                            "esp"
-                        ],
-                        "fs_type": "fat32",
-                        "mount_options": [],
-                        "mountpoint": "/boot",
-                        "obj_id": "ffbca513-26e5-4640-8af7-c13f212a55d8",
-                        "size": {
-                            "sector_size": {
-                                "unit": "B",
-                                "value": 512
-                            },
-                            "unit": "GiB",
-                            "value": 1
-                        },
-                        "start": {
-                            "sector_size": {
-                                "unit": "B",
-                                "value": 512
-                            },
-                            "unit": "MiB",
-                            "value": 1
-                        },
-                        "status": "create",
-                        "type": "primary"
-                    },
-                    {
-                        "btrfs": [
-                            {
-                                "mountpoint": "/",
-                                "name": "@"
-                            },
-                            {
-                                "mountpoint": "/home",
-                                "name": "@home"
-                            },
-                            {
-                                "mountpoint": "/var/log",
-                                "name": "@log"
-                            },
-                            {
-                                "mountpoint": "/var/cache/pacman/pkg",
-                                "name": "@pkg"
-                            }
-                        ],
-                        "dev_path": null,
-                        "flags": [],
-                        "fs_type": "btrfs",
-                        "mount_options": [
-                            "compress=zstd"
-                        ],
-                        "mountpoint": null,
-                        "obj_id": "a9b6b0fc-681c-45f5-8341-bc7dd24e9b14",
-                        "size": {
-                            "sector_size": {
-                                "unit": "B",
-                                "value": 512
-                            },
-                            "unit": "B",
-                            "value": 67643637760
-                        },
-                        "start": {
-                            "sector_size": {
-                                "unit": "B",
-                                "value": 512
-                            },
-                            "unit": "B",
-                            "value": 1074790400
-                        },
-                        "status": "create",
-                        "type": "primary"
-                    }
-                ],
-                "wipe": true
-            }
-        ]
-    },
-    "hostname": "archlinuxbtw",
-    "kernels": [
-        "linux"
-    ],
-    "locale_config": {
-        "kb_layout": "fr",
-        "sys_enc": "UTF-8",
-        "sys_lang": "fr_FR.UTF-8"
-    },
-    "ntp": true,
-    "packages": [
-        "firefox",
-        "git"
-    ],
-    "parallel_downloads": 0,
-    "profile_config": {
-        "gfx_driver": "All open-source",
-        "greeter": "gdm",
-        "profile": {
-            "custom_settings": {
-                "Niri": {
-                    "seat_access": "polkit"
-                }
+    "config_type": "default_layout",
+    "device_modifications": [
+      {
+        "device": "/dev/sda",
+        "partitions": [
+          {
+            "btrfs": [],
+            "dev_path": null,
+            "flags": ["boot", "esp"],
+            "fs_type": "fat32",
+            "mount_options": [],
+            "mountpoint": "/boot",
+            "obj_id": "ffbca513-26e5-4640-8af7-c13f212a55d8",
+            "size": {
+              "sector_size": {
+                "unit": "B",
+                "value": 512
+              },
+              "unit": "GiB",
+              "value": 1
             },
-            "details": [
-                "Niri"
+            "start": {
+              "sector_size": {
+                "unit": "B",
+                "value": 512
+              },
+              "unit": "MiB",
+              "value": 1
+            },
+            "status": "create",
+            "type": "primary"
+          },
+          {
+            "btrfs": [
+              {
+                "mountpoint": "/",
+                "name": "@"
+              },
+              {
+                "mountpoint": "/home",
+                "name": "@home"
+              },
+              {
+                "mountpoint": "/var/log",
+                "name": "@log"
+              },
+              {
+                "mountpoint": "/var/cache/pacman/pkg",
+                "name": "@pkg"
+              }
             ],
-            "main": "Desktop"
+            "dev_path": null,
+            "flags": [],
+            "fs_type": "btrfs",
+            "mount_options": ["compress=zstd"],
+            "mountpoint": null,
+            "obj_id": "a9b6b0fc-681c-45f5-8341-bc7dd24e9b14",
+            "size": {
+              "sector_size": {
+                "unit": "B",
+                "value": 512
+              },
+              "unit": "B",
+              "value": 67643637760
+            },
+            "start": {
+              "sector_size": {
+                "unit": "B",
+                "value": 512
+              },
+              "unit": "B",
+              "value": 1074790400
+            },
+            "status": "create",
+            "type": "primary"
+          }
+        ],
+        "wipe": true
+      }
+    ]
+  },
+  "hostname": "archlinuxbtw",
+  "kernels": ["linux"],
+  "locale_config": {
+    "kb_layout": "fr",
+    "sys_enc": "UTF-8",
+    "sys_lang": "fr_FR.UTF-8"
+  },
+  "ntp": true,
+  "packages": [
+    "firefox",
+    "git",
+    "base-devel",
+    "networkmanager",
+    "curl",
+    "wget",
+    "rsync",
+    "sudo"
+  ],
+  "parallel_downloads": 5,
+  "profile_config": {
+    "gfx_driver": "All open-source",
+    "greeter": "gdm",
+    "profile": {
+      "custom_settings": {
+        "Niri": {
+          "seat_access": "polkit"
         }
-    },
-    "script": null,
-    "services": [],
-    "swap": true,
-    "timezone": "Europe/Paris",
-    "version": "3.0.14"
+      },
+      "details": ["Niri"],
+      "main": "Desktop"
+    }
+  },
+  "script": null,
+  "services": ["NetworkManager"],
+  "swap": true,
+  "timezone": "Europe/Paris",
+  "version": "3.0.14"
 }

@@ -4,6 +4,37 @@ This document describes the Arch Linux-specific development environment configur
 
 ---
 
+## Quick Installation (From ISO)
+
+Boot from the Arch Linux ISO, connect to the internet, and run:
+
+```bash
+# Option 1: Quick bootstrap (interactive, self-contained)
+curl -sL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/archlinux/bootstrap-quick.sh | bash
+
+# Option 2: Clone and run (if you want to customize first)
+git clone https://github.com/ZiedYousfi/myconfig.git
+cd myconfig/archlinux
+./bootstrap.sh
+```
+
+The bootstrap script will:
+
+1. Prompt for username, password, disk, and hostname
+2. Run `archinstall` with the preconfigured settings
+3. Set up a first-boot service that runs `install.sh` automatically
+4. Reboot into your new system
+
+On first boot, the system will automatically install all development tools, AUR packages, and configure your dotfiles. This takes 5-15 minutes depending on your internet speed.
+
+**Monitor first-boot progress:**
+
+```bash
+journalctl -f -u first-boot-setup.service
+```
+
+---
+
 ## Package Manager
 
 **pacman** is the primary package manager for Arch Linux, with **paru** (preferred) or **yay** as AUR helpers for community packages.
@@ -352,11 +383,50 @@ The following paths are configured:
 
 ## Installation
 
+### Fresh Install (From Arch ISO)
+
+See [Quick Installation](#quick-installation-from-iso) above.
+
+### Post-Install Only (Existing Arch System)
+
+If you already have Arch Linux installed and just want the development environment:
+
 ```bash
-bash archlinux/install.sh
+git clone https://github.com/YOUR_USER/setup-config.git
+cd setup-config/archlinux
+bash install.sh
 ```
 
 The script is idempotent - running it multiple times is safe.
+
+---
+
+## Bootstrap Scripts
+
+| Script               | Description                                                     |
+| -------------------- | --------------------------------------------------------------- |
+| `bootstrap-quick.sh` | Self-contained, interactive installer. Can be piped from curl.  |
+| `bootstrap.sh`       | Uses local config files. Run after cloning the repo.            |
+| `install.sh`         | Post-install only. Sets up dotfiles and tools on existing Arch. |
+| `uninstall.sh`       | Removes all installed configurations.                           |
+
+### archinstall Configuration Files
+
+Located in `archinstall_config/`:
+
+| File                      | Description                                             |
+| ------------------------- | ------------------------------------------------------- |
+| `user_configuration.json` | System settings: disk layout, packages, locale, profile |
+| `user_credentials.json`   | User account and password (encrypted)                   |
+
+**Default settings:**
+
+- **Bootloader:** Systemd-boot
+- **Filesystem:** Btrfs with subvolumes (@, @home, @log, @pkg)
+- **Audio:** PipeWire
+- **Desktop:** Niri with GDM greeter
+- **Locale:** fr_FR.UTF-8 with French keyboard
+- **Timezone:** Europe/Paris
 
 ---
 
@@ -374,7 +444,8 @@ The script is idempotent - running it multiple times is safe.
 To remove everything installed by the setup script:
 
 ```bash
-bash archlinux/uninstall.sh
+cd ~/setup-config/archlinux
+bash uninstall.sh
 ```
 
 The uninstall script will:
