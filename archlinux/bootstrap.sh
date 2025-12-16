@@ -163,10 +163,16 @@ set -euo pipefail
 SETUP_LOG="/var/log/first-boot-setup.log"
 REPO_URL="__REPO_URL__"
 USERNAME="__USERNAME__"
+SUDOERS_FILE="/etc/sudoers.d/first-boot-nopasswd"
 
 exec > >(tee -a "$SETUP_LOG") 2>&1
 
 echo "[$(date)] Starting first-boot setup..."
+
+# Add temporary NOPASSWD entry for the user
+echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" > "$SUDOERS_FILE"
+chmod 440 "$SUDOERS_FILE"
+echo "[$(date)] Temporary sudoers entry added for $USERNAME"
 
 # Wait for network
 for i in {1..30}; do
@@ -185,6 +191,10 @@ fi
 # Run the install script as the user
 cd "/home/$USERNAME/setup-config/archlinux"
 sudo -u "$USERNAME" bash install.sh
+
+# Remove temporary sudoers entry
+rm -f "$SUDOERS_FILE"
+echo "[$(date)] Temporary sudoers entry removed"
 
 # Disable this service after successful run
 systemctl disable first-boot-setup.service
