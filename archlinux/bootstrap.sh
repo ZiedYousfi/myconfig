@@ -106,7 +106,7 @@ select_disk() {
   local default_disk
   default_disk=$(lsblk -d -n -o NAME | grep -E "^(sd|nvme|vd)" | head -1)
 
-  read -rp "Enter disk to install to [${default_disk}]: " selected_disk
+  read -r -p "Enter disk to install to [${default_disk}]: " selected_disk </dev/tty
   selected_disk="${selected_disk:-$default_disk}"
 
   # Validate disk exists
@@ -117,7 +117,7 @@ select_disk() {
 
   echo ""
   log_warning "ALL DATA ON /dev/$selected_disk WILL BE DESTROYED!"
-  read -rp "Are you sure? (yes/no): " confirm
+  read -r -p "Are you sure? (yes/no): " confirm </dev/tty
   if [[ "$confirm" != "yes" ]]; then
     log_info "Installation cancelled."
     exit 0
