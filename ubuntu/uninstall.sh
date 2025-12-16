@@ -73,7 +73,7 @@ unstow_dotfiles() {
     if command -v stow &>/dev/null && [ -d "$USER_DOTFILES_DIR" ]; then
         log_info "Unstowing dotfiles from $USER_DOTFILES_DIR..."
 
-        for package in ghostty nvim tmux zsh; do
+        for package in ghostty nvim tmux zed zsh; do
             if [ -d "$USER_DOTFILES_DIR/$package" ]; then
                 log_info "Unstowing $package..."
                 stow --dir="$USER_DOTFILES_DIR" --target="$HOME" --delete "$package" 2>/dev/null || true
@@ -194,6 +194,31 @@ remove_ghostty() {
         log_info "Ghostty binary found. It was installed via community script."
         log_warning "You may need to manually remove Ghostty depending on how it was installed."
         log_info "Check: which ghostty"
+    fi
+}
+
+remove_zed() {
+    # Remove Zed configuration
+    if [ -d "$XDG_CONFIG_HOME/zed" ]; then
+        log_info "Removing Zed configuration..."
+        rm -rf "$XDG_CONFIG_HOME/zed"
+        log_success "Zed configuration removed"
+    else
+        log_info "Zed configuration not found, skipping"
+    fi
+
+    # Remove Zed binary if installed
+    if command -v zed &>/dev/null; then
+        log_info "Zed binary found."
+        log_warning "You may need to manually remove Zed depending on how it was installed."
+        log_info "Check: which zed"
+    fi
+
+    # Remove Zed from ~/.local if installed there
+    if [ -d "$HOME/.local/zed.app" ]; then
+        log_info "Removing Zed from ~/.local/zed.app..."
+        rm -rf "$HOME/.local/zed.app"
+        log_success "Zed application removed"
     fi
 }
 
@@ -339,6 +364,7 @@ main() {
 
     # Remove configurations
     remove_ghostty
+    remove_zed
     remove_lazyvim
     remove_oh_my_tmux
     remove_oh_my_zsh

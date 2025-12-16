@@ -43,6 +43,7 @@ After installation, `~/.dotfiles` contains:
 | `ghostty` | `~/.config/ghostty/`                 | Terminal emulator configuration |
 | `nvim`    | `~/.config/nvim/lua/plugins/`        | Custom Neovim plugins           |
 | `tmux`    | `~/.config/tmux/`                    | Custom tmux configuration       |
+| `zed`     | `~/.config/zed/`                     | Zed editor configuration        |
 | `zsh`     | `~/.oh-my-zsh/custom/plugins/zieds/` | Custom Zsh plugin               |
 
 ```
@@ -62,6 +63,10 @@ After installation, `~/.dotfiles` contains:
 │   └── .config/
 │       └── tmux/
 │           └── tmux.conf.local
+├── zed/
+│   └── .config/
+│       └── zed/
+│           └── settings.json
 └── zsh/
     └── .oh-my-zsh/
         └── custom/
@@ -99,6 +104,18 @@ After installation, `~/.dotfiles` contains:
 - **Custom Plugins (stowed from ~/.dotfiles):**
   - `auto-save.lua` - Automatic file saving
   - `colorscheme.lua` - Monokai color scheme
+
+### Editor: Zed
+
+- **Installation:** macOS App (Homebrew cask)
+- **Configuration:** Stowed from `~/.dotfiles/zed/`
+- **Features:**
+  - Dark theme (Zedokai Darker Classic)
+  - Autosave after 2 seconds
+  - Agent integration with Copilot Claude Opus 4.5
+  - Edit predictions via Zed
+  - Git panel on left, project panel on right
+  - Minimap disabled
 
 ---
 
@@ -222,6 +239,7 @@ The repository can be deleted. Your dotfiles live in:
 ├── ghostty/
 ├── nvim/
 ├── tmux/
+├── zed/
 └── zsh/
 ```
 

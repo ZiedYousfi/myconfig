@@ -73,7 +73,7 @@ unstow_dotfiles() {
     if command -v stow &>/dev/null && [ -d "$USER_DOTFILES_DIR" ]; then
         log_info "Unstowing dotfiles from $USER_DOTFILES_DIR..."
 
-        for package in ghostty nvim tmux zsh; do
+        for package in ghostty nvim tmux zed zsh; do
             if [ -d "$USER_DOTFILES_DIR/$package" ]; then
                 log_info "Unstowing $package..."
                 stow --dir="$USER_DOTFILES_DIR" --target="$HOME" --delete "$package" 2>/dev/null || true
@@ -189,6 +189,16 @@ remove_ghostty_config() {
     fi
 }
 
+remove_zed_config() {
+    if [ -d "$XDG_CONFIG_HOME/zed" ]; then
+        log_info "Removing Zed configuration..."
+        rm -rf "$XDG_CONFIG_HOME/zed"
+        log_success "Zed configuration removed"
+    else
+        log_info "Zed configuration not found, skipping"
+    fi
+}
+
 # ============================================================================
 # Remove Homebrew Packages
 # ============================================================================
@@ -222,6 +232,7 @@ remove_brew_packages() {
 
     local casks=(
         "ghostty"
+        "zed"
     )
 
     # Remove casks
@@ -309,6 +320,7 @@ main() {
 
     # Remove configurations
     remove_ghostty_config
+    remove_zed_config
     remove_lazyvim
     remove_oh_my_tmux
     remove_oh_my_zsh

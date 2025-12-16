@@ -135,7 +135,7 @@ setup_user_dotfiles() {
     mkdir -p "$USER_DOTFILES_DIR"
 
     # Copy each stow package from repo to user dotfiles directory
-    for package in ghostty nvim tmux zsh; do
+    for package in ghostty nvim tmux zed zsh; do
         if [ -d "$REPO_DOTFILES_DIR/$package" ]; then
             log_info "Copying $package to $USER_DOTFILES_DIR..."
             # Use rsync to copy, preserving structure and updating only if newer
@@ -388,6 +388,26 @@ configure_ghostty() {
 }
 
 # ============================================================================
+# Zed Installation
+# ============================================================================
+
+install_zed() {
+    if command -v zed &>/dev/null; then
+        log_success "Zed is already installed"
+    else
+        log_info "Installing Zed..."
+        curl -f https://zed.dev/install.sh | sh
+        log_success "Zed installed"
+    fi
+}
+
+configure_zed() {
+    log_info "Configuring Zed via stow..."
+    stow_package "zed"
+    log_success "Zed configured"
+}
+
+# ============================================================================
 # Locale Configuration
 # ============================================================================
 
@@ -459,6 +479,10 @@ main() {
 
     # Configure Ghostty (uses stow)
     configure_ghostty
+
+    # Install and configure Zed editor
+    install_zed
+    configure_zed
 
     echo ""
     echo "╔════════════════════════════════════════════════════════════════╗"

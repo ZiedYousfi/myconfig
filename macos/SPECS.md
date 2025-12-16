@@ -32,6 +32,7 @@ This document describes the macOS-specific development environment configuration
 | btop             | formula | Resource monitor         |
 | fastfetch        | formula | System info display      |
 | ghostty          | cask    | Terminal emulator        |
+| zed              | cask    | Modern code editor       |
 | sst/tap/opencode | formula | AI coding assistant      |
 
 ---
@@ -62,6 +63,10 @@ After installation, your `~/.dotfiles` contains:
 │   └── .config/
 │       └── tmux/
 │           └── tmux.conf.local
+├── zed/
+│   └── .config/
+│       └── zed/
+│           └── settings.json
 └── zsh/
     └── .oh-my-zsh/
         └── custom/
@@ -83,6 +88,24 @@ command = /bin/bash --noprofile --norc -c "/opt/homebrew/bin/tmux has-session 2>
 ```
 
 Note: Uses `/opt/homebrew/bin/tmux` path for Apple Silicon Macs.
+
+---
+
+## Zed Configuration
+
+**Location:** `~/.config/zed/settings.json` (symlinked from `~/.dotfiles/zed/`)
+
+Zed is a modern, high-performance code editor. Key settings include:
+
+- **Theme:** Zedokai Darker Classic (dark mode)
+- **Autosave:** Enabled with 2-second delay
+- **Font sizes:** UI 18, Buffer 16
+- **Agent:** Configured with Claude Opus 4.5 as default model
+- **Edit Predictions:** Enabled with Zed provider
+- **Git Panel:** Icon-based status, docked left
+- **Project Panel:** Docked right
+- **Minimap:** Disabled
+- **Inline Diagnostics:** Enabled
 
 ---
 

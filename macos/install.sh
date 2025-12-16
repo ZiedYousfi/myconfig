@@ -110,6 +110,7 @@ install_packages() {
 
     # Cask applications
     install_brew_package "ghostty" "true"
+    install_brew_package "zed" "true"
 
     # Window management (macOS)
     # Yabai from asmvik tap
@@ -154,7 +155,7 @@ setup_user_dotfiles() {
     mkdir -p "$USER_DOTFILES_DIR"
 
     # Copy each stow package from repo to user dotfiles directory
-    for package in ghostty nvim tmux zsh sketchybar yabai; do
+    for package in ghostty nvim tmux zed zsh sketchybar yabai; do
         if [ -d "$REPO_DOTFILES_DIR/$package" ]; then
             log_info "Copying $package to $USER_DOTFILES_DIR..."
             # Use rsync to copy, preserving structure and updating only if newer
@@ -386,6 +387,16 @@ configure_ghostty() {
 }
 
 # ============================================================================
+# Zed Configuration
+# ============================================================================
+
+configure_zed() {
+    log_info "Configuring Zed via stow..."
+    stow_package "zed"
+    log_success "Zed configured"
+}
+
+# ============================================================================
 # Yabai Configuration
 # ============================================================================
 
@@ -501,6 +512,9 @@ main() {
 
     # Configure Ghostty (uses stow)
     configure_ghostty
+
+    # Configure Zed editor (uses stow)
+    configure_zed
 
     # Setup Yabai window manager
     configure_yabai

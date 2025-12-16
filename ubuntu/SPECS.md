@@ -56,6 +56,13 @@ Used for essential system packages required before Homebrew:
 | fastfetch        | System info display     |
 | sst/tap/opencode | AI coding assistant     |
 
+### Cask Applications (via Community Scripts)
+
+| Application | Installation Method    | Description        |
+| ----------- | ---------------------- | ------------------ |
+| Ghostty     | Community script       | Terminal emulator  |
+| Zed         | Official Linux install | Modern code editor |
+
 ---
 
 ## Dotfiles Structure (Stow Packages)
@@ -84,6 +91,10 @@ After installation, your `~/.dotfiles` contains:
 │   └── .config/
 │       └── tmux/
 │           └── tmux.conf.local
+├── zed/
+│   └── .config/
+│       └── zed/
+│           └── settings.json
 └── zsh/
     └── .oh-my-zsh/
         └── custom/
@@ -111,6 +122,30 @@ command = /bin/bash --noprofile --norc -c "/usr/bin/tmux has-session 2>/dev/null
 ```
 
 Note: Uses `/usr/bin/tmux` path for system tmux or adjust to Homebrew path if needed.
+
+---
+
+## Zed Configuration
+
+**Installation:** Via official Zed Linux installer
+
+```bash
+curl -fsSL https://zed.dev/install.sh | sh
+```
+
+**Location:** `~/.config/zed/settings.json` (symlinked from `~/.dotfiles/zed/`)
+
+Zed is a modern, high-performance code editor. Key settings include:
+
+- **Theme:** Zedokai Darker Classic (dark mode)
+- **Autosave:** Enabled with 2-second delay
+- **Font sizes:** UI 18, Buffer 16
+- **Agent:** Configured with Claude Opus 4.5 as default model
+- **Edit Predictions:** Enabled with Zed provider
+- **Git Panel:** Icon-based status, docked left
+- **Project Panel:** Docked right
+- **Minimap:** Disabled
+- **Inline Diagnostics:** Enabled
 
 ---
 
@@ -281,7 +316,7 @@ bash ubuntu/uninstall.sh
 
 The uninstall script will:
 
-1. **Unstow all dotfiles** - Remove symlinks for ghostty, nvim, tmux, and zsh
+1. **Unstow all dotfiles** - Remove symlinks for ghostty, nvim, tmux, zed, and zsh
 2. **Remove Oh My Zsh** - Including all plugins and managed `.zshrc`
 3. **Remove Oh My Tmux** - And tmux configuration directory
 4. **Remove LazyVim** - Including Neovim data, state, and cache
