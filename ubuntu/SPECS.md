@@ -117,25 +117,23 @@ After installation, your `~/.dotfiles` contains:
 
 ### Settings
 
-| Setting              | Value             | Description                           |
-| -------------------- | ----------------- | ------------------------------------- |
-| `fullscreen`         | `true`            | Start in fullscreen mode              |
-| `background`         | `#000000`         | Black background                      |
-| `background-opacity` | `0.75`            | 75% window opacity                    |
-| `background-blur`    | `true`            | Enable background blur (Linux)        |
-| `command`            | (tmux attach/new) | Auto-attach to or create tmux session |
+| Setting      | Value             | Description                           |
+| ------------ | ----------------- | ------------------------------------- |
+| `fullscreen` | `true`            | Start in fullscreen mode              |
+| `background` | `#000000`         | Black background                      |
+| `font-size`  | `18`              | Terminal font size                    |
+| `command`    | (tmux attach/new) | Auto-attach to or create tmux session |
 
 ### Config File
 
 ```
 fullscreen=true
 background = #000000
-background-opacity = 0.75
-background-blur = true
+font-size = 18
 command = /bin/bash --noprofile --norc -c "/usr/bin/tmux has-session 2>/dev/null && /usr/bin/tmux attach-session -d || /usr/bin/tmux new-session"
 ```
 
-Note: Uses `/usr/bin/tmux` path for system tmux or adjust to Homebrew path if needed. The `background-blur = true` setting enables background blur on Linux (compositor support required).
+Note: Uses `/usr/bin/tmux` path for system tmux or adjust to Homebrew path if needed. The Ghostty config shipped in this repository for Ubuntu does not include `background-opacity` or `background-blur` — it sets `font-size` instead. If you want background blur on Linux, add `background-blur = true` to the Ghostty config (requires compositor support).
 
 ---
 

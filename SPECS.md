@@ -24,7 +24,7 @@ The environment uses a **tiling window manager** for efficient window organizati
 
 - **macOS:** Yabai (tiling WM) + Sketchybar (status bar)
 - **Arch Linux:** Niri (scrollable tiling Wayland compositor) + Waybar (status bar)
-- **Ubuntu:** (not yet configured)
+- **Ubuntu:** Configured — uses Homebrew (Linuxbrew) for developer packages; Ghostty and Zed are installed via community/official installers. No custom tiling WM/status bar is managed by these scripts.
 
 ### Monokai Classic Color Theme
 
@@ -226,15 +226,15 @@ After installation, `~/.dotfiles` contains:
 
 ## Platform Differences
 
-| Aspect          | macOS                                  | Ubuntu                      | Arch Linux              |
-| --------------- | -------------------------------------- | --------------------------- | ----------------------- |
-| Package Manager | Homebrew                               | apt + Homebrew (Linuxbrew)  | pacman + paru/yay (AUR) |
-| Ghostty Install | Homebrew cask                          | Community script            | AUR (`yay -S ghostty`)  |
-| Tiling WM       | Yabai                                  | —                           | Niri                    |
-| Status Bar      | Sketchybar                             | —                           | Waybar                  |
-| tmux Path       | `/opt/homebrew/bin/tmux`               | `/usr/bin/tmux`             | `/usr/bin/tmux`         |
-| Update Command  | `brew update && brew upgrade`          | `apt update && apt upgrade` | `paru -Syu`             |
-| Extra Features  | `bootout-gui` function, key repeat fix | French locale generation    | `reload-niri` function  |
+| Aspect          | macOS                                  | Ubuntu                                 | Arch Linux                 |
+| --------------- | -------------------------------------- | -------------------------------------- | -------------------------- |
+| Package Manager | Homebrew                               | apt + Homebrew (Linuxbrew)             | pacman + paru (AUR helper) |
+| Ghostty Install | Homebrew cask                          | Community script                       | AUR (`paru -S ghostty`)    |
+| Tiling WM       | Yabai                                  | GNOME (no custom tiling WM configured) | Niri                       |
+| Status Bar      | Sketchybar                             | GNOME top bar (no custom status bar)   | Waybar                     |
+| tmux Path       | `/opt/homebrew/bin/tmux`               | `/usr/bin/tmux`                        | `/usr/bin/tmux`            |
+| Update Command  | `brew update && brew upgrade`          | `apt update && apt upgrade`            | `paru -Syu`                |
+| Extra Features  | `bootout-gui` function, key repeat fix | French locale generation               | `reload-niri` function     |
 
 See the platform-specific SPECS for complete details.
 
