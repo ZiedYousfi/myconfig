@@ -25,7 +25,11 @@ git clone https://github.com/ZiedYousfi/myconfig.git
 cd setup-config
 ```
 
-Choose the platform and run the installer script:
+There are two primary ways to apply the configuration:
+
+1. Traditional installer scripts (one-shot, imperative)
+
+- Use the platform installers if you prefer the existing script-based flow:
 
 - macOS
 
@@ -45,20 +49,69 @@ bash ubuntu/install.sh
 bash archlinux/install.sh
 ```
 
-After installation completes, you can delete this repository:
+After running a script you can delete the cloned repo:
 
 ```
 cd ..
 rm -rf setup-config
 ```
 
-Your dotfiles are now in `~/.dotfiles` and symlinked to the appropriate locations.
+Your dotfiles will be copied to `~/.dotfiles` and (when stowed) symlinked into your home.
 
-Notes:
+Notes for the script-based flow:
 
 - The installers are idempotent — running them multiple times is safe.
 - Some steps require `sudo` for installing system packages and changing shells. You will be prompted for your password as needed.
-- Make sure you have a working network connection (the scripts fetch packages and remote repositories).
+- Ensure you have a working network connection (the scripts fetch packages and remote repositories).
+
+2. Declarative Nix Flake + Home Manager (recommended for reproducibility)
+
+- The repository includes a Nix flake that provides:
+  - `homeConfigurations` (Home Manager configurations) to declaratively manage dotfiles and program configs
+  - `devShells.default` for a reproducible development shell
+  - per-package Home Manager modules for `tmux`, `nvim`, `zed`, and `zsh`
+
+Basic usage examples (replace the system/user triple to match your machine):
+
+- Enter the developer shell:
+
+```
+nix develop .#devShells.x86_64-linux.default
+# or for a different system: nix develop .#devShells.aarch64-linux.default
+```
+
+- Apply the Home Manager configuration (preferred; adjusts the user's home declaratively):
+
+```
+nix run .#homeConfigurations.x86_64-linux.yourusername.activationPackage
+```
+
+or build and run the activation script:
+
+```
+nix build .#homeConfigurations.x86_64-linux.yourusername.activationPackage
+./result/activate
+```
+
+Notes for the flake flow:
+
+- Set the username/home that the flake targets by editing `setup-config/nix/flake.nix` (the `defaultUser` / `defaultHome` values) or by running the appropriate configuration for your real username.
+- The flake exposes the repository's dotfiles under `nix/dotfiles/` and the Home Manager modules manage those files using `home.file."<path>".source`. This means the dotfiles are:
+  - declarative and reproducible (stored in the Nix store and tracked by the flake)
+  - symlinked into `$HOME` by Home Manager, preserving the usual file layout
+- If you want to preserve the GNU Stow workflow for quick experiments, enable automatic stow inside the module by setting `setupConfig.dotfiles.autoStow = true` in your Home Manager flake configuration (this will attempt to run `stow -v *` in `~/.dotfiles` during activation if `stow` is available). Alternatively, run `cd ~/.dotfiles && stow <package>` manually to test a package without changing the flake.
+
+Which approach to choose:
+
+- Use the installer scripts when you want a minimal, script-driven setup on a fresh machine.
+- Use the Nix Flake + Home Manager when you want reproducibility, easy rollbacks and the ability to apply the same configuration across multiple machines in a declarative fashion.
+
+Common troubleshooting tips for Nix:
+
+- If `nix` or Flakes are not installed, install Nix and enable Flakes per the official Nix documentation for your OS.
+- When switching between approaches, be careful about leftover manually-written files (stow-produced symlinks) — remove or back them up before activating the flake-managed configuration to avoid conflicts.
+
+You can find more details about the flake and how per-package modules are organized in `setup-config/nix/` (look at `flake.nix` and the `modules` subdirectory).
 
 ## What it installs (overview)
 

@@ -1,0 +1,94 @@
+# Monokai Theme for SketchyBar
+# Color Palette:
+# Background: #272822 (39,40,34)
+# Pink:       #f92672 (249,38,114)
+# Orange:     #fd971f (253,151,31)
+# Green:      #a6e22e (166,226,46)
+# Cyan:       #66d9ef (102,217,239)
+
+PLUGIN_DIR="$CONFIG_DIR/plugins"
+
+# Monokai color definitions (ARGB format)
+MONOKAI_BG=0xf0272822
+MONOKAI_FG=0xffffffff
+MONOKAI_PINK=0xfff92672
+MONOKAI_ORANGE=0xfffd971f
+MONOKAI_GREEN=0xffa6e22e
+MONOKAI_CYAN=0xff66d9ef
+
+##### Bar Appearance #####
+sketchybar --bar position=top height=28 blur_radius=30 color=$MONOKAI_BG
+
+##### Changing Defaults #####
+default=(
+  padding_left=5
+  padding_right=5
+  icon.font="Hack Nerd Font:Bold:14.0"
+  label.font="Hack Nerd Font:Bold:12.0"
+  icon.color=$MONOKAI_FG
+  label.color=$MONOKAI_FG
+  icon.padding_left=4
+  icon.padding_right=4
+  label.padding_left=4
+  label.padding_right=4
+)
+sketchybar --default "${default[@]}"
+
+##### Adding Mission Control Space Indicators #####
+SPACE_ICONS=("1" "2" "3" "4" "5" "6" "7" "8" "9" "10")
+for i in "${!SPACE_ICONS[@]}"
+do
+  sid="$(($i+1))"
+  space=(
+    space="$sid"
+    icon="${SPACE_ICONS[i]}"
+    icon.padding_left=10
+    icon.padding_right=10
+    icon.color=$MONOKAI_FG
+    icon.highlight_color=$MONOKAI_PINK
+    background.color=$MONOKAI_PINK
+    background.corner_radius=5
+    background.height=22
+    background.padding_left=2
+    background.padding_right=2
+    background.drawing=off
+    label.drawing=off
+    script="$PLUGIN_DIR/space.sh"
+    click_script="$PLUGIN_DIR/switch_space.sh $sid"
+  )
+  sketchybar --add space space."$sid" left --set space."$sid" "${space[@]}"
+done
+
+##### Adding Left Items #####
+sketchybar --add item chevron left \
+           --set chevron icon= label.drawing=off \
+                         icon.color=$MONOKAI_CYAN \
+           --add item front_app left \
+           --set front_app icon.drawing=off \
+                           label.color=$MONOKAI_GREEN \
+                           script="$PLUGIN_DIR/front_app.sh" \
+           --subscribe front_app front_app_switched
+
+##### Adding Center Items #####
+sketchybar --add item clock center \
+           --set clock update_freq=10 \
+                       icon= \
+                       icon.color=$MONOKAI_CYAN \
+                       label.color=$MONOKAI_FG \
+                       script="$PLUGIN_DIR/clock.sh"
+
+##### Adding Right Items #####
+sketchybar --add item volume right \
+           --set volume icon.color=$MONOKAI_GREEN \
+                        label.color=$MONOKAI_FG \
+                        script="$PLUGIN_DIR/volume.sh" \
+           --subscribe volume volume_change \
+           --add item battery right \
+           --set battery update_freq=120 \
+                         icon.color=$MONOKAI_ORANGE \
+                         label.color=$MONOKAI_FG \
+                         script="$PLUGIN_DIR/battery.sh" \
+           --subscribe battery system_woke power_source_change
+
+##### Force all scripts to run the first time (never do this in a script) #####
+sketchybar --update
