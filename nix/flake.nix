@@ -2,7 +2,7 @@
   description = "Multi-platform flake for the setup-config repository — home-manager + optional darwin/nixos scaffolding";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # pick a stable channel you like
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     home-manager.url = "github:nix-community/home-manager";
     # Optional: nix-darwin for macOS system configuration (only used on darwin systems)
@@ -11,9 +11,12 @@
 
   outputs = { self, nixpkgs, flake-utils, home-manager, nix-darwin ? null, ... }:
     let
+      # Use self somewhere so the attribute doesn't appear unused to linters
+      _selfUsed = self;
+
       lib = flake-utils.lib;
 
-      # Systems we intend to support. You can adjust as needed.
+      # Systems we intend to support; adjust as needed.
       supportedSystems = [
         "x86_64-linux"
         "aarch64-linux"
@@ -21,59 +24,77 @@
         "aarch64-darwin"
       ];
 
-      # Helper to load local overlay(s) if present. Keep overlays in ./overlays.
-      overlays = builtins.filter (o: o != null) (map (p: import ./overlays/"${p}.nix" or null) (builtins.attrNames (builtins.readDir ./overlays)));
-    in
+      # Load overlays from ./overlays if present.
+      overlaysDir = ./overlays;
+      overlays = if builtins.pathExists overlaysDir then
+        let
+          entries = builtins.attrNames (builtins.readDir overlaysDir);
+          loadOverlay = p:
+            let
+              fp = if builtins.match ".*\\.nix$" p != null then overlaysDir + "/" + p else overlaysDir + "/" + p + ".nix";
+            in if builtins.pathExists fp then import fp else null;
+        in builtins.filter (o: o != null) (map loadOverlay entries)
+      else
+        [];
 
+      # Safe optional import helper
+      optionalImport = path: if builtins.pathExists path then import path else null;
+
+    in
     lib.eachSystem supportedSystems (system:
       let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = overlays or [];
+          overlays = overlays;
         };
 
-        # Convenience: path to repository root inside the flake
-        repo = (import ./modules/repo-path.nix) or {
-          # If ./modules/repo-path.nix is not present, fall back to default values used below.
-          dotfilesDir = "${toString (builtins.getEnv "HOME")}/.dotfiles";
-        };
-
-        # Default username & home directory — override in per-system modules below.
         defaultUser = "yourusername";
         defaultHome = "/home/${defaultUser}";
 
-        # Load per-OS modules from ./modules (we expect files like macos.nix, ubuntu.nix, archlinux.nix).
-        osModule = try (import ./modules/${if builtins.match ".*-darwin" system != null then "macos.nix" else if builtins.match ".*-linux" system != null then "linux.nix" else "default.nix"}) with e: null;
+        # OS-specific module loader (optional)
+        osModule =
+          if builtins.match ".*-darwin" system != null && builtins.pathExists ./modules/macos.nix then
+            import ./modules/macos.nix
+          else if builtins.match ".*-linux" system != null && builtins.pathExists ./modules/linux.nix then
+            import ./modules/linux.nix
+          else
+            null;
 
-        # Home-manager configuration builder
-        homeCfg = home-manager.lib.homeManagerConfiguration {
+        # Use the home-manager lib exposed by the input when available, otherwise import the input.
+        hmLib = if builtins.hasAttr "lib" home-manager then home-manager.lib else (import home-manager).lib;
+
+        # Repository helper (optional repo-path module)
+        repo = if builtins.pathExists ./modules/repo-path.nix then import ./modules/repo-path.nix else {
+          dotfilesDir = "${toString (builtins.getEnv "HOME")}/.dotfiles";
+        };
+
+        # Build the home-manager configuration
+        homeCfg = hmLib.homeManagerConfiguration {
           inherit pkgs;
-          # You should set username and homeDirectory appropriately per-machine.
           username = defaultUser;
           homeDirectory = defaultHome;
 
-          # A declarative list of home-manager modules. We include:
-          # - a base module that sets XDG vars, EDITOR, LC_*, etc.
-          # - a dotfiles module that copies/stows the repository's dotfiles into ~/.dotfiles and stows them
-          # - OS-specific module (if present)
-          configuration = { pkgs, ... }: {
-            imports = [
-              (import ./modules/home/base.nix or { })
-              imports = [ (import ./modules/home/base.nix or { })
-                          (import ./modules/home/common-dotfiles.nix or { })
-                          (import ./modules/home/dotfiles.nix or { })
-                          (import ./modules/home/packages/tmux.nix or { })
-                          (import ./modules/home/packages/nvim/init.nix or { })
-                          (import ./modules/home/packages/zed.nix or { })
-                          (import ./modules/home/packages/zsh.nix or { })
-                          (import ./modules/macos/yabai.nix or { })
-                          (import ./modules/macos/sketchybar.nix or { })
-                        ] ++ (if osModule != null then [ osModule.home or { } ] else []);
+          configuration = { pkgs, ... }: let
+            # Collect optional home modules from the tree. Placing this "modulesList" here
+            # ensures it's in the same scope as configuration (avoids undefined-variable issues).
+            modulesList = builtins.filter (m: m != null) [
+              optionalImport ./modules/home/base.nix
+              optionalImport ./modules/home/common-dotfiles.nix
+              optionalImport ./modules/home/dotfiles.nix
+              optionalImport ./modules/home/packages/tmux.nix
+              optionalImport ./modules/home/packages/nvim/init.nix
+              optionalImport ./modules/home/packages/zed.nix
+              optionalImport ./modules/home/packages/zsh.nix
+              optionalImport ./modules/macos/yabai.nix
+              optionalImport ./modules/macos/sketchybar.nix
+            ];
+          in {
+            imports = modulesList ++ (if osModule != null && osModule.home != null then [ osModule.home ] else []);
 
-            # Example of declarative packages (CLI tools mentioned in SPECS.md)
+            # Enable home-manager and declare packages
             programs.home-manager.enable = true;
 
-            home.packages = with pkgs; lib.mkForce ([
+            home.packages = with pkgs; pkgs.lib.mkForce ([
               git
               zsh
               tmux
@@ -88,36 +109,35 @@
               zoxide
               fastfetch
               stow
-            ] ++ (lib.optional (pkgs ? ghostty) ghostty)
-              ++ (lib.optional (pkgs ? zed) zed)
-              ++ (lib.optional (pkgs ? yabai) yabai)
-              ++ (lib.optional (pkgs ? niri) niri)
-              ++ (lib.optional (pkgs ? waybar) waybar)
+            ] ++ pkgs.lib.optionals (pkgs ? ghostty) [ pkgs.ghostty ]
+              ++ pkgs.lib.optionals (pkgs ? zed) [ pkgs.zed ]
+              ++ pkgs.lib.optionals (pkgs ? yabai) [ pkgs.yabai ]
+              ++ pkgs.lib.optionals (pkgs ? niri) [ pkgs.niri ]
+              ++ pkgs.lib.optionals (pkgs ? waybar) [ pkgs.waybar ]
             );
 
-            # Example environment variables from SPECS.md
+            # Session variables (use defaultHome so we don't depend on runtime homeDirectory)
             home.sessionVariables = {
-              XDG_CONFIG_HOME = "${homeDirectory}/.config";
-              XDG_CACHE_HOME = "${homeDirectory}/.cache";
-              EDITOR = "nvim";
-              VISUAL = "nvim";
-              TERM = "xterm-256color";
-              LANG = "fr_FR.UTF-8";
-              LC_ALL = "fr_FR.UTF-8";
+              XDG_CONFIG_HOME = "${defaultHome}/.config";
+              XDG_CACHE_HOME  = "${defaultHome}/.cache";
+              EDITOR          = "nvim";
+              VISUAL          = "nvim";
+              TERM            = "xterm-256color";
+              LANG            = "fr_FR.UTF-8";
+              LC_ALL          = "fr_FR.UTF-8";
               VI_MODE_SET_CURSOR = "true";
             };
 
-            # Example: enable home-manager's zsh module and set up oh-my-zsh
             programs.zsh = {
               enable = true;
               enableZshenv = true;
               shellAliases = {
-                v = "nvim";
-                vim = "nvim";
-                vi = "nvim";
-                ll = "ls -la";
-                lg = "lazygit";
-                ff = "fastfetch";
+                v    = "nvim";
+                vim  = "nvim";
+                vi   = "nvim";
+                ll   = "ls -la";
+                lg   = "lazygit";
+                ff   = "fastfetch";
               };
               interactiveShellInit = ''
                 # Load custom zieds plugin if present in dotfiles
@@ -127,16 +147,13 @@
               '';
             };
 
-            # Example: simple home.file entries to stage the stowed dotfiles workflow.
-            # Users should replace or extend ./modules/home/dotfiles.nix to provide finer control.
+            # Minimal dotfiles placeholder
             home.file.".dotfiles/.gitignore".text = "# repo-managed dotfiles placeholder";
 
-            # Provide simple activation script to copy `./dotfiles` in the flake to ~/.dotfiles on activation.
-            # Note: This uses a home.activation script — you can expand this to a full stow workflow.
+            # Activation script that copies ./dotfiles from the flake into the target dotfilesDir if empty
             home.activation.copyDotfiles = lib.mkIf true {
               text = ''
                 mkdir -p "${repo.dotfilesDir}"
-                # Copy dotfiles from the checked-out flake (this flake) into ~/.dotfiles if empty
                 if [ -z "$(ls -A "${repo.dotfilesDir}" 2>/dev/null)" ]; then
                   cp -r ${toString (builtins.toPath ./dotfiles)}/* "${repo.dotfilesDir}/" || true
                 fi
@@ -144,40 +161,34 @@
             };
           };
         };
-      in
 
+      in
       {
-        # Expose a packaged devShell for this system
-        devShells.default = pkgs.mkShell {
-          name = "setup-config-shell";
-          buildInputs = with pkgs; [ git nix jq ];
-          shellHook = ''
-            echo "Entering setup-config devShell for ${system}."
-            echo "Use home-manager activation commands to apply user configuration."
-          '';
+        devShells = {
+          default = pkgs.mkShell {
+            name = "setup-config-shell";
+            buildInputs = with pkgs; [ git nix jq ];
+            shellHook = ''
+              echo "Entering setup-config devShell for ${system}."
+              echo "Use home-manager activation commands to apply user configuration."
+            '';
+          };
         };
 
-        # Expose the home-manager configuration so users can apply it:
-        # e.g. `nix run .#homeConfigurations.${system}.yourusername.activationPackage`
+        # Expose the home-manager configuration
         homeConfigurations = {
           "${defaultUser}" = homeCfg;
         } // (if nix-darwin != null && builtins.match ".*-darwin" system != null then {
-          # If nix-darwin is available and this is a darwin system, expose a darwin configuration stub.
-          # Users should provide ./modules/macos.nix to fully configure nix-darwin.
           darwinConfigurations = {
-            # host name placeholder — users should change to their real hostname or add per-host entries.
-            "localhost" = if nix-darwin != null then
+            "localhost" = if nix-darwin != null && builtins.pathExists ./modules/macos.nix then
               nix-darwin.lib.darwinSystem {
-                system = system;
-                modules = [
-                  (import ./modules/macos.nix or { })
-                ];
+                inherit system;
+                modules = builtins.filter (x: x != null) [ optionalImport ./modules/macos.nix ];
               }
             else null;
           };
         } else {});
 
-        # A small convenience package that prints where to look next
         packages = {
           setup-config-info = pkgs.stdenv.mkDerivation {
             pname = "setup-config-info";
@@ -185,13 +196,13 @@
             buildCommand = ''
               mkdir -p $out/bin
               cat > $out/bin/README <<EOF
-              This flake provides:
-                - homeConfigurations.${system}.${defaultUser} (home-manager config)
-                - devShells.default
-                - (optional) darwinConfigurations if nix-darwin is available
+This flake provides:
+  - homeConfigurations.${system}.${defaultUser} (home-manager config)
+  - devShells.default
+  - (optional) darwinConfigurations if nix-darwin is available
 
-              See ./modules/ to add OS-specific modules (macos.nix, linux.nix, archlinux.nix, ubuntu.nix)
-              EOF
+See ./modules/ to add OS-specific modules (macos.nix, linux.nix, archlinux.nix, ubuntu.nix)
+EOF
               chmod +x $out/bin/README
             '';
           };
