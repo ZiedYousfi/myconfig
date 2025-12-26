@@ -38,7 +38,7 @@
         [];
 
       # Safe optional import helper
-      optionalImport = path: if builtins.pathExists path then import path else null;
+      optionalImport = pathToImport: if builtins.pathExists pathToImport then import pathToImport else null;
 
     in
     lib.eachSystem supportedSystems (system:
@@ -123,8 +123,8 @@
               EDITOR          = "nvim";
               VISUAL          = "nvim";
               TERM            = "xterm-256color";
-              LANG            = "fr_FR.UTF-8";
-              LC_ALL          = "fr_FR.UTF-8";
+              LANG            = "en_US.UTF-8";
+              LC_ALL          = "en_US.UTF-8";
               VI_MODE_SET_CURSOR = "true";
             };
 
