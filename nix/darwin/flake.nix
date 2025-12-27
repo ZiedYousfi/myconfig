@@ -36,9 +36,9 @@
         # Import the repo helper (if present) that provides dotfilesDir, activationScript, etc.
         repo = if builtins.pathExists commonRepoPath then import commonRepoPath else {
           dotfilesDir = "${toString (builtins.getEnv "HOME")}/.dotfiles";
-          flakeDotfilesPath = toString (commonDotfiles or ../dotfiles);
+          flakeDotfilesPath = toString (builtins.toPath commonDotfiles);
           activationScript = ''
-            mkdir -p "${dotfilesDir}"
+            mkdir -p "${toString (builtins.getEnv "HOME")}/.dotfiles"
           '';
         };
 
