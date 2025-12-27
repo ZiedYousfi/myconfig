@@ -1,0 +1,54 @@
+{
+  description = "Common pieces for the setup-config flakes (shared modules, dotfiles and helpers)";
+
+  # Intentionally no heavy inputs here — this flake only exposes on-disk paths
+  # so other flakes can import the common modules/dotfiles via `inputs.common.raw`.
+  inputs = { };
+
+  outputs = { self, ... }:
+    let
+      # Paths are relative to this flake file. These point at the repository-level
+      # `modules` and `dotfiles` that are shared across OS-specific flakes.
+      modulesPath  = ../modules;
+      dotfilesPath = ../dotfiles;
+      repoPathFile = ../modules/repo-path.nix;
+    in
+    {
+      # `raw` is a lightweight convention: downstream flakes can reference
+      # `inputs.common.raw.modules` or `inputs.common.raw.dotfiles` to get the
+      # on-disk path and import files directly.
+      raw = {
+        modules  = modulesPath;
+        dotfiles = dotfilesPath;
+        repoPath = repoPathFile;
+
+        # Small runtime documentation string that other flakes can read if desired.
+        doc = ''
+          setup-config common flake
+          =========================
+
+          Exposes these on-disk paths (relative to the repository root):
+
+            - modules:  ${builtins.toString modulesPath}
+            - dotfiles: ${builtins.toString dotfilesPath}
+            - repoPath: ${builtins.toString repoPathFile}
+
+          Usage from another flake (example in `flake.nix` outputs):
+            inputs = {
+              common.url = "path:./nix/common";
+            };
+
+            outputs = { self, nixpkgs, common, ... }:
+              let
+                sharedModules = common.raw.modules;
+              in {
+                # import a shared module
+                myModule = import (sharedModules + "/home/base.nix") { inherit nixpkgs; };
+              };
+
+          This flake intentionally avoids pulling in `nixpkgs` or other heavy
+          inputs so it can be imported quickly by OS-specific flakes.
+        '';
+      };
+    };
+}
