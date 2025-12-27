@@ -7,7 +7,7 @@ Quick steps (fresh macOS):
 
 Prerequisites
 
-- Install Nix following the official instructions: <https://nixos.org/install>
+- Install Nix following the official instructions: <https://nixos.org/download>
 - Enable flakes & the new Nix CLI by adding the following to `/etc/nix/nix.conf` or `~/.config/nix/nix.conf`:
 
 ``` nix
