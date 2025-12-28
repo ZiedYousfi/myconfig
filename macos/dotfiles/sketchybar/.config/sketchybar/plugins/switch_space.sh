@@ -33,12 +33,19 @@ if [ ! -f "$CURRENT_FILE" ]; then
   exit 4
 fi
 
-current="$(cat "$CURRENT_FILE" 2>/dev/null || true)"
+current_raw="$(cat "$CURRENT_FILE" 2>/dev/null || true)"
+# Support formats: "<index>" or "<index>:<display>". Extract numeric index for
+# validation and calculations while preserving the raw value in logs.
+if [ -z "$current_raw" ]; then
+  echo "bad current: $current_raw" >>"$LOG"
+  exit 4
+fi
+current="${current_raw%%:*}"
 case "$current" in
-  ''|*[!0-9]*) echo "bad current: $current" >>"$LOG"; exit 4 ;;
+  ''|*[!0-9]*) echo "bad current: $current_raw" >>"$LOG"; exit 4 ;;
 esac
 
-echo "current=$current target=$target" >>"$LOG"
+echo "current_raw=$current_raw current=$current target=$target" >>"$LOG"
 
 if [ "$current" -eq "$target" ]; then
   echo "already on target" >>"$LOG"

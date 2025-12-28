@@ -17,13 +17,13 @@ MONOKAI_GREEN=0xffa6e22e
 MONOKAI_CYAN=0xff66d9ef
 
 ##### Bar Appearance #####
-sketchybar --bar position=top height=28 blur_radius=30 color=$MONOKAI_BG
+sketchybar --bar position=bottom height=34 blur_radius=30 color=$MONOKAI_BG
 
 ##### Changing Defaults #####
 default=(
   padding_left=5
   padding_right=5
-  icon.font="Hack Nerd Font:Bold:14.0"
+  icon.font="Hack Nerd Font:Bold:16.0"
   label.font="Hack Nerd Font:Bold:12.0"
   icon.color=$MONOKAI_FG
   label.color=$MONOKAI_FG
@@ -42,21 +42,23 @@ do
   space=(
     space="$sid"
     icon="${SPACE_ICONS[i]}"
-    icon.padding_left=10
-    icon.padding_right=10
+    icon.padding_left=14
+    icon.padding_right=14
     icon.color=$MONOKAI_FG
     icon.highlight_color=$MONOKAI_PINK
     background.color=$MONOKAI_PINK
-    background.corner_radius=5
-    background.height=22
-    background.padding_left=2
-    background.padding_right=2
-    background.drawing=off
+    background.corner_radius=6
+    background.height=30
+    background.padding_left=6
+    background.padding_right=6
+    background.drawing=on
     label.drawing=off
     script="$PLUGIN_DIR/space.sh"
     click_script="$PLUGIN_DIR/switch_space.sh $sid"
   )
-  sketchybar --add space space."$sid" left --set space."$sid" "${space[@]}"
+  sketchybar --add space space."$sid" left --set space."$sid" "${space[@]}" \
+             --subscribe space."$sid" mouse.entered mouse.exited mouse.exited.global
+
 done
 
 ##### Adding Left Items #####
