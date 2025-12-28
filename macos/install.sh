@@ -3,13 +3,13 @@
 # macOS Development Environment Setup Script
 # This script is idempotent - running it multiple times is safe
 # Uses GNU Stow for dotfiles management
-# Dotfiles are copied to ~/.dotfiles and stowed from there
+# Dotfiles are copied to ~/dotfiles and stowed from there
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DOTFILES_DIR="$SCRIPT_DIR/dotfiles"
-USER_DOTFILES_DIR="$HOME/.dotfiles"
+USER_DOTFILES_DIR="$HOME/dotfiles"
 
 # Colors for output
 RED='\033[0;31m'
