@@ -195,9 +195,9 @@ stow_package() {
 
     # Ask user what to do
     echo -e "${BLUE}How would you like to resolve this conflict?${NC}"
-    echo "  [a] Adopt   - Keep existing files and bring them into ~/.dotfiles"
+    echo "  [a] Adopt   - Keep existing files and bring them into ~/dotfiles"
     echo "               (Use this if you've customized these configs)"
-    echo "  [o] Override - Delete existing files and use ~/.dotfiles versions"
+    echo "  [o] Override - Delete existing files and use ~/dotfiles versions"
     echo "               (Use this to get fresh configs from the repo)"
     echo "  [s] Skip    - Don't stow this package"
     echo ""
@@ -216,10 +216,19 @@ stow_package() {
                 log_info "Overriding existing files for $package..."
                 # Find and remove conflicting files
                 # Use stow --simulate to find what would be stowed, then remove existing files
+                local stow_sim_output
+                stow_sim_output=$(stow --dir="$USER_DOTFILES_DIR" --target="$target" --simulate --restow --no-folding "$package" 2>&1 || true)
+
+                # Extract conflicts from both error patterns:
+                # 1. "existing target is not owned by stow: <path>"
+                # 2. "over existing target <path> since"
                 local conflicts
-                conflicts=$(stow --dir="$USER_DOTFILES_DIR" --target="$target" --simulate --restow --no-folding "$package" 2>&1 | grep -oE "existing target is not owned by stow: [^ ]+" | sed 's/existing target is not owned by stow: //')
+                conflicts=$(echo "$stow_sim_output" | grep -oE "existing target is not owned by stow: [^ ]+" | sed 's/existing target is not owned by stow: //')
+                conflicts="$conflicts $(echo "$stow_sim_output" | grep -oE "over existing target [^ ]+ since" | sed 's/over existing target //' | sed 's/ since//')"
 
                 for conflict_file in $conflicts; do
+                    # Skip empty strings
+                    [ -z "$conflict_file" ] && continue
                     local full_path="$target/$conflict_file"
                     if [ -e "$full_path" ] || [ -L "$full_path" ]; then
                         log_info "Removing $full_path..."
