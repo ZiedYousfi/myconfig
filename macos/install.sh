@@ -310,6 +310,9 @@ export ZSH="$HOME/.oh-my-zsh"
 # Theme
 ZSH_THEME="refined"
 
+# Enable command auto-correction
+ENABLE_CORRECTION="true"
+
 # Plugins
 plugins=(git zsh-autosuggestions zsh-syntax-highlighting vi-mode zieds)
 

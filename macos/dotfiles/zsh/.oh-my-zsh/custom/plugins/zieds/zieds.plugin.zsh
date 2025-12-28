@@ -3,8 +3,6 @@
 # Environment variables
 export PATH="$PATH:$(go env GOPATH)/bin"
 
-export ENABLE_CORRECTION="true"
-
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_CACHE_HOME="$HOME/.cache"
 
