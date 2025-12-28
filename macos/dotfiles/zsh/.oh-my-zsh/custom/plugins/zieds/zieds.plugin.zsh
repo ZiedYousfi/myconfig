@@ -23,6 +23,8 @@ alias v='nvim'
 alias ll='ls -la'
 alias gcb='git fetch --prune && git branch -vv | grep ": gone]" | awk "{print \$1}" | xargs -n 1 git branch -d'
 
+alias please='sudo'
+
 unalias gd 2>/dev/null || true
 
 mkd() { mkdir -p -- "$1" && cd -P -- "$1"; }
