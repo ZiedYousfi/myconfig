@@ -21,8 +21,8 @@ sketchybar --bar position=bottom height=34 blur_radius=30 color=$MONOKAI_BG
 
 ##### Changing Defaults #####
 default=(
-  padding_left=5
-  padding_right=5
+  padding_left=4
+  padding_right=4
   icon.font="Hack Nerd Font:Bold:16.0"
   label.font="Hack Nerd Font:Bold:12.0"
   icon.color=$MONOKAI_FG
@@ -49,8 +49,8 @@ do
     background.color=$MONOKAI_PINK
     background.corner_radius=6
     background.height=30
-    background.padding_left=6
-    background.padding_right=6
+    background.padding_left=2
+    background.padding_right=2
     background.drawing=on
     label.drawing=off
     script="$PLUGIN_DIR/space.sh"
