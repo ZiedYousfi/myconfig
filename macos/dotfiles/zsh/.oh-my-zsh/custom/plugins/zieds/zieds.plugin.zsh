@@ -90,6 +90,15 @@ pf() {
   [ -n "$file" ] && nvim "$file"
 }
 
+# Yazi file manager wrapper - changes directory on exit
+y() {
+  local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+  command yazi "$@" --cwd-file="$tmp"
+  IFS= read -r -d '' cwd < "$tmp"
+  [ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
+  rm -f -- "$tmp"
+}
+
 # Update packages (macOS implementation)
 update() {
   echo "Updating packages..."

@@ -85,35 +85,46 @@ install_brew_package() {
     fi
 }
 
-install_packages() {
-    log_info "Installing packages via Homebrew..."
+# ============================================================================
+# Individual Package Installation Functions
+# ============================================================================
 
-    # Core tools (order matters - git first)
-    install_brew_package "git"
-    install_brew_package "stow"
-    install_brew_package "zsh"
-    install_brew_package "tmux"
-    install_brew_package "neovim"
-    install_brew_package "go"
-    install_brew_package "llvm"
+# Core tools
+install_git() { install_brew_package "git"; }
+install_stow() { install_brew_package "stow"; }
+install_zsh() { install_brew_package "zsh"; }
+install_tmux() { install_brew_package "tmux"; }
+install_neovim() { install_brew_package "neovim"; }
+install_go() { install_brew_package "go"; }
+install_llvm() { install_brew_package "llvm"; }
 
-    # Modern CLI tools
-    install_brew_package "zoxide"
-    install_brew_package "eza"
-    install_brew_package "fd"
-    install_brew_package "fzf"
-    install_brew_package "ripgrep"
-    install_brew_package "bat"
-    install_brew_package "lazygit"
-    install_brew_package "btop"
-    install_brew_package "fastfetch"
+# Modern CLI tools
+install_zoxide() { install_brew_package "zoxide"; }
+install_eza() { install_brew_package "eza"; }
+install_fd() { install_brew_package "fd"; }
+install_fzf() { install_brew_package "fzf"; }
+install_ripgrep() { install_brew_package "ripgrep"; }
+install_bat() { install_brew_package "bat"; }
+install_lazygit() { install_brew_package "lazygit"; }
+install_btop() { install_brew_package "btop"; }
+install_fastfetch() { install_brew_package "fastfetch"; }
 
-    # Cask applications
-    install_brew_package "ghostty" "true"
-    install_brew_package "zed" "true"
+# Yazi file manager and dependencies
+install_yazi() { install_brew_package "yazi"; }
+install_ffmpeg() { install_brew_package "ffmpeg"; }
+install_sevenzip() { install_brew_package "sevenzip"; }
+install_jq() { install_brew_package "jq"; }
+install_poppler() { install_brew_package "poppler"; }
+install_resvg() { install_brew_package "resvg"; }
+install_imagemagick() { install_brew_package "imagemagick"; }
+install_nerd_font_symbols() { install_brew_package "font-symbols-only-nerd-font" "true"; }
 
-    # Window management (macOS)
-    # Yabai from asmvik tap
+# Cask applications
+install_ghostty() { install_brew_package "ghostty" "true"; }
+install_zed() { install_brew_package "zed" "true"; }
+
+# Window management (macOS)
+install_yabai() {
     if brew list "asmvik/formulae/yabai" &>/dev/null; then
         log_success "yabai is already installed"
     else
@@ -121,8 +132,9 @@ install_packages() {
         brew install asmvik/formulae/yabai
         log_success "yabai installed"
     fi
+}
 
-    # Sketchybar from FelixKratz tap
+install_sketchybar() {
     if brew list "FelixKratz/formulae/sketchybar" &>/dev/null; then
         log_success "sketchybar is already installed"
     else
@@ -131,8 +143,9 @@ install_packages() {
         brew install sketchybar
         log_success "sketchybar installed"
     fi
+}
 
-    # opencode (install SST version from sst/tap)
+install_opencode() {
     if brew list "sst/tap/opencode" &>/dev/null; then
         log_success "SST opencode is already installed"
     else
@@ -140,6 +153,55 @@ install_packages() {
         brew install sst/tap/opencode
         log_success "SST opencode installed"
     fi
+}
+
+# ============================================================================
+# Install All Packages
+# ============================================================================
+
+install_packages() {
+    log_info "Installing packages via Homebrew..."
+
+    # Core tools (order matters - git first)
+    install_git
+    install_stow
+    install_zsh
+    install_tmux
+    install_neovim
+    install_go
+    install_llvm
+
+    # Modern CLI tools
+    install_zoxide
+    install_eza
+    install_fd
+    install_fzf
+    install_ripgrep
+    install_bat
+    install_lazygit
+    install_btop
+    install_fastfetch
+
+    # Yazi file manager and dependencies
+    install_yazi
+    install_ffmpeg
+    install_sevenzip
+    install_jq
+    install_poppler
+    install_resvg
+    install_imagemagick
+    install_nerd_font_symbols
+
+    # Cask applications
+    install_ghostty
+    install_zed
+
+    # Window management (macOS)
+    install_yabai
+    install_sketchybar
+
+    # Development tools
+    install_opencode
 
     log_success "All packages installed"
 }
@@ -155,7 +217,7 @@ setup_user_dotfiles() {
     mkdir -p "$USER_DOTFILES_DIR"
 
     # Copy each stow package from repo to user dotfiles directory
-    for package in ghostty nvim tmux zed zsh sketchybar yabai; do
+    for package in ghostty nvim tmux zed zsh sketchybar yabai yazi; do
         if [ -d "$REPO_DOTFILES_DIR/$package" ]; then
             log_info "Copying $package to $USER_DOTFILES_DIR..."
             # Use rsync to copy, preserving structure and updating only if newer
@@ -468,6 +530,49 @@ configure_sketchybar() {
 }
 
 # ============================================================================
+# Yazi Configuration
+# ============================================================================
+
+configure_yazi() {
+    log_info "Configuring Yazi via stow..."
+    stow_package "yazi"
+
+    # Ensure flavors directory exists (needed for ya pkg to work)
+    mkdir -p "$XDG_CONFIG_HOME/yazi/flavors"
+
+    # Install monokai flavor for yazi
+    if command -v ya &>/dev/null; then
+        log_info "Installing yazi monokai flavor..."
+        # ya pkg has a bug where it looks for preview.png but package has preview.webp
+        # So we install and manually deploy if needed
+        ya pkg add malick-tammal/monokai 2>/dev/null || true
+
+        # Check if flavor was deployed, if not, manually copy it
+        local FLAVOR_DIR="$XDG_CONFIG_HOME/yazi/flavors/monokai.yazi"
+        if [ ! -f "$FLAVOR_DIR/flavor.toml" ]; then
+            # Find the package in yazi state directory
+            local PKG_DIR
+            PKG_DIR=$(find "$HOME/.local/state/yazi/packages" -name "flavor.toml" -path "*monokai*" -exec dirname {} \; 2>/dev/null | head -n1)
+            if [ -n "$PKG_DIR" ] && [ -d "$PKG_DIR" ]; then
+                log_info "Manually deploying monokai flavor..."
+                mkdir -p "$FLAVOR_DIR"
+                cp -r "$PKG_DIR"/* "$FLAVOR_DIR/"
+            fi
+        fi
+
+        if [ -f "$FLAVOR_DIR/flavor.toml" ]; then
+            log_success "Yazi monokai flavor installed"
+        else
+            log_warning "Could not install monokai flavor"
+        fi
+    else
+        log_warning "ya command not found, skipping flavor installation"
+    fi
+
+    log_success "Yazi configured"
+}
+
+# ============================================================================
 # macOS System Settings
 # ============================================================================
 
@@ -533,6 +638,9 @@ main() {
 
     # Setup Sketchybar status bar
     configure_sketchybar
+
+    # Configure Yazi file manager
+    configure_yazi
 
     # Configure macOS-specific settings
     configure_macos_settings

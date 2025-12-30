@@ -73,7 +73,7 @@ unstow_dotfiles() {
     if command -v stow &>/dev/null && [ -d "$USER_DOTFILES_DIR" ]; then
         log_info "Unstowing dotfiles from $USER_DOTFILES_DIR..."
 
-        for package in ghostty nvim tmux zed zsh; do
+        for package in ghostty nvim tmux zed zsh yazi; do
             if [ -d "$USER_DOTFILES_DIR/$package" ]; then
                 log_info "Unstowing $package..."
                 stow --dir="$USER_DOTFILES_DIR" --target="$HOME" --delete "$package" 2>/dev/null || true
@@ -199,6 +199,27 @@ remove_zed_config() {
     fi
 }
 
+remove_yazi_config() {
+    if [ -d "$XDG_CONFIG_HOME/yazi" ]; then
+        log_info "Removing Yazi configuration..."
+        rm -rf "$XDG_CONFIG_HOME/yazi"
+        log_success "Yazi configuration removed"
+    else
+        log_info "Yazi configuration not found, skipping"
+    fi
+
+    # Remove yazi data and state
+    if [ -d "$HOME/.local/share/yazi" ]; then
+        log_info "Removing Yazi data..."
+        rm -rf "$HOME/.local/share/yazi"
+    fi
+
+    if [ -d "$HOME/.local/state/yazi" ]; then
+        log_info "Removing Yazi state..."
+        rm -rf "$HOME/.local/state/yazi"
+    fi
+}
+
 # ============================================================================
 # Remove Homebrew Packages
 # ============================================================================
@@ -228,11 +249,19 @@ remove_brew_packages() {
         "neovim"
         "tmux"
         "stow"
+        "yazi"
+        "ffmpeg"
+        "sevenzip"
+        "jq"
+        "poppler"
+        "resvg"
+        "imagemagick"
     )
 
     local casks=(
         "ghostty"
         "zed"
+        "font-symbols-only-nerd-font"
     )
 
     # Remove casks
@@ -321,6 +350,7 @@ main() {
     # Remove configurations
     remove_ghostty_config
     remove_zed_config
+    remove_yazi_config
     remove_lazyvim
     remove_oh_my_tmux
     remove_oh_my_zsh

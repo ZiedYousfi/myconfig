@@ -1,0 +1,6 @@
+# Yazi theme configuration
+# Uses monokai flavor for dark mode
+# Install flavor with: ya pkg add malick-tammal/monokai
+
+[flavor]
+dark = "monokai"
