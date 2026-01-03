@@ -262,6 +262,7 @@ remove_brew_packages() {
     local casks=(
         "ghostty"
         "zed"
+        "visual-studio-code"
         "font-symbols-only-nerd-font"
     )
 

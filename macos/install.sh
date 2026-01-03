@@ -122,6 +122,7 @@ install_nerd_font_symbols() { install_brew_package "font-symbols-only-nerd-font"
 # Cask applications
 install_ghostty() { install_brew_package "ghostty" "true"; }
 install_zed() { install_brew_package "zed" "true"; }
+install_vscode() { install_brew_package "visual-studio-code" "true"; }
 
 # Window management (macOS)
 install_yabai() {
@@ -206,6 +207,7 @@ install_packages() {
     # Cask applications
     install_ghostty
     install_zed
+    install_vscode
 
     # Window management (macOS)
     install_yabai
