@@ -8,6 +8,13 @@
 
 PLUGIN_DIR="$CONFIG_DIR/plugins"
 
+# Kill and restart stats_provider for CPU/RAM stats
+killall stats_provider >/dev/null 2>&1 || true
+stats_provider --cpu usage --memory ram_used ram_total --interval 1 &
+
+# stats_provider emits this custom event
+sketchybar --add event system_stats
+
 # Monokai color definitions (ARGB format)
 MONOKAI_BG=0xf0272822
 MONOKAI_FG=0xffffffff
@@ -90,7 +97,19 @@ sketchybar --add item volume right \
                          icon.color=$MONOKAI_ORANGE \
                          label.color=$MONOKAI_FG \
                          script="$PLUGIN_DIR/battery.sh" \
-           --subscribe battery system_woke power_source_change
+           --subscribe battery system_woke power_source_change \
+           --add item ram right \
+           --set ram icon="$(printf '\xEF\x8B\x9B')" \
+                     icon.color=$MONOKAI_PINK \
+                     label.color=$MONOKAI_FG \
+                     script="$PLUGIN_DIR/ram.sh" \
+           --subscribe ram system_stats \
+           --add item cpu right \
+           --set cpu icon="$(printf '\xEF\x92\xBC')" \
+                     icon.color=$MONOKAI_CYAN \
+                     label.color=$MONOKAI_FG \
+                     script="$PLUGIN_DIR/cpu.sh" \
+           --subscribe cpu system_stats
 
 ##### Force all scripts to run the first time (never do this in a script) #####
 sketchybar --update

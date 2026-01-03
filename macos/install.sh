@@ -145,6 +145,17 @@ install_sketchybar() {
     fi
 }
 
+install_sketchybar_system_stats() {
+    if brew list "joncrangle/tap/sketchybar-system-stats" &>/dev/null; then
+        log_success "sketchybar-system-stats is already installed"
+    else
+        log_info "Installing sketchybar-system-stats..."
+        brew tap joncrangle/tap
+        brew install sketchybar-system-stats
+        log_success "sketchybar-system-stats installed"
+    fi
+}
+
 install_opencode() {
     if brew list "sst/tap/opencode" &>/dev/null; then
         log_success "SST opencode is already installed"
@@ -199,6 +210,7 @@ install_packages() {
     # Window management (macOS)
     install_yabai
     install_sketchybar
+    install_sketchybar_system_stats
 
     # Development tools
     install_opencode

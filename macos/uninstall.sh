@@ -235,6 +235,7 @@ remove_brew_packages() {
     # List of packages installed by the setup script
     local packages=(
         "sst/tap/opencode"
+        "joncrangle/tap/sketchybar-system-stats"
         "fastfetch"
         "btop"
         "lazygit"
