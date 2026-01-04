@@ -645,9 +645,6 @@ main() {
     # Install Homebrew first (needed for all other packages)
     install_homebrew
 
-    # Ensure brew is in PATH
-    eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null || eval "$(/usr/local/bin/brew shellenv)" 2>/dev/null || true
-
     # Install all packages (including stow)
     install_packages
 
@@ -689,9 +686,9 @@ main() {
     echo "╚════════════════════════════════════════════════════════════════╝"
     echo ""
     log_info "Dotfiles are stored in: $USER_DOTFILES_DIR"
-    log_info "Dotfiles are managed via GNU Stow from ~/.dotfiles"
+    log_info "Dotfiles are managed via GNU Stow from ~/dotfiles"
     log_info "You can now safely delete the setup-config repository."
-    log_info "To modify configs, edit files in ~/.dotfiles and re-run stow."
+    log_info "To modify configs, edit files in ~/dotfiles and re-run stow."
     echo ""
     log_info "Please restart your terminal or run 'source ~/.zshrc' to apply changes."
     log_info "You may also need to log out and back in for some macOS settings to take effect."
