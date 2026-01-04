@@ -528,7 +528,7 @@ configure_sketchybar() {
 
     # Make all plugin scripts executable
     if [ -d "$SKETCHYBAR_CONFIG/plugins" ]; then
-        find "$SKETCHYBAR_CONFIG/plugins" -type f -name "*.sh" -exec chmod +x {} \;
+        find "$SKETCHYBAR_CONFIG/plugins" -type f -exec chmod +x {} \;
     fi
 
     # Start sketchybar service if not running

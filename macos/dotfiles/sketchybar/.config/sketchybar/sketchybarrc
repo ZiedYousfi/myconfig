@@ -41,6 +41,23 @@ default=(
 )
 sketchybar --default "${default[@]}"
 
+##### Adding Left Items #####
+restart_wm=(
+  icon="$(printf '\xEF\x80\xA1')"
+  icon.color=$MONOKAI_CYAN
+  label.drawing=off
+  background.corner_radius=6
+  background.height=30
+  background.padding_left=2
+  background.padding_right=2
+  background.drawing=off
+  script="$PLUGIN_DIR/hover.sh"
+  click_script="$PLUGIN_DIR/restart_window_management.sh"
+)
+sketchybar --add item restart_wm left \
+           --set restart_wm "${restart_wm[@]}" \
+           --subscribe restart_wm mouse.entered mouse.exited mouse.exited.global
+
 ##### Adding Mission Control Space Indicators #####
 SPACE_ICONS=("1" "2" "3" "4" "5" "6" "7" "8" "9" "10")
 for i in "${!SPACE_ICONS[@]}"
@@ -68,7 +85,6 @@ do
 
 done
 
-##### Adding Left Items #####
 sketchybar --add item chevron left \
            --set chevron icon= label.drawing=off \
                          icon.color=$MONOKAI_CYAN \
