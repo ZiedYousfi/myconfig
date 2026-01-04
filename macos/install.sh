@@ -108,6 +108,7 @@ install_bat() { install_brew_package "bat"; }
 install_lazygit() { install_brew_package "lazygit"; }
 install_btop() { install_brew_package "btop"; }
 install_fastfetch() { install_brew_package "fastfetch"; }
+install_uv() { install_brew_package "uv"; }
 
 # Yazi file manager and dependencies
 install_yazi() { install_brew_package "yazi"; }
@@ -193,6 +194,7 @@ install_packages() {
     install_lazygit
     install_btop
     install_fastfetch
+    install_uv
 
     # Yazi file manager and dependencies
     install_yazi

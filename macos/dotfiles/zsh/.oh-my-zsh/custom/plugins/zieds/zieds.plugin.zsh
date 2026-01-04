@@ -8,8 +8,8 @@ export XDG_CACHE_HOME="$HOME/.cache"
 
 export VCPKG_ROOT="$HOME/vcpkg"
 
-export LANG="fr_FR.UTF-8"
-export LC_ALL="fr_FR.UTF-8"
+export LANG="en_US.UTF-8"
+export LC_ALL="en_US.UTF-8"
 
 export VI_MODE_SET_CURSOR=true
 
@@ -22,6 +22,9 @@ alias v='nvim'
 
 alias ll='ls -la'
 alias gcb='git fetch --prune && git branch -vv | grep ": gone]" | awk "{print \$1}" | xargs -n 1 git branch -d'
+
+alias pip='uv pip'
+alias pip3='uv pip3'
 
 alias please='sudo'
 
