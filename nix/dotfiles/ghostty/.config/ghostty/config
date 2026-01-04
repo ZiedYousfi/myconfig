@@ -1,7 +1,0 @@
-fullscreen=true
-background = #000000
-background-opacity = 0.75
-background-blur = macos-glass-regular
-
-font-size = 18
-command = /bin/bash --noprofile --norc -c "/opt/homebrew/bin/tmux has-session 2>/dev/null && /opt/homebrew/bin/tmux attach-session -d || /opt/homebrew/bin/tmux new-session"
