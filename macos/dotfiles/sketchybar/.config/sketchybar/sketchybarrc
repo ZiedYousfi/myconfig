@@ -59,7 +59,7 @@ sketchybar --add item restart_wm left \
            --subscribe restart_wm mouse.entered mouse.exited mouse.exited.global
 
 mission_control=(
-  icon="MC"
+  icon="$(printf '\xEF\x80\x89')"
   icon.color=$MONOKAI_ORANGE
   label.drawing=off
   background.corner_radius=6
