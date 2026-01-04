@@ -85,6 +85,18 @@ install_brew_package() {
     fi
 }
 
+install_uv_package() {
+    local package="$1"
+
+    if uv tool list | grep -q "^$package "; then
+        log_success "$package (uv) is already installed"
+    else
+        log_info "Installing $package (uv)..."
+        uv tool install "$package"
+        log_success "$package (uv) installed"
+    fi
+}
+
 # ============================================================================
 # Individual Package Installation Functions
 # ============================================================================
@@ -95,8 +107,11 @@ install_stow() { install_brew_package "stow"; }
 install_zsh() { install_brew_package "zsh"; }
 install_tmux() { install_brew_package "tmux"; }
 install_neovim() { install_brew_package "neovim"; }
+install_python() { install_brew_package "python"; }
 install_go() { install_brew_package "go"; }
 install_llvm() { install_brew_package "llvm"; }
+install_rustup() { install_brew_package "rustup-init"; }
+install_bun() { install_brew_package "bun"; }
 
 # Modern CLI tools
 install_zoxide() { install_brew_package "zoxide"; }
@@ -109,6 +124,8 @@ install_lazygit() { install_brew_package "lazygit"; }
 install_btop() { install_brew_package "btop"; }
 install_fastfetch() { install_brew_package "fastfetch"; }
 install_uv() { install_brew_package "uv"; }
+install_meson() { install_uv_package "meson"; }
+install_conan() { install_uv_package "conan"; }
 
 # Yazi file manager and dependencies
 install_yazi() { install_brew_package "yazi"; }
@@ -181,8 +198,11 @@ install_packages() {
     install_zsh
     install_tmux
     install_neovim
+    install_python
     install_go
     install_llvm
+    install_rustup
+    install_bun
 
     # Modern CLI tools
     install_zoxide
@@ -195,6 +215,8 @@ install_packages() {
     install_btop
     install_fastfetch
     install_uv
+    install_meson
+    install_conan
 
     # Yazi file manager and dependencies
     install_yazi
