@@ -26,6 +26,9 @@ alias gcb='git fetch --prune && git branch -vv | grep ": gone]" | awk "{print \$
 alias pip='uv pip'
 alias pip3='uv pip3'
 
+alias npm='bun'
+alias npx='bunx'
+
 alias please='sudo'
 
 unalias gd 2>/dev/null || true
