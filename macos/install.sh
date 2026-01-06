@@ -509,6 +509,73 @@ configure_zed() {
 }
 
 # ============================================================================
+# VS Code Configuration
+# ============================================================================
+
+install_vscode_extensions() {
+    local extensions=("$@")
+    if ! command -v code &>/dev/null; then
+        log_warning "VS Code 'code' command not found, skipping extension installation"
+        return
+    fi
+
+    for extension in "${extensions[@]}"; do
+        if code --list-extensions | grep -qi "^$extension$"; then
+            log_success "Extension $extension is already installed"
+        else
+            log_info "Installing VS Code extension: $extension..."
+            code --install-extension "$extension" --force
+            log_success "Extension $extension installed"
+        fi
+    done
+}
+
+configure_vscode() {
+    log_info "Configuring VS Code extensions..."
+
+    # Define your extensions here
+    local extensions=(
+        "cheshirekow.cmake-format"
+        "davidanson.vscode-markdownlint"
+        "dbaeumer.vscode-eslint"
+        "donjayamanne.githistory"
+        "esbenp.prettier-vscode"
+        "fill-labs.dependi"
+        "github.copilot"
+        "github.copilot-chat"
+        "github.vscode-github-actions"
+        "github.vscode-pull-request-github"
+        "golang.go"
+        "llvm-vs-code-extensions.vscode-clangd"
+        "ms-azuretools.vscode-containers"
+        "ms-azuretools.vscode-docker"
+        "ms-dotnettools.csdevkit"
+        "ms-dotnettools.csharp"
+        "ms-dotnettools.vscode-dotnet-runtime"
+        "ms-python.debugpy"
+        "ms-python.python"
+        "ms-python.vscode-pylance"
+        "ms-python.vscode-python-envs"
+        "ms-vscode.cmake-tools"
+        "oven.bun-vscode"
+        "redhat.java"
+        "rust-lang.rust-analyzer"
+        "sumneko.lua"
+        "svelte.svelte-vscode"
+        "upstash.context7-mcp"
+        "vscjava.vscode-gradle"
+        "vscjava.vscode-java-debug"
+        "vscjava.vscode-java-dependency"
+        "vscjava.vscode-java-pack"
+        "vscjava.vscode-java-test"
+        "vscjava.vscode-maven"
+    )
+
+    install_vscode_extensions "${extensions[@]}"
+    log_success "VS Code configuration complete"
+}
+
+# ============================================================================
 # Yabai Configuration
 # ============================================================================
 
@@ -667,6 +734,9 @@ main() {
 
     # Configure Zed editor (uses stow)
     configure_zed
+
+    # Configure VS Code
+    configure_vscode
 
     # Setup Yabai window manager
     configure_yabai
