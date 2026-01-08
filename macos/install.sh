@@ -108,10 +108,15 @@ install_zsh() { install_brew_package "zsh"; }
 install_tmux() { install_brew_package "tmux"; }
 install_neovim() { install_brew_package "neovim"; }
 install_python() { install_brew_package "python"; }
+
 install_go() { install_brew_package "go"; }
 install_llvm() { install_brew_package "llvm"; }
 install_rustup() { install_brew_package "rustup-init"; }
 install_bun() { install_brew_package "bun"; }
+
+# Java and build tools
+install_openjdk() { install_brew_package "openjdk"; }
+install_maven() { install_brew_package "maven"; }
 
 # Modern CLI tools
 install_zoxide() { install_brew_package "zoxide"; }
@@ -203,6 +208,10 @@ install_packages() {
     install_llvm
     install_rustup
     install_bun
+
+    # Java and build tools
+    install_openjdk
+    install_maven
 
     # Modern CLI tools
     install_zoxide
