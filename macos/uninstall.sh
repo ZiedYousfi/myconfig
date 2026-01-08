@@ -14,7 +14,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # User dotfiles directory (where dotfiles were copied during install)
-USER_DOTFILES_DIR="$HOME/.dotfiles"
+USER_DOTFILES_DIR="$HOME/dotfiles"
 
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -73,7 +73,7 @@ unstow_dotfiles() {
     if command -v stow &>/dev/null && [ -d "$USER_DOTFILES_DIR" ]; then
         log_info "Unstowing dotfiles from $USER_DOTFILES_DIR..."
 
-        for package in ghostty nvim tmux zed zsh yazi; do
+        for package in ghostty nvim tmux zed zsh yazi sketchybar yabai; do
             if [ -d "$USER_DOTFILES_DIR/$package" ]; then
                 log_info "Unstowing $package..."
                 stow --dir="$USER_DOTFILES_DIR" --target="$HOME" --delete "$package" 2>/dev/null || true
@@ -82,21 +82,52 @@ unstow_dotfiles() {
 
         log_success "Dotfiles unstowed"
     else
-        log_warning "Stow not found or ~/.dotfiles directory missing, skipping unstow"
+        log_warning "Stow not found or ~/dotfiles directory missing, skipping unstow"
     fi
 }
 
 remove_user_dotfiles() {
     if [ -d "$USER_DOTFILES_DIR" ]; then
-        read -p "Do you want to remove the ~/.dotfiles directory? (yes/no): " remove_dotfiles
+        read -p "Do you want to remove the ~/dotfiles directory? (yes/no): " remove_dotfiles
         if [[ "$remove_dotfiles" == "yes" ]]; then
             log_info "Removing $USER_DOTFILES_DIR..."
             rm -rf "$USER_DOTFILES_DIR"
-            log_success "~/.dotfiles directory removed"
+            log_success "~/dotfiles directory removed"
         else
-            log_info "Keeping ~/.dotfiles directory"
+            log_info "Keeping ~/dotfiles directory"
         fi
     fi
+# Remove Sketchybar config and service
+remove_sketchybar_config() {
+    if [ -d "$XDG_CONFIG_HOME/sketchybar" ]; then
+        log_info "Removing Sketchybar configuration..."
+        rm -rf "$XDG_CONFIG_HOME/sketchybar"
+        log_success "Sketchybar configuration removed"
+    else
+        log_info "Sketchybar configuration not found, skipping"
+    fi
+    # Stop Sketchybar service if running
+    if command -v brew &>/dev/null && brew services list | grep -q sketchybar; then
+        log_info "Stopping Sketchybar service..."
+        brew services stop sketchybar || true
+    fi
+}
+
+# Remove Yabai config and service
+remove_yabai_config() {
+    if [ -d "$XDG_CONFIG_HOME/yabai" ]; then
+        log_info "Removing Yabai configuration..."
+        rm -rf "$XDG_CONFIG_HOME/yabai"
+        log_success "Yabai configuration removed"
+    else
+        log_info "Yabai configuration not found, skipping"
+    fi
+    # Stop Yabai service if running
+    if command -v yabai &>/dev/null && pgrep -x "yabai" > /dev/null; then
+        log_info "Stopping Yabai service..."
+        yabai --stop-service 2>/dev/null || true
+    fi
+}
 }
 
 # ============================================================================
@@ -232,7 +263,8 @@ remove_brew_packages() {
 
     log_info "Removing Homebrew packages installed by setup..."
 
-    # List of packages installed by the setup script
+
+    # List of packages installed by the setup script (full symmetry with install.sh)
     local packages=(
         "sst/tap/opencode"
         "joncrangle/tap/sketchybar-system-stats"
@@ -257,6 +289,14 @@ remove_brew_packages() {
         "poppler"
         "resvg"
         "imagemagick"
+        "python"
+        "openjdk"
+        "maven"
+        "rustup-init"
+        "bun"
+        "uv"
+        "meson"
+        "conan"
     )
 
     local casks=(
@@ -349,10 +389,13 @@ main() {
     # Unstow dotfiles first (while stow is still installed)
     unstow_dotfiles
 
+
     # Remove configurations
     remove_ghostty_config
     remove_zed_config
     remove_yazi_config
+    remove_sketchybar_config
+    remove_yabai_config
     remove_lazyvim
     remove_oh_my_tmux
     remove_oh_my_zsh
