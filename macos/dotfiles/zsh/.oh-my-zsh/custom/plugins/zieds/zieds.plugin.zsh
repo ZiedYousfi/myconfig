@@ -1,7 +1,8 @@
 # Zied's Oh My Zsh plugin
 
 # Environment variables
-export PATH="$HOME/.local/bin:$PATH:$(go env GOPATH)/bin"
+export JAVA_HOME="/opt/homebrew/opt/openjdk"
+export PATH="$HOME/.local/bin:$PATH:$(go env GOPATH)/bin:$JAVA_HOME/bin"
 
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_CACHE_HOME="$HOME/.cache"
