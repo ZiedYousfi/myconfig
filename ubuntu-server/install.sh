@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# macOS Development Environment Setup Script
+# Ubuntu Server Development Environment Setup Script
 # This script is idempotent - running it multiple times is safe
 # Uses GNU Stow for dotfiles management
 # Dotfiles are copied to ~/dotfiles and stowed from there
@@ -10,7 +10,6 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 SHARED_DOTFILES_DIR="$REPO_ROOT/dotfiles"
-MACOS_DOTFILES_DIR="$SCRIPT_DIR/dotfiles"
 USER_DOTFILES_DIR="$HOME/dotfiles"
 
 # Colors for output
@@ -42,60 +41,32 @@ export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 
 mkdir -p "$XDG_CONFIG_HOME"
 mkdir -p "$XDG_CACHE_HOME"
+mkdir -p "$HOME/.local/bin"
 
 # ============================================================================
-# Homebrew Installation
+# System Update
 # ============================================================================
 
-install_homebrew() {
-    if command -v brew &>/dev/null; then
-        log_success "Homebrew is already installed"
-    else
-        log_info "Installing Homebrew..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-        # Add Homebrew to PATH for this session
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-        log_success "Homebrew installed"
-    fi
+update_system() {
+    log_info "Updating system packages..."
+    sudo apt update
+    sudo apt upgrade -y
+    log_success "System updated"
 }
 
 # ============================================================================
-# Brew Packages Installation
+# APT Packages Installation
 # ============================================================================
 
-install_brew_package() {
-    local package="$1"
-    local cask="${2:-false}"
-
-    if [ "$cask" = "true" ]; then
-        if brew list --cask "$package" &>/dev/null; then
-            log_success "$package (cask) is already installed"
-        else
-            log_info "Installing $package (cask)..."
-            brew install --cask "$package"
-            log_success "$package (cask) installed"
-        fi
-    else
-        if brew list "$package" &>/dev/null; then
-            log_success "$package is already installed"
-        else
-            log_info "Installing $package..."
-            brew install "$package"
-            log_success "$package installed"
-        fi
-    fi
-}
-
-install_uv_package() {
+install_apt_package() {
     local package="$1"
 
-    if uv tool list | grep -q "^$package "; then
-        log_success "$package (uv) is already installed"
+    if dpkg -l "$package" 2>/dev/null | grep -q "^ii"; then
+        log_success "$package is already installed"
     else
-        log_info "Installing $package (uv)..."
-        uv tool install "$package"
-        log_success "$package (uv) installed"
+        log_info "Installing $package..."
+        sudo apt install -y "$package"
+        log_success "$package installed"
     fi
 }
 
@@ -104,104 +75,244 @@ install_uv_package() {
 # ============================================================================
 
 # Core tools
-install_git() { install_brew_package "git"; }
-install_stow() { install_brew_package "stow"; }
-install_zsh() { install_brew_package "zsh"; }
-install_tmux() { install_brew_package "tmux"; }
-install_neovim() { install_brew_package "neovim"; }
-install_python() { install_brew_package "python"; }
+install_git() { install_apt_package "git"; }
+install_stow() { install_apt_package "stow"; }
+install_zsh() { install_apt_package "zsh"; }
+install_tmux() { install_apt_package "tmux"; }
+install_curl() { install_apt_package "curl"; }
+install_wget() { install_apt_package "wget"; }
+install_build_essential() { install_apt_package "build-essential"; }
+install_unzip() { install_apt_package "unzip"; }
 
-install_go() { install_brew_package "go"; }
-install_llvm() { install_brew_package "llvm"; }
-install_rustup() { install_brew_package "rustup-init"; }
-install_bun() { install_brew_package "bun"; }
+# Neovim - install from GitHub releases for latest version
+install_neovim() {
+    if command -v nvim &>/dev/null; then
+        log_success "Neovim is already installed"
+    else
+        log_info "Installing Neovim from GitHub releases..."
+        local NVIM_VERSION="v0.10.2"
+        curl -LO "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux64.tar.gz"
+        sudo rm -rf /opt/nvim
+        sudo tar -C /opt -xzf nvim-linux64.tar.gz
+        sudo ln -sf /opt/nvim-linux64/bin/nvim /usr/local/bin/nvim
+        rm nvim-linux64.tar.gz
+        log_success "Neovim installed"
+    fi
+}
+
+# Python
+install_python() {
+    install_apt_package "python3"
+    install_apt_package "python3-pip"
+    install_apt_package "python3-venv"
+}
+
+# Go
+install_go() {
+    if command -v go &>/dev/null; then
+        log_success "Go is already installed"
+    else
+        log_info "Installing Go..."
+        local GO_VERSION="1.22.0"
+        curl -LO "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
+        sudo rm -rf /usr/local/go
+        sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
+        rm "go${GO_VERSION}.linux-amd64.tar.gz"
+        export PATH="$PATH:/usr/local/go/bin"
+        log_success "Go installed"
+    fi
+}
+
+# Rust
+install_rustup() {
+    if command -v rustup &>/dev/null; then
+        log_success "Rustup is already installed"
+    else
+        log_info "Installing Rust via rustup..."
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        source "$HOME/.cargo/env"
+        log_success "Rust installed"
+    fi
+}
+
+# Bun
+install_bun() {
+    if command -v bun &>/dev/null; then
+        log_success "Bun is already installed"
+    else
+        log_info "Installing Bun..."
+        curl -fsSL https://bun.sh/install | bash
+        export BUN_INSTALL="$HOME/.bun"
+        export PATH="$BUN_INSTALL/bin:$PATH"
+        log_success "Bun installed"
+    fi
+}
 
 # Java and build tools
-install_openjdk() { install_brew_package "openjdk"; }
-install_maven() { install_brew_package "maven"; }
+install_openjdk() { install_apt_package "openjdk-21-jdk"; }
+install_maven() { install_apt_package "maven"; }
 
-# Modern CLI tools
-install_zoxide() { install_brew_package "zoxide"; }
-install_eza() { install_brew_package "eza"; }
-install_fd() { install_brew_package "fd"; }
-install_fzf() { install_brew_package "fzf"; }
-install_ripgrep() { install_brew_package "ripgrep"; }
-install_bat() { install_brew_package "bat"; }
-install_lazygit() { install_brew_package "lazygit"; }
-install_btop() { install_brew_package "btop"; }
-install_fastfetch() { install_brew_package "fastfetch"; }
-install_uv() { install_brew_package "uv"; }
-install_meson() { install_uv_package "meson"; }
-install_conan() { install_uv_package "conan"; }
+# LLVM
+install_llvm() {
+    install_apt_package "llvm"
+    install_apt_package "clang"
+    install_apt_package "clangd"
+}
+
+# Modern CLI tools - install from cargo/GitHub if not in apt
+install_zoxide() {
+    if command -v zoxide &>/dev/null; then
+        log_success "zoxide is already installed"
+    else
+        log_info "Installing zoxide..."
+        curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+        log_success "zoxide installed"
+    fi
+}
+
+install_eza() {
+    if command -v eza &>/dev/null; then
+        log_success "eza is already installed"
+    else
+        log_info "Installing eza..."
+        sudo mkdir -p /etc/apt/keyrings
+        wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+        echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
+        sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
+        sudo apt update
+        sudo apt install -y eza
+        log_success "eza installed"
+    fi
+}
+
+install_fd() {
+    if command -v fd &>/dev/null || command -v fdfind &>/dev/null; then
+        log_success "fd is already installed"
+    else
+        log_info "Installing fd-find..."
+        install_apt_package "fd-find"
+        # Create symlink for fd command
+        if command -v fdfind &>/dev/null; then
+            ln -sf "$(which fdfind)" "$HOME/.local/bin/fd"
+        fi
+        log_success "fd installed"
+    fi
+}
+
+install_fzf() { install_apt_package "fzf"; }
+
+install_ripgrep() { install_apt_package "ripgrep"; }
+
+install_bat() {
+    if command -v bat &>/dev/null || command -v batcat &>/dev/null; then
+        log_success "bat is already installed"
+    else
+        log_info "Installing bat..."
+        install_apt_package "bat"
+        # Create symlink for bat command
+        if command -v batcat &>/dev/null; then
+            ln -sf "$(which batcat)" "$HOME/.local/bin/bat"
+        fi
+        log_success "bat installed"
+    fi
+}
+
+install_lazygit() {
+    if command -v lazygit &>/dev/null; then
+        log_success "lazygit is already installed"
+    else
+        log_info "Installing lazygit..."
+        LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+        curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+        tar xf lazygit.tar.gz lazygit
+        sudo install lazygit /usr/local/bin
+        rm lazygit.tar.gz lazygit
+        log_success "lazygit installed"
+    fi
+}
+
+install_btop() { install_apt_package "btop"; }
+
+install_fastfetch() {
+    if command -v fastfetch &>/dev/null; then
+        log_success "fastfetch is already installed"
+    else
+        log_info "Installing fastfetch..."
+        sudo add-apt-repository -y ppa:zhangsongcui3371/fastfetch 2>/dev/null || true
+        sudo apt update
+        sudo apt install -y fastfetch
+        log_success "fastfetch installed"
+    fi
+}
+
+install_uv() {
+    if command -v uv &>/dev/null; then
+        log_success "uv is already installed"
+    else
+        log_info "Installing uv..."
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        export PATH="$HOME/.cargo/bin:$PATH"
+        log_success "uv installed"
+    fi
+}
+
+install_meson() {
+    if command -v meson &>/dev/null; then
+        log_success "meson is already installed"
+    else
+        log_info "Installing meson via uv..."
+        uv tool install meson
+        log_success "meson installed"
+    fi
+}
+
+install_conan() {
+    if command -v conan &>/dev/null; then
+        log_success "conan is already installed"
+    else
+        log_info "Installing conan via uv..."
+        uv tool install conan
+        log_success "conan installed"
+    fi
+}
 
 # Yazi file manager and dependencies
-install_yazi() { install_brew_package "yazi"; }
-install_ffmpeg() { install_brew_package "ffmpeg"; }
-install_sevenzip() { install_brew_package "sevenzip"; }
-install_jq() { install_brew_package "jq"; }
-install_poppler() { install_brew_package "poppler"; }
-install_resvg() { install_brew_package "resvg"; }
-install_imagemagick() { install_brew_package "imagemagick"; }
-install_nerd_font_symbols() { install_brew_package "font-symbols-only-nerd-font" "true"; }
-
-# Cask applications
-install_ghostty() { install_brew_package "ghostty" "true"; }
-install_zed() { install_brew_package "zed" "true"; }
-install_vscode() { install_brew_package "visual-studio-code" "true"; }
-
-# Window management (macOS)
-install_yabai() {
-    if brew list "asmvik/formulae/yabai" &>/dev/null; then
-        log_success "yabai is already installed"
+install_yazi() {
+    if command -v yazi &>/dev/null; then
+        log_success "yazi is already installed"
     else
-        log_info "Installing yabai..."
-        brew install asmvik/formulae/yabai
-        log_success "yabai installed"
+        log_info "Installing yazi..."
+        # Install from GitHub releases
+        local YAZI_VERSION=$(curl -s "https://api.github.com/repos/sxyazi/yazi/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+        curl -Lo yazi.zip "https://github.com/sxyazi/yazi/releases/download/v${YAZI_VERSION}/yazi-x86_64-unknown-linux-gnu.zip"
+        unzip -o yazi.zip
+        sudo mv yazi-x86_64-unknown-linux-gnu/yazi /usr/local/bin/
+        sudo mv yazi-x86_64-unknown-linux-gnu/ya /usr/local/bin/
+        rm -rf yazi.zip yazi-x86_64-unknown-linux-gnu
+        log_success "yazi installed"
     fi
 }
 
-install_sketchybar() {
-    if brew list "FelixKratz/formulae/sketchybar" &>/dev/null; then
-        log_success "sketchybar is already installed"
-    else
-        log_info "Installing sketchybar..."
-        brew tap FelixKratz/formulae
-        brew install sketchybar
-        log_success "sketchybar installed"
-    fi
-}
-
-install_sketchybar_system_stats() {
-    if brew list "joncrangle/tap/sketchybar-system-stats" &>/dev/null; then
-        log_success "sketchybar-system-stats is already installed"
-    else
-        log_info "Installing sketchybar-system-stats..."
-        brew tap joncrangle/tap
-        brew install sketchybar-system-stats
-        log_success "sketchybar-system-stats installed"
-    fi
-}
-
-install_opencode() {
-    if brew list "sst/tap/opencode" &>/dev/null; then
-        log_success "SST opencode is already installed"
-    else
-        log_info "Installing SST opencode..."
-        brew install sst/tap/opencode
-        log_success "SST opencode installed"
-    fi
-}
+install_ffmpeg() { install_apt_package "ffmpeg"; }
+install_p7zip() { install_apt_package "p7zip-full"; }
+install_jq() { install_apt_package "jq"; }
+install_poppler() { install_apt_package "poppler-utils"; }
+install_imagemagick() { install_apt_package "imagemagick"; }
 
 # ============================================================================
 # Install All Packages
 # ============================================================================
 
 install_packages() {
-    log_info "Installing packages via Homebrew..."
+    log_info "Installing packages..."
 
     # Core tools (order matters - git first)
     install_git
     install_stow
+    install_curl
+    install_wget
+    install_build_essential
+    install_unzip
     install_zsh
     install_tmux
     install_neovim
@@ -232,31 +343,16 @@ install_packages() {
     # Yazi file manager and dependencies
     install_yazi
     install_ffmpeg
-    install_sevenzip
+    install_p7zip
     install_jq
     install_poppler
-    install_resvg
     install_imagemagick
-    install_nerd_font_symbols
-
-    # Cask applications
-    install_ghostty
-    install_zed
-    install_vscode
-
-    # Window management (macOS)
-    install_yabai
-    install_sketchybar
-    install_sketchybar_system_stats
-
-    # Development tools
-    install_opencode
 
     log_success "All packages installed"
 }
 
 # ============================================================================
-# Dotfiles Setup - Copy to ~/.dotfiles
+# Dotfiles Setup - Copy to ~/dotfiles
 # ============================================================================
 
 setup_user_dotfiles() {
@@ -268,16 +364,8 @@ setup_user_dotfiles() {
     # Copy shared dotfiles (platform-independent) from repo root
     for package in ghostty nvim tmux zed zsh yazi; do
         if [ -d "$SHARED_DOTFILES_DIR/$package" ]; then
-            log_info "Copying $package (shared) to $USER_DOTFILES_DIR..."
+            log_info "Copying $package to $USER_DOTFILES_DIR..."
             rsync -a --update "$SHARED_DOTFILES_DIR/$package/" "$USER_DOTFILES_DIR/$package/"
-        fi
-    done
-
-    # Copy macOS-specific dotfiles
-    for package in sketchybar yabai; do
-        if [ -d "$MACOS_DOTFILES_DIR/$package" ]; then
-            log_info "Copying $package (macOS) to $USER_DOTFILES_DIR..."
-            rsync -a --update "$MACOS_DOTFILES_DIR/$package/" "$USER_DOTFILES_DIR/$package/"
         fi
     done
 
@@ -333,19 +421,14 @@ stow_package() {
             [oO])
                 log_info "Overriding existing files for $package..."
                 # Find and remove conflicting files
-                # Use stow --simulate to find what would be stowed, then remove existing files
                 local stow_sim_output
                 stow_sim_output=$(stow --dir="$USER_DOTFILES_DIR" --target="$target" --simulate --restow --no-folding "$package" 2>&1 || true)
 
-                # Extract conflicts from both error patterns:
-                # 1. "existing target is not owned by stow: <path>"
-                # 2. "over existing target <path> since"
                 local conflicts
                 conflicts=$(echo "$stow_sim_output" | grep -oE "existing target is not owned by stow: [^ ]+" | sed 's/existing target is not owned by stow: //')
                 conflicts="$conflicts $(echo "$stow_sim_output" | grep -oE "over existing target [^ ]+ since" | sed 's/over existing target //' | sed 's/ since//')"
 
                 for conflict_file in $conflicts; do
-                    # Skip empty strings
                     [ -z "$conflict_file" ] && continue
                     local full_path="$target/$conflict_file"
                     if [ -e "$full_path" ] || [ -L "$full_path" ]; then
@@ -354,7 +437,6 @@ stow_package() {
                     fi
                 done
 
-                # Now stow should work
                 stow --dir="$USER_DOTFILES_DIR" --target="$target" --restow --no-folding "$package"
                 log_success "$package stowed successfully (existing files overridden)"
                 return 0
@@ -440,6 +522,17 @@ EOF
     log_success ".zshrc configured"
 }
 
+set_default_shell() {
+    local current_shell=$(getent passwd "$USER" | cut -d: -f7)
+    if [[ "$current_shell" == */zsh ]]; then
+        log_success "Zsh is already the default shell"
+    else
+        log_info "Setting zsh as default shell..."
+        chsh -s "$(which zsh)"
+        log_success "Zsh set as default shell"
+    fi
+}
+
 # ============================================================================
 # Oh My Tmux Installation
 # ============================================================================
@@ -469,7 +562,7 @@ install_oh_my_tmux() {
         log_success "tmux.conf symlink created"
     fi
 
-    # Stow custom tmux.conf.local (like we do for LazyVim plugins)
+    # Stow custom tmux.conf.local
     log_info "Stowing custom tmux configuration..."
     stow_package "tmux"
 }
@@ -507,152 +600,31 @@ install_lazyvim() {
 }
 
 # ============================================================================
-# Ghostty Configuration
+# Ghostty Configuration (if present)
 # ============================================================================
 
 configure_ghostty() {
-    log_info "Configuring Ghostty via stow..."
-    stow_package "ghostty"
-    log_success "Ghostty configured"
+    if [ -d "$USER_DOTFILES_DIR/ghostty" ]; then
+        log_info "Configuring Ghostty via stow..."
+        stow_package "ghostty"
+        log_success "Ghostty configured"
+    else
+        log_warning "Ghostty dotfiles not found, skipping"
+    fi
 }
 
 # ============================================================================
-# Zed Configuration
+# Zed Configuration (if present)
 # ============================================================================
 
 configure_zed() {
-    log_info "Configuring Zed via stow..."
-    stow_package "zed"
-    log_success "Zed configured"
-}
-
-# ============================================================================
-# VS Code Configuration
-# ============================================================================
-
-install_vscode_extensions() {
-    local extensions=("$@")
-    if ! command -v code &>/dev/null; then
-        log_warning "VS Code 'code' command not found, skipping extension installation"
-        return
-    fi
-
-    for extension in "${extensions[@]}"; do
-        if code --list-extensions | grep -qi "^$extension$"; then
-            log_success "Extension $extension is already installed"
-        else
-            log_info "Installing VS Code extension: $extension..."
-            code --install-extension "$extension" --force
-            log_success "Extension $extension installed"
-        fi
-    done
-}
-
-configure_vscode() {
-    log_info "Configuring VS Code extensions..."
-
-    # Define your extensions here
-    local extensions=(
-        "cheshirekow.cmake-format"
-        "davidanson.vscode-markdownlint"
-        "dbaeumer.vscode-eslint"
-        "donjayamanne.githistory"
-        "esbenp.prettier-vscode"
-        "fill-labs.dependi"
-        "geequlim.godot-tools"
-        "github.copilot"
-        "github.copilot-chat"
-        "github.vscode-github-actions"
-        "github.vscode-pull-request-github"
-        "golang.go"
-        "llvm-vs-code-extensions.vscode-clangd"
-        "ms-azuretools.vscode-containers"
-        "ms-azuretools.vscode-docker"
-        "ms-dotnettools.csdevkit"
-        "ms-dotnettools.csharp"
-        "ms-dotnettools.vscode-dotnet-runtime"
-        "ms-python.debugpy"
-        "ms-python.python"
-        "ms-python.vscode-pylance"
-        "ms-python.vscode-python-envs"
-        "ms-vscode.cmake-tools"
-        "ms-vscode.makefile-tools"
-        "oven.bun-vscode"
-        "redhat.java"
-        "redhat.vscode-xml"
-        "rust-lang.rust-analyzer"
-        "sumneko.lua"
-        "svelte.svelte-vscode"
-        "upstash.context7-mcp"
-        "vscjava.vscode-gradle"
-        "vscjava.vscode-java-debug"
-        "vscjava.vscode-java-dependency"
-        "vscjava.vscode-java-pack"
-        "vscjava.vscode-java-test"
-        "vscjava.vscode-maven"
-    )
-
-    install_vscode_extensions "${extensions[@]}"
-    log_success "VS Code configuration complete"
-}
-
-# ============================================================================
-# Yabai Configuration
-# ============================================================================
-
-configure_yabai() {
-    log_info "Configuring Yabai via stow..."
-    stow_package "yabai"
-
-    # Make yabairc executable
-    local YABAIRC="$XDG_CONFIG_HOME/yabai/yabairc"
-    if [ -f "$YABAIRC" ]; then
-        chmod +x "$YABAIRC"
-    fi
-
-    # Start yabai service if not running
-    if ! pgrep -x "yabai" > /dev/null; then
-        log_info "Starting yabai service..."
-        yabai --start-service 2>/dev/null || true
+    if [ -d "$USER_DOTFILES_DIR/zed" ]; then
+        log_info "Configuring Zed via stow..."
+        stow_package "zed"
+        log_success "Zed configured"
     else
-        log_info "Restarting yabai to apply configuration..."
-        yabai --restart-service 2>/dev/null || true
+        log_warning "Zed dotfiles not found, skipping"
     fi
-
-    log_success "Yabai configured"
-    log_warning "Note: Yabai requires accessibility permissions and SIP configuration for full functionality."
-    log_warning "See: https://github.com/koekeishiya/yabai/wiki/Disabling-System-Integrity-Protection"
-}
-
-# ============================================================================
-# Sketchybar Configuration
-# ============================================================================
-
-configure_sketchybar() {
-    log_info "Configuring Sketchybar via stow..."
-    stow_package "sketchybar"
-
-    # Make sketchybarrc and plugins executable
-    local SKETCHYBAR_CONFIG="$XDG_CONFIG_HOME/sketchybar"
-    if [ -f "$SKETCHYBAR_CONFIG/sketchybarrc" ]; then
-        chmod +x "$SKETCHYBAR_CONFIG/sketchybarrc"
-    fi
-
-    # Make all plugin scripts executable
-    if [ -d "$SKETCHYBAR_CONFIG/plugins" ]; then
-        find "$SKETCHYBAR_CONFIG/plugins" -type f -exec chmod +x {} \;
-    fi
-
-    # Start sketchybar service if not running
-    if ! pgrep -x "sketchybar" > /dev/null; then
-        log_info "Starting sketchybar service..."
-        brew services start sketchybar 2>/dev/null || true
-    else
-        log_info "Restarting sketchybar to apply configuration..."
-        brew services restart sketchybar 2>/dev/null || true
-    fi
-
-    log_success "Sketchybar configured"
 }
 
 # ============================================================================
@@ -669,14 +641,11 @@ configure_yazi() {
     # Install monokai flavor for yazi
     if command -v ya &>/dev/null; then
         log_info "Installing yazi monokai flavor..."
-        # ya pkg has a bug where it looks for preview.png but package has preview.webp
-        # So we install and manually deploy if needed
         ya pkg add malick-tammal/monokai 2>/dev/null || true
 
         # Check if flavor was deployed, if not, manually copy it
         local FLAVOR_DIR="$XDG_CONFIG_HOME/yazi/flavors/monokai.yazi"
         if [ ! -f "$FLAVOR_DIR/flavor.toml" ]; then
-            # Find the package in yazi state directory
             local PKG_DIR
             PKG_DIR=$(find "$HOME/.local/state/yazi/packages" -name "flavor.toml" -path "*monokai*" -exec dirname {} \; 2>/dev/null | head -n1)
             if [ -n "$PKG_DIR" ] && [ -d "$PKG_DIR" ]; then
@@ -699,50 +668,43 @@ configure_yazi() {
 }
 
 # ============================================================================
-# macOS System Settings
-# ============================================================================
-
-configure_macos_settings() {
-    log_info "Configuring macOS settings..."
-
-    # Disable press-and-hold for key repeat
-    defaults write -g ApplePressAndHoldEnabled -bool false
-    log_success "Disabled press-and-hold for key repeat"
-
-    log_success "macOS settings configured"
-}
-
-# ============================================================================
 # Main Installation Flow
 # ============================================================================
 
 main() {
     echo ""
     echo "╔════════════════════════════════════════════════════════════════╗"
-    echo "║         macOS Development Environment Setup                    ║"
+    echo "║       Ubuntu Server Development Environment Setup              ║"
     echo "║                  (Powered by GNU Stow)                         ║"
     echo "╚════════════════════════════════════════════════════════════════╝"
     echo ""
 
-    # Check if running on macOS
-    if [[ "$(uname)" != "Darwin" ]]; then
-        log_error "This script is intended for macOS only."
+    # Check if running on Linux
+    if [[ "$(uname)" != "Linux" ]]; then
+        log_error "This script is intended for Linux only."
         exit 1
     fi
 
-    # Install Homebrew first (needed for all other packages)
-    install_homebrew
+    # Check if running on Ubuntu/Debian
+    if ! command -v apt &>/dev/null; then
+        log_error "This script requires apt package manager (Ubuntu/Debian)."
+        exit 1
+    fi
 
-    # Install all packages (including stow)
+    # Update system first
+    update_system
+
+    # Install all packages
     install_packages
 
-    # Copy dotfiles to ~/.dotfiles (before stowing)
+    # Copy dotfiles to ~/dotfiles (before stowing)
     setup_user_dotfiles
 
     # Setup Oh My Zsh and plugins (uses stow for custom plugin)
     install_oh_my_zsh
     install_zsh_plugins
     configure_zshrc
+    set_default_shell
 
     # Setup tmux with Oh My Tmux (uses stow for tmux.conf.local)
     install_oh_my_tmux
@@ -750,26 +712,14 @@ main() {
     # Setup Neovim with LazyVim (uses stow for custom plugins)
     install_lazyvim
 
-    # Configure Ghostty (uses stow)
+    # Configure Ghostty (uses stow - only if installing locally)
     configure_ghostty
 
-    # Configure Zed editor (uses stow)
+    # Configure Zed editor (uses stow - only if installing locally)
     configure_zed
-
-    # Configure VS Code
-    configure_vscode
-
-    # Setup Yabai window manager
-    configure_yabai
-
-    # Setup Sketchybar status bar
-    configure_sketchybar
 
     # Configure Yazi file manager
     configure_yazi
-
-    # Configure macOS-specific settings
-    configure_macos_settings
 
     echo ""
     echo "╔════════════════════════════════════════════════════════════════╗"
@@ -782,7 +732,7 @@ main() {
     log_info "To modify configs, edit files in ~/dotfiles and re-run stow."
     echo ""
     log_info "Please restart your terminal or run 'source ~/.zshrc' to apply changes."
-    log_info "You may also need to log out and back in for some macOS settings to take effect."
+    log_info "You may need to log out and back in for the default shell change to take effect."
     echo ""
 }
 

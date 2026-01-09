@@ -1,13 +1,28 @@
 # Zied's Oh My Zsh plugin
+# Cross-platform compatible (macOS and Linux)
 
-# Environment variables
-export JAVA_HOME="/opt/homebrew/opt/openjdk"
-export PATH="$HOME/.local/bin:$PATH:$(go env GOPATH)/bin:$JAVA_HOME/bin"
+# Detect the operating system
+case "$(uname -s)" in
+    Darwin)
+        IS_MACOS=true
+        IS_LINUX=false
+        ;;
+    Linux)
+        IS_MACOS=false
+        IS_LINUX=true
+        ;;
+    *)
+        IS_MACOS=false
+        IS_LINUX=false
+        ;;
+esac
+
+# ============================================================================
+# Environment Variables (Cross-platform)
+# ============================================================================
 
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_CACHE_HOME="$HOME/.cache"
-
-export VCPKG_ROOT="$HOME/vcpkg"
 
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
@@ -16,6 +31,33 @@ export VI_MODE_SET_CURSOR=true
 
 export EDITOR="nvim"
 export VISUAL="nvim"
+
+export TERM="xterm-256color"
+
+# ============================================================================
+# Platform-specific Environment Variables
+# ============================================================================
+
+if $IS_MACOS; then
+    # macOS-specific paths
+    export JAVA_HOME="/opt/homebrew/opt/openjdk"
+    export PATH="$HOME/.local/bin:$PATH:$(go env GOPATH 2>/dev/null)/bin:$JAVA_HOME/bin"
+    export VCPKG_ROOT="$HOME/vcpkg"
+elif $IS_LINUX; then
+    # Linux-specific paths
+    export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+    [ -d "$JAVA_HOME" ] || export JAVA_HOME="/usr/lib/jvm/default-java"
+    export GOPATH="$HOME/go"
+    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$GOPATH/bin:$JAVA_HOME/bin:$PATH"
+    export VCPKG_ROOT="$HOME/vcpkg"
+    # Bun path for Linux
+    export BUN_INSTALL="$HOME/.bun"
+    [ -d "$BUN_INSTALL" ] && export PATH="$BUN_INSTALL/bin:$PATH"
+fi
+
+# ============================================================================
+# Aliases (Cross-platform)
+# ============================================================================
 
 alias vim='nvim'
 alias vi='nvim'
@@ -34,9 +76,22 @@ alias please='sudo'
 
 unalias gd 2>/dev/null || true
 
-mkd() { mkdir -p -- "$1" && cd -P -- "$1"; }
+# Tool aliases
+alias ls='eza --icons --group-directories-first --git --color=always'
+alias find='fd'
+alias grep='rg'
+alias rg='rg --color=always --smart-case --hidden --glob "!.git/*" --glob "!.svn/*" --glob "!.hg/*" --glob "!node_modules/*"'
+alias lg='lazygit'
+alias ff='fastfetch'
+alias oc='opencode'
+alias zeze='zoxide edit'
+alias tmux='tmux -f $XDG_CONFIG_HOME/tmux/tmux.conf'
 
-use-tmux() { /bin/bash --noprofile --norc -c "/opt/homebrew/bin/tmux has-session 2>/dev/null && /opt/homebrew/bin/tmux attach-session -d || /opt/homebrew/bin/tmux new-session"; }
+# ============================================================================
+# Functions (Cross-platform)
+# ============================================================================
+
+mkd() { mkdir -p -- "$1" && cd -P -- "$1"; }
 
 reload-zsh() { source "$HOME/.zshrc" && echo "zsh reloaded"; }
 
@@ -77,19 +132,6 @@ stowgo() {
     stow --dir="$HOME/.dotfiles" --target="$target" --restow --no-folding "$pkg"
 }
 
-# Tool aliases
-alias ls='eza --icons --group-directories-first --git --color=always'
-alias find='fd'
-alias grep='rg'
-alias rg='rg --color=always --smart-case --hidden --glob "!.git/*" --glob "!.svn/*" --glob "!.hg/*" --glob "!node_modules/*"'
-alias lg='lazygit'
-alias ff='fastfetch'
-alias oc='opencode'
-alias zeze='zoxide edit'
-alias tmux='tmux -f $XDG_CONFIG_HOME/tmux/tmux.conf'
-
-export TERM="xterm-256color"
-
 # Fuzzy file picker - opens selection in neovim
 pf() {
   local file
@@ -106,18 +148,47 @@ y() {
   rm -f -- "$tmp"
 }
 
-# Update packages (macOS implementation)
-update() {
-  echo "Updating packages..."
-  brew update && brew upgrade && brew cleanup
-  echo "Packages updated successfully."
-}
+# ============================================================================
+# Platform-specific Functions
+# ============================================================================
 
-# macOS-specific: bootout GUI session
-bootout-gui() { launchctl bootout gui/$UID }
+if $IS_MACOS; then
+    # macOS: use-tmux with Homebrew tmux path
+    use-tmux() { /bin/bash --noprofile --norc -c "/opt/homebrew/bin/tmux has-session 2>/dev/null && /opt/homebrew/bin/tmux attach-session -d || /opt/homebrew/bin/tmux new-session"; }
 
-# zoxide initialization (run: eval "$(zoxide init zsh)")
-eval "$(zoxide init zsh)"
+    # macOS: Update packages via Homebrew
+    update() {
+        echo "Updating packages via Homebrew..."
+        brew update && brew upgrade && brew cleanup
+        echo "Packages updated successfully."
+    }
+
+    # macOS-specific: bootout GUI session
+    bootout-gui() { launchctl bootout gui/$UID }
+
+elif $IS_LINUX; then
+    # Linux: use-tmux with system tmux
+    use-tmux() { /bin/bash --noprofile --norc -c "tmux has-session 2>/dev/null && tmux attach-session -d || tmux new-session"; }
+
+    # Linux: Update packages via apt
+    update() {
+        echo "Updating packages via apt..."
+        sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y && sudo apt autoclean
+        echo "Packages updated successfully."
+    }
+fi
+
+# ============================================================================
+# Zoxide initialization
+# ============================================================================
+
+if command -v zoxide &>/dev/null; then
+    eval "$(zoxide init zsh)"
+fi
+
+# ============================================================================
+# Interactive cleanup utility
+# ============================================================================
 
 cleanup() {
   if [[ -z "$PS1" ]]; then
