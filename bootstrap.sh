@@ -149,21 +149,32 @@ download_and_extract() {
         exit 1
     fi
 
-    # Remove the zip file to avoid including it in the move
+    # Remove the zip file
     rm setup-config.zip
 
-    # Find the extracted directory (handles both release and archive formats)
-    local extracted_dir=$(find . -maxdepth 1 -type d -name "*${REPO_NAME}*" | head -n 1)
+    # Find the source directory more robustly
+    local extracted_dir=""
 
+    # 1. Try to find a directory containing 'ubuntu-server' or 'macos' (repo root markers)
+    extracted_dir=$(find . -maxdepth 2 -type d \( -name "ubuntu-server" -o -name "macos" \) -exec dirname {} \; | head -n 1)
+
+    # 2. If not found, check if there's exactly one subdirectory
     if [ -z "$extracted_dir" ] || [ "$extracted_dir" = "." ]; then
-        # If no subdirectory found, use the current temp directory
-        echo "$TEMP_DIR"
-    else
-        # Return absolute path
-        (cd "$extracted_dir" && pwd)
+        local subdir_count=$(find . -mindepth 1 -maxdepth 1 -type d | wc -l)
+        if [ "$subdir_count" -eq 1 ]; then
+            extracted_dir=$(find . -mindepth 1 -maxdepth 1 -type d)
+        fi
     fi
 
-    log_success "Extracted successfully"
+    # 3. Fall back to current temp directory
+    if [ -z "$extracted_dir" ] || [ "$extracted_dir" = "." ]; then
+        extracted_dir="."
+    fi
+
+    # Return absolute path
+    (cd "$extracted_dir" && pwd)
+
+    log_success "Extracted successfully" >&2
 }
 
 run_installation() {
@@ -171,20 +182,31 @@ run_installation() {
     local source_dir="$2"
 
     log_info "Preparing installation directory..."
+    log_info "Source directory: $source_dir"
 
     # Backup existing installation if it exists
     if [ -d "$INSTALL_DIR" ]; then
-        local backup_dir="${INSTALL_DIR}.backup.$(date +%Y%m%d_%H%M%S)"
+        local backup_timestamp=$(date +%Y%m%d_%H%M%S)
+        local backup_dir="${INSTALL_DIR}.backup.${backup_timestamp}"
         log_warning "Backing up existing installation to $backup_dir"
         mv "$INSTALL_DIR" "$backup_dir"
     fi
 
-    # Move extracted files to installation directory
+    # Create installation directory
     mkdir -p "$INSTALL_DIR"
 
-    # Copy extracted files to installation directory
-    # source_dir is an absolute path
-    cp -pr "$source_dir"/. "$INSTALL_DIR/"
+    # Copy files
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        cp -pR "$source_dir"/. "$INSTALL_DIR/"
+    else
+        cp -a "$source_dir"/. "$INSTALL_DIR/"
+    fi
+
+    # Verify copy
+    if [ ! -d "$INSTALL_DIR/ubuntu-server" ] && [ ! -d "$INSTALL_DIR/macos" ]; then
+        log_error "File copy failed or source directory was empty. Check $source_dir"
+        exit 1
+    fi
 
     log_success "Files copied to $INSTALL_DIR"
 
