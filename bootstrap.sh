@@ -149,16 +149,21 @@ download_and_extract() {
         exit 1
     fi
 
+    # Remove the zip file to avoid including it in the move
+    rm setup-config.zip
+
     # Find the extracted directory (handles both release and archive formats)
     local extracted_dir=$(find . -maxdepth 1 -type d -name "*${REPO_NAME}*" | head -n 1)
 
-    if [ -z "$extracted_dir" ]; then
-        # If no directory found, it might have extracted to current directory
-        extracted_dir="."
+    if [ -z "$extracted_dir" ] || [ "$extracted_dir" = "." ]; then
+        # If no subdirectory found, use the current temp directory
+        echo "$TEMP_DIR"
+    else
+        # Return absolute path
+        (cd "$extracted_dir" && pwd)
     fi
 
     log_success "Extracted successfully"
-    echo "$extracted_dir"
 }
 
 run_installation() {
@@ -177,13 +182,9 @@ run_installation() {
     # Move extracted files to installation directory
     mkdir -p "$INSTALL_DIR"
 
-    if [ "$source_dir" = "." ]; then
-        # Files extracted to current directory
-        mv * "$INSTALL_DIR/" 2>/dev/null || true
-    else
-        # Files in subdirectory
-        mv "$source_dir"/* "$INSTALL_DIR/"
-    fi
+    # Copy extracted files to installation directory
+    # source_dir is an absolute path
+    cp -pr "$source_dir"/. "$INSTALL_DIR/"
 
     log_success "Files copied to $INSTALL_DIR"
 
