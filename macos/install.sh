@@ -162,6 +162,7 @@ install_bat() { install_brew_package "bat"; }
 install_lazygit() { install_brew_package "lazygit"; }
 install_btop() { install_brew_package "btop"; }
 install_fastfetch() { install_brew_package "fastfetch"; }
+install_1password_cli() { install_brew_package "1password-cli"; }
 install_uv() { install_brew_package "uv"; }
 install_meson() { install_uv_package "meson"; }
 install_conan() { install_uv_package "conan"; }
@@ -257,6 +258,7 @@ install_packages() {
     install_lazygit
     install_btop
     install_fastfetch
+    install_1password_cli
     install_uv
     install_meson
     install_conan

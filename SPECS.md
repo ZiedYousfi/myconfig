@@ -140,6 +140,7 @@ ghostty/
 | `zoxide` | Smart cd with frecency | `cd` |
 | `btop` | Resource monitor | `top`, `htop` |
 | `fastfetch` | System information display | `neofetch` |
+| `1password-cli` | 1Password command-line interface | - |
 | `jq` | JSON processor | - |
 
 ### Git Tools

@@ -198,6 +198,8 @@ install_btop() { install_brew_package "btop"; }
 
 install_fastfetch() { install_brew_package "fastfetch"; }
 
+install_1password_cli() { install_brew_package "1password-cli"; }
+
 install_uv() {
     if command -v uv &>/dev/null; then
         log_success "uv is already installed"
@@ -303,6 +305,7 @@ install_packages() {
     install_lazygit
     install_btop
     install_fastfetch
+    install_1password_cli
 
     log_info "Installing Python tools..."
     install_uv

@@ -268,6 +268,7 @@ remove_brew_packages() {
     local packages=(
         "sst/tap/opencode"
         "joncrangle/tap/sketchybar-system-stats"
+        "1password-cli"
         "fastfetch"
         "btop"
         "lazygit"
