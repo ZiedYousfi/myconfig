@@ -28,24 +28,24 @@ INSTALL_DIR="${HOME}/.setup-config"
 TEMP_DIR="/tmp/setup-config-$$"
 
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${BLUE}[INFO]${NC} $1" >&2
 }
 
 log_success() {
-    echo -e "${GREEN}[✓]${NC} $1"
+    echo -e "${GREEN}[✓]${NC} $1" >&2
 }
 
 log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${YELLOW}[WARNING]${NC} $1" >&2
 }
 
 log_error() {
-    echo -e "${RED}[✗]${NC} $1"
+    echo -e "${RED}[✗]${NC} $1" >&2
 }
 
 print_banner() {
-    echo -e "${CYAN}${BOLD}"
-    cat << "EOF"
+    echo -e "${CYAN}${BOLD}" >&2
+    cat << "EOF" >&2
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
 ║        Setup Configuration Bootstrap Script               ║
@@ -54,7 +54,7 @@ print_banner() {
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
 EOF
-    echo -e "${NC}"
+    echo -e "${NC}" >&2
 }
 
 detect_platform() {
@@ -72,12 +72,12 @@ detect_platform() {
 }
 
 prompt_platform() {
-    echo -e "${BOLD}Select your platform:${NC}"
-    echo ""
-    echo "  1) macOS"
-    echo "  2) Ubuntu Server"
-    echo "  3) Exit"
-    echo ""
+    echo -e "${BOLD}Select your platform:${NC}" >&2
+    echo "" >&2
+    echo "  1) macOS" >&2
+    echo "  2) Ubuntu Server" >&2
+    echo "  3) Exit" >&2
+    echo "" >&2
 
     while true; do
         read -p "Enter your choice (1-3): " choice
@@ -192,7 +192,7 @@ run_installation() {
 
     # Run the appropriate installation script
     log_info "Starting ${platform} installation..."
-    echo ""
+    echo "" >&2
 
     case $platform in
         macos)
@@ -280,7 +280,7 @@ main() {
             platform=$(prompt_platform)
         else
             log_info "Detected platform: $detected_platform"
-            echo ""
+            echo "" >&2
             read -p "Is this correct? (Y/n): " confirm
 
             if [[ "$confirm" =~ ^[Nn] ]]; then
@@ -307,7 +307,7 @@ main() {
     fi
 
     log_info "Selected platform: ${BOLD}${platform}${NC}"
-    echo ""
+    echo "" >&2
 
     # Ensure required dependencies are installed
     ensure_dependencies "$platform"
@@ -324,14 +324,14 @@ main() {
     # Cleanup
     cleanup
 
-    echo ""
+    echo "" >&2
     log_success "${BOLD}Installation complete!${NC}"
-    echo ""
+    echo "" >&2
     log_info "Configuration installed to: $INSTALL_DIR"
     log_info "Dotfiles managed from: ~/dotfiles"
-    echo ""
+    echo "" >&2
     log_info "Please restart your terminal or run: ${CYAN}source ~/.zshrc${NC}"
-    echo ""
+    echo "" >&2
 }
 
 # Set up error handling

@@ -8,9 +8,9 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMP_TEST_DIR="/tmp/bootstrap-test-$$"
 
-echo "🧪 Bootstrap Local Test"
-echo "======================="
-echo ""
+echo "🧪 Bootstrap Local Test" >&2
+echo "=======================" >&2
+echo "" >&2
 
 # Colors
 GREEN='\033[0;32m'
@@ -19,15 +19,15 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${BLUE}[INFO]${NC} $1" >&2
 }
 
 log_success() {
-    echo -e "${GREEN}[✓]${NC} $1"
+    echo -e "${GREEN}[✓]${NC} $1" >&2
 }
 
 log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${YELLOW}[WARNING]${NC} $1" >&2
 }
 
 # Create test environment
@@ -55,7 +55,7 @@ zip -r setup-config.zip myconfig-main/ -q \
     -x "*.pyc"
 
 log_success "Mock archive created"
-echo ""
+echo "" >&2
 
 # Test extraction
 log_info "Testing archive extraction..."
@@ -90,7 +90,7 @@ for file in "${required_files[@]}"; do
     fi
 done
 
-echo ""
+echo "" >&2
 
 if [ "$all_found" = true ]; then
     log_success "All required files present"
@@ -99,7 +99,7 @@ else
 fi
 
 # Test install script syntax
-echo ""
+echo "" >&2
 log_info "Testing install script syntax..."
 
 if [ -f "myconfig-main/macos/install.sh" ]; then
@@ -116,24 +116,24 @@ if [ -f "myconfig-main/bootstrap.sh" ]; then
 fi
 
 # Archive size check
-echo ""
+echo "" >&2
 log_info "Archive statistics:"
-ls -lh setup-config.zip | awk '{print "  Size: " $5}'
-unzip -l setup-config.zip | tail -1 | awk '{print "  Files: " $2}'
+ls -lh setup-config.zip | awk '{print "  Size: " $5}' >&2
+unzip -l setup-config.zip | tail -1 | awk '{print "  Files: " $2}' >&2
 
 # Cleanup
-echo ""
+echo "" >&2
 log_info "Cleaning up test environment..."
 cd /
 rm -rf "$TEMP_TEST_DIR"
 log_success "Cleanup complete"
 
-echo ""
+echo "" >&2
 log_success "All tests passed! ✨"
-echo ""
-echo "Next steps:"
-echo "  1. Commit and push your changes"
-echo "  2. Create a git tag: git tag -a v1.0.0 -m 'Release v1.0.0'"
-echo "  3. Push the tag: git push origin v1.0.0"
-echo "  4. GitHub Actions will create the release automatically"
-echo ""
+echo "" >&2
+echo "Next steps:" >&2
+echo "  1. Commit and push your changes" >&2
+echo "  2. Create a git tag: git tag -a v1.0.0 -m 'Release v1.0.0'" >&2
+echo "  3. Push the tag: git push origin v1.0.0" >&2
+echo "  4. GitHub Actions will create the release automatically" >&2
+echo "" >&2
