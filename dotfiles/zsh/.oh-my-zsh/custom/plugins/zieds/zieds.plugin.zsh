@@ -45,8 +45,16 @@ if $IS_MACOS; then
     export VCPKG_ROOT="$HOME/vcpkg"
 elif $IS_LINUX; then
     # Linux-specific paths
-    export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
-    [ -d "$JAVA_HOME" ] || export JAVA_HOME="/usr/lib/jvm/default-java"
+    # Homebrew (Linuxbrew) paths
+    if [ -d "/home/linuxbrew/.linuxbrew" ]; then
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+        export HOMEBREW_PREFIX="/home/linuxbrew/.linuxbrew"
+        export JAVA_HOME="$HOMEBREW_PREFIX/opt/openjdk@21"
+    else
+        # Fallback to system Java if Homebrew not installed
+        export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+        [ -d "$JAVA_HOME" ] || export JAVA_HOME="/usr/lib/jvm/default-java"
+    fi
     export GOPATH="$HOME/go"
     export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$GOPATH/bin:$JAVA_HOME/bin:$PATH"
     export VCPKG_ROOT="$HOME/vcpkg"
@@ -170,11 +178,28 @@ elif $IS_LINUX; then
     # Linux: use-tmux with system tmux
     use-tmux() { /bin/bash --noprofile --norc -c "tmux has-session 2>/dev/null && tmux attach-session -d || tmux new-session"; }
 
-    # Linux: Update packages via apt
+    # Linux: Update both system (apt) and Homebrew packages
     update() {
-        echo "Updating packages via apt..."
+        echo "🔄 Updating system and packages..."
+        echo ""
+
+        # Update system packages via apt
+        echo "📦 Updating system packages (apt)..."
         sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y && sudo apt autoclean
-        echo "Packages updated successfully."
+        echo "✅ System packages updated."
+        echo ""
+
+        # Update Homebrew packages if installed
+        if command -v brew &>/dev/null; then
+            echo "🍺 Updating Homebrew packages..."
+            brew update && brew upgrade && brew cleanup
+            echo "✅ Homebrew packages updated."
+        else
+            echo "ℹ️  Homebrew not found, skipping Homebrew updates."
+        fi
+
+        echo ""
+        echo "✨ All updates completed successfully!"
     }
 fi
 

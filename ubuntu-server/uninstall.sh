@@ -53,7 +53,7 @@ confirm_uninstall() {
     echo "  - LazyVim configuration"
     echo "  - Stowed dotfiles symlinks"
     echo "  - ~/dotfiles directory (optionally)"
-    echo "  - Installed packages (optionally)"
+    echo "  - Homebrew and installed packages (optionally)"
     echo ""
     read -p "Are you sure you want to continue? (yes/no): " confirm
     if [[ "$confirm" != "yes" ]]; then
@@ -206,112 +206,30 @@ remove_zshrc() {
 }
 
 # ============================================================================
-# Remove Installed Tools (Optional)
+# Remove Homebrew and Packages (Optional)
 # ============================================================================
 
-remove_installed_tools() {
-    read -p "Do you want to remove installed tools (neovim, lazygit, yazi, etc.)? (yes/no): " remove_tools
-    if [[ "$remove_tools" != "yes" ]]; then
-        log_info "Keeping installed tools"
+remove_homebrew() {
+    if ! command -v brew &>/dev/null; then
+        log_warning "Homebrew not found, skipping"
         return
     fi
 
-    log_info "Removing installed tools..."
-
-    # Remove Neovim
-    if [ -d "/opt/nvim-linux64" ]; then
-        sudo rm -rf /opt/nvim-linux64
-        sudo rm -f /usr/local/bin/nvim
-        log_success "Neovim removed"
-    fi
-
-    # Remove lazygit
-    if [ -f "/usr/local/bin/lazygit" ]; then
-        sudo rm -f /usr/local/bin/lazygit
-        log_success "lazygit removed"
-    fi
-
-    # Remove yazi
-    if [ -f "/usr/local/bin/yazi" ]; then
-        sudo rm -f /usr/local/bin/yazi
-        sudo rm -f /usr/local/bin/ya
-        log_success "yazi removed"
-    fi
-
-    # Remove Go
-    if [ -d "/usr/local/go" ]; then
-        sudo rm -rf /usr/local/go
-        rm -rf "$HOME/go"
-        log_success "Go removed"
-    fi
-
-    # Remove Rust
-    if [ -d "$HOME/.rustup" ]; then
-        rm -rf "$HOME/.rustup"
-        rm -rf "$HOME/.cargo"
-        log_success "Rust removed"
-    fi
-
-    # Remove Bun
-    if [ -d "$HOME/.bun" ]; then
-        rm -rf "$HOME/.bun"
-        log_success "Bun removed"
-    fi
-
-    # Remove zoxide
-    rm -f "$HOME/.local/bin/zoxide"
-    log_success "zoxide removed"
-
-    # Remove fd symlink
-    rm -f "$HOME/.local/bin/fd"
-
-    # Remove bat symlink
-    rm -f "$HOME/.local/bin/bat"
-
-    log_success "Installed tools removed"
-}
-
-# ============================================================================
-# Remove APT Packages (Optional)
-# ============================================================================
-
-remove_apt_packages() {
-    read -p "Do you want to remove apt packages installed by setup? (yes/no): " remove_apt
-    if [[ "$remove_apt" != "yes" ]]; then
-        log_info "Keeping apt packages"
+    read -p "Do you want to remove Homebrew and all installed packages? (yes/no): " remove_brew
+    if [[ "$remove_brew" != "yes" ]]; then
+        log_info "Keeping Homebrew"
         return
     fi
 
-    log_info "Removing apt packages..."
+    log_info "Removing Homebrew..."
 
-    local packages=(
-        "btop"
-        "fzf"
-        "ripgrep"
-        "bat"
-        "fd-find"
-        "eza"
-        "jq"
-        "ffmpeg"
-        "p7zip-full"
-        "poppler-utils"
-        "imagemagick"
-        "openjdk-21-jdk"
-        "maven"
-        "llvm"
-        "clang"
-        "clangd"
-    )
+    # Run Homebrew's official uninstall script
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
 
-    for pkg in "${packages[@]}"; do
-        if dpkg -l "$pkg" 2>/dev/null | grep -q "^ii"; then
-            log_info "Removing $pkg..."
-            sudo apt remove -y "$pkg" 2>/dev/null || true
-        fi
-    done
+    # Remove any remaining directories
+    sudo rm -rf /home/linuxbrew/.linuxbrew 2>/dev/null || true
 
-    sudo apt autoremove -y
-    log_success "apt packages removed"
+    log_success "Homebrew removed"
 }
 
 # ============================================================================
@@ -340,11 +258,8 @@ main() {
     # Optionally remove ~/dotfiles
     remove_user_dotfiles
 
-    # Optionally remove installed tools
-    remove_installed_tools
-
-    # Optionally remove apt packages
-    remove_apt_packages
+    # Optionally remove Homebrew and packages
+    remove_homebrew
 
     echo ""
     echo "╔════════════════════════════════════════════════════════════════╗"

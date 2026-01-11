@@ -2,7 +2,7 @@
 
 # Ubuntu Server Development Environment Setup Script
 # This script is idempotent - running it multiple times is safe
-# Uses GNU Stow for dotfiles management
+# Uses Homebrew for package management and GNU Stow for dotfiles
 # Dotfiles are copied to ~/dotfiles and stowed from there
 
 set -e
@@ -44,28 +44,47 @@ mkdir -p "$XDG_CACHE_HOME"
 mkdir -p "$HOME/.local/bin"
 
 # ============================================================================
+# Homebrew Installation
+# ============================================================================
+
+install_homebrew() {
+    if command -v brew &>/dev/null; then
+        log_success "Homebrew is already installed"
+    else
+        log_info "Installing Homebrew..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+        # Add Homebrew to PATH
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+        log_success "Homebrew installed"
+    fi
+}
+
+# ============================================================================
 # System Update
 # ============================================================================
 
 update_system() {
-    log_info "Updating system packages..."
-    sudo apt update
-    sudo apt upgrade -y
+    log_info "Updating Homebrew and packages..."
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" 2>/dev/null || true
+    brew update
+    brew upgrade
     log_success "System updated"
 }
 
 # ============================================================================
-# APT Packages Installation
+# Homebrew Package Installation
 # ============================================================================
 
-install_apt_package() {
+install_brew_package() {
     local package="$1"
 
-    if dpkg -l "$package" 2>/dev/null | grep -q "^ii"; then
+    if brew list "$package" &>/dev/null; then
         log_success "$package is already installed"
     else
         log_info "Installing $package..."
-        sudo apt install -y "$package"
+        brew install "$package"
         log_success "$package installed"
     fi
 }
@@ -75,53 +94,23 @@ install_apt_package() {
 # ============================================================================
 
 # Core tools
-install_git() { install_apt_package "git"; }
-install_stow() { install_apt_package "stow"; }
-install_zsh() { install_apt_package "zsh"; }
-install_tmux() { install_apt_package "tmux"; }
-install_curl() { install_apt_package "curl"; }
-install_wget() { install_apt_package "wget"; }
-install_build_essential() { install_apt_package "build-essential"; }
-install_unzip() { install_apt_package "unzip"; }
+install_git() { install_brew_package "git"; }
+install_stow() { install_brew_package "stow"; }
+install_zsh() { install_brew_package "zsh"; }
+install_tmux() { install_brew_package "tmux"; }
+install_curl() { install_brew_package "curl"; }
+install_wget() { install_brew_package "wget"; }
+install_gcc() { install_brew_package "gcc"; }
+install_unzip() { install_brew_package "unzip"; }
 
-# Neovim - install from GitHub releases for latest version
-install_neovim() {
-    if command -v nvim &>/dev/null; then
-        log_success "Neovim is already installed"
-    else
-        log_info "Installing Neovim from GitHub releases..."
-        local NVIM_VERSION="v0.10.2"
-        curl -LO "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux64.tar.gz"
-        sudo rm -rf /opt/nvim
-        sudo tar -C /opt -xzf nvim-linux64.tar.gz
-        sudo ln -sf /opt/nvim-linux64/bin/nvim /usr/local/bin/nvim
-        rm nvim-linux64.tar.gz
-        log_success "Neovim installed"
-    fi
-}
+# Neovim
+install_neovim() { install_brew_package "neovim"; }
 
 # Python
-install_python() {
-    install_apt_package "python3"
-    install_apt_package "python3-pip"
-    install_apt_package "python3-venv"
-}
+install_python() { install_brew_package "python@3.12"; }
 
 # Go
-install_go() {
-    if command -v go &>/dev/null; then
-        log_success "Go is already installed"
-    else
-        log_info "Installing Go..."
-        local GO_VERSION="1.22.0"
-        curl -LO "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
-        sudo rm -rf /usr/local/go
-        sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
-        rm "go${GO_VERSION}.linux-amd64.tar.gz"
-        export PATH="$PATH:/usr/local/go/bin"
-        log_success "Go installed"
-    fi
-}
+install_go() { install_brew_package "go"; }
 
 # Rust
 install_rustup() {
@@ -149,101 +138,30 @@ install_bun() {
 }
 
 # Java and build tools
-install_openjdk() { install_apt_package "openjdk-21-jdk"; }
-install_maven() { install_apt_package "maven"; }
+install_openjdk() { install_brew_package "openjdk@21"; }
+install_maven() { install_brew_package "maven"; }
 
 # LLVM
-install_llvm() {
-    install_apt_package "llvm"
-    install_apt_package "clang"
-    install_apt_package "clangd"
-}
+install_llvm() { install_brew_package "llvm"; }
 
-# Modern CLI tools - install from cargo/GitHub if not in apt
-install_zoxide() {
-    if command -v zoxide &>/dev/null; then
-        log_success "zoxide is already installed"
-    else
-        log_info "Installing zoxide..."
-        curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
-        log_success "zoxide installed"
-    fi
-}
+# Modern CLI tools
+install_zoxide() { install_brew_package "zoxide"; }
 
-install_eza() {
-    if command -v eza &>/dev/null; then
-        log_success "eza is already installed"
-    else
-        log_info "Installing eza..."
-        sudo mkdir -p /etc/apt/keyrings
-        wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
-        echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
-        sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
-        sudo apt update
-        sudo apt install -y eza
-        log_success "eza installed"
-    fi
-}
+install_eza() { install_brew_package "eza"; }
 
-install_fd() {
-    if command -v fd &>/dev/null || command -v fdfind &>/dev/null; then
-        log_success "fd is already installed"
-    else
-        log_info "Installing fd-find..."
-        install_apt_package "fd-find"
-        # Create symlink for fd command
-        if command -v fdfind &>/dev/null; then
-            ln -sf "$(which fdfind)" "$HOME/.local/bin/fd"
-        fi
-        log_success "fd installed"
-    fi
-}
+install_fd() { install_brew_package "fd"; }
 
-install_fzf() { install_apt_package "fzf"; }
+install_fzf() { install_brew_package "fzf"; }
 
-install_ripgrep() { install_apt_package "ripgrep"; }
+install_ripgrep() { install_brew_package "ripgrep"; }
 
-install_bat() {
-    if command -v bat &>/dev/null || command -v batcat &>/dev/null; then
-        log_success "bat is already installed"
-    else
-        log_info "Installing bat..."
-        install_apt_package "bat"
-        # Create symlink for bat command
-        if command -v batcat &>/dev/null; then
-            ln -sf "$(which batcat)" "$HOME/.local/bin/bat"
-        fi
-        log_success "bat installed"
-    fi
-}
+install_bat() { install_brew_package "bat"; }
 
-install_lazygit() {
-    if command -v lazygit &>/dev/null; then
-        log_success "lazygit is already installed"
-    else
-        log_info "Installing lazygit..."
-        LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-        curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-        tar xf lazygit.tar.gz lazygit
-        sudo install lazygit /usr/local/bin
-        rm lazygit.tar.gz lazygit
-        log_success "lazygit installed"
-    fi
-}
+install_lazygit() { install_brew_package "lazygit"; }
 
-install_btop() { install_apt_package "btop"; }
+install_btop() { install_brew_package "btop"; }
 
-install_fastfetch() {
-    if command -v fastfetch &>/dev/null; then
-        log_success "fastfetch is already installed"
-    else
-        log_info "Installing fastfetch..."
-        sudo add-apt-repository -y ppa:zhangsongcui3371/fastfetch 2>/dev/null || true
-        sudo apt update
-        sudo apt install -y fastfetch
-        log_success "fastfetch installed"
-    fi
-}
+install_fastfetch() { install_brew_package "fastfetch"; }
 
 install_uv() {
     if command -v uv &>/dev/null; then
@@ -277,27 +195,13 @@ install_conan() {
 }
 
 # Yazi file manager and dependencies
-install_yazi() {
-    if command -v yazi &>/dev/null; then
-        log_success "yazi is already installed"
-    else
-        log_info "Installing yazi..."
-        # Install from GitHub releases
-        local YAZI_VERSION=$(curl -s "https://api.github.com/repos/sxyazi/yazi/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-        curl -Lo yazi.zip "https://github.com/sxyazi/yazi/releases/download/v${YAZI_VERSION}/yazi-x86_64-unknown-linux-gnu.zip"
-        unzip -o yazi.zip
-        sudo mv yazi-x86_64-unknown-linux-gnu/yazi /usr/local/bin/
-        sudo mv yazi-x86_64-unknown-linux-gnu/ya /usr/local/bin/
-        rm -rf yazi.zip yazi-x86_64-unknown-linux-gnu
-        log_success "yazi installed"
-    fi
-}
+install_yazi() { install_brew_package "yazi"; }
 
-install_ffmpeg() { install_apt_package "ffmpeg"; }
-install_p7zip() { install_apt_package "p7zip-full"; }
-install_jq() { install_apt_package "jq"; }
-install_poppler() { install_apt_package "poppler-utils"; }
-install_imagemagick() { install_apt_package "imagemagick"; }
+install_ffmpeg() { install_brew_package "ffmpeg"; }
+install_p7zip() { install_brew_package "p7zip"; }
+install_jq() { install_brew_package "jq"; }
+install_poppler() { install_brew_package "poppler"; }
+install_imagemagick() { install_brew_package "imagemagick"; }
 
 # ============================================================================
 # Install All Packages
@@ -306,12 +210,12 @@ install_imagemagick() { install_apt_package "imagemagick"; }
 install_packages() {
     log_info "Installing packages..."
 
-    # Core tools (order matters - git first)
+    # Core tools
     install_git
     install_stow
     install_curl
     install_wget
-    install_build_essential
+    install_gcc
     install_unzip
     install_zsh
     install_tmux
@@ -675,7 +579,7 @@ main() {
     echo ""
     echo "╔════════════════════════════════════════════════════════════════╗"
     echo "║       Ubuntu Server Development Environment Setup              ║"
-    echo "║                  (Powered by GNU Stow)                         ║"
+    echo "║              (Powered by Homebrew & GNU Stow)                  ║"
     echo "╚════════════════════════════════════════════════════════════════╝"
     echo ""
 
@@ -685,13 +589,10 @@ main() {
         exit 1
     fi
 
-    # Check if running on Ubuntu/Debian
-    if ! command -v apt &>/dev/null; then
-        log_error "This script requires apt package manager (Ubuntu/Debian)."
-        exit 1
-    fi
+    # Install Homebrew first
+    install_homebrew
 
-    # Update system first
+    # Update system
     update_system
 
     # Install all packages

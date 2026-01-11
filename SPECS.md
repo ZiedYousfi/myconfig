@@ -485,9 +485,9 @@ Dotfiles are managed using GNU Stow:
 
 This section documents components specific to Ubuntu Server (headless, no desktop environment).
 
-### Package Manager: APT + Manual Installs
+### Package Manager: Homebrew
 
-Packages are installed via APT when available, with manual installs from GitHub releases for the latest versions of tools like Neovim, lazygit, and yazi.
+All packages are installed via Homebrew (Linuxbrew), providing access to up-to-date packages and a larger repository compared to apt.
 
 See [ubuntu-server/install.sh](ubuntu-server/install.sh) for the complete installation script.
 
@@ -497,28 +497,31 @@ Located in `zieds.plugin.zsh` (platform detection is automatic):
 
 | Function | Description |
 |----------|-------------|
-| `update` | Runs `sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y` |
-| `use-tmux` | Attach or create tmux session (uses system tmux path) |
+| `update` | Updates both system (apt) and Homebrew packages |
+| `use-tmux` | Attach or create tmux session |
 
 ### Ubuntu-Specific Environment Variables
 
 ```bash
-JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+HOMEBREW_PREFIX="/home/linuxbrew/.linuxbrew"
+JAVA_HOME="$HOMEBREW_PREFIX/opt/openjdk@21"
 GOPATH="$HOME/go"
 BUN_INSTALL="$HOME/.bun"
-PATH="$HOME/.local/bin:$HOME/.cargo/bin:$GOPATH/bin:$JAVA_HOME/bin:$BUN_INSTALL/bin:$PATH"
+PATH="$HOME/.local/bin:$HOME/.cargo/bin:$GOPATH/bin:$JAVA_HOME/bin:$BUN_INSTALL/bin:$HOMEBREW_PREFIX/bin:$PATH"
 VCPKG_ROOT="$HOME/vcpkg"
 ```
 
 ### Installed Packages
 
+All packages are installed via Homebrew:
+
 | Category | Packages |
 |----------|----------|
-| Core | `git`, `stow`, `zsh`, `tmux`, `curl`, `wget`, `build-essential`, `unzip` |
-| Languages | `python3`, `go`, `rustup`, `bun`, `openjdk-21-jdk`, `llvm`, `clang` |
-| Build Tools | `maven`, `meson`, `conan` |
-| CLI Tools | `eza`, `fd-find`, `fzf`, `ripgrep`, `bat`, `zoxide`, `lazygit`, `btop`, `fastfetch`, `uv` |
-| File Manager | `yazi`, `ffmpeg`, `p7zip-full`, `jq`, `poppler-utils`, `imagemagick` |
+| Core | `git`, `stow`, `zsh`, `tmux`, `curl`, `wget`, `gcc`, `unzip` |
+| Languages | `python@3.12`, `go`, `rustup` (via curl), `bun` (via curl), `openjdk@21`, `llvm` |
+| Build Tools | `maven`, `meson` (via uv), `conan` (via uv) |
+| CLI Tools | `eza`, `fd`, `fzf`, `ripgrep`, `bat`, `zoxide`, `lazygit`, `btop`, `fastfetch`, `uv` (via curl) |
+| File Manager | `yazi`, `ffmpeg`, `p7zip`, `jq`, `poppler`, `imagemagick` |
 
 ### What's NOT Included (Server Edition)
 
