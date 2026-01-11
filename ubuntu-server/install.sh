@@ -35,13 +35,29 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Ensure XDG directories exist
+# Ensure XDG directories exist and have correct ownership
+ensure_dir_owned() {
+    local dir="$1"
+    if [ -d "$dir" ]; then
+        if [ ! -w "$dir" ]; then
+            log_warning "Directory $dir is not writable. Attempting to fix with sudo..."
+            sudo chown -R "$(id -u):$(id -g)" "$dir"
+        fi
+    else
+        mkdir -p "$dir" || {
+            log_warning "Failed to create $dir. Trying with sudo..."
+            sudo mkdir -p "$dir"
+            sudo chown -R "$(id -u):$(id -g)" "$dir"
+        }
+    fi
+}
+
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 
-mkdir -p "$XDG_CONFIG_HOME"
-mkdir -p "$XDG_CACHE_HOME"
-mkdir -p "$HOME/.local/bin"
+ensure_dir_owned "$XDG_CONFIG_HOME"
+ensure_dir_owned "$XDG_CACHE_HOME"
+ensure_dir_owned "$HOME/.local/bin"
 
 # ============================================================================
 # Homebrew Installation
@@ -527,7 +543,7 @@ install_oh_my_tmux() {
     fi
 
     # Create tmux config directory
-    mkdir -p "$TMUX_CONFIG_DIR"
+    ensure_dir_owned "$TMUX_CONFIG_DIR"
 
     # Symlink tmux.conf from Oh My Tmux
     if [ -L "$TMUX_CONFIG_DIR/tmux.conf" ]; then
@@ -612,7 +628,7 @@ configure_yazi() {
     stow_package "yazi"
 
     # Ensure flavors directory exists (needed for ya pkg to work)
-    mkdir -p "$XDG_CONFIG_HOME/yazi/flavors"
+    ensure_dir_owned "$XDG_CONFIG_HOME/yazi/flavors"
 
     # Install monokai flavor for yazi
     if command -v ya &>/dev/null; then
@@ -626,7 +642,7 @@ configure_yazi() {
             PKG_DIR=$(find "$HOME/.local/state/yazi/packages" -name "flavor.toml" -path "*monokai*" -exec dirname {} \; 2>/dev/null | head -n1)
             if [ -n "$PKG_DIR" ] && [ -d "$PKG_DIR" ]; then
                 log_info "Manually deploying monokai flavor..."
-                mkdir -p "$FLAVOR_DIR"
+                ensure_dir_owned "$FLAVOR_DIR"
                 cp -r "$PKG_DIR"/* "$FLAVOR_DIR/"
             fi
         fi
