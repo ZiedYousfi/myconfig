@@ -36,6 +36,22 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Ensure sudo access and keep it alive
+check_sudo() {
+    log_info "This script requires sudo privileges for some operations."
+    log_info "You may be prompted for your password."
+
+    # Ask for sudo upfront
+    if sudo -v; then
+        # Keep-alive: update existing sudo time stamp until the script has finished
+        while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+        log_success "Sudo access granted"
+    else
+        log_error "Sudo access is required for this script to run correctly."
+        exit 1
+    fi
+}
+
 # Ensure XDG directories exist and have correct ownership
 ensure_dir_owned() {
     local dir="$1"
@@ -487,6 +503,52 @@ EOF
     log_success ".zshrc configured"
 }
 
+set_default_shell() {
+    local zsh_path
+    zsh_path=$(which zsh)
+
+    if [ -z "$zsh_path" ]; then
+        log_error "Zsh not found in PATH"
+        return 1
+    fi
+
+    # Check if zsh is already the default shell
+    if [[ "$SHELL" == *"/zsh" ]]; then
+        log_success "Zsh is already the default shell"
+        return 0
+    fi
+
+    log_info "Setting zsh as default shell ($zsh_path)..."
+
+    # Ensure zsh is in /etc/shells
+    if ! grep -Fxq "$zsh_path" /etc/shells; then
+        log_info "Adding $zsh_path to /etc/shells..."
+        echo "$zsh_path" | sudo tee -a /etc/shells > /dev/null
+    fi
+
+    # Try to use sudo chsh to avoid interaction if we have sudo access
+    if sudo -n true 2>/dev/null; then
+        if sudo chsh -s "$zsh_path" "$USER"; then
+            log_success "Zsh set as default shell via sudo"
+            export SHELL="$zsh_path"
+            return 0
+        fi
+    fi
+
+    # Fallback to interactive chsh if sudo failed or not available
+    if [ -t 0 ]; then
+        if chsh -s "$zsh_path"; then
+            log_success "Zsh set as default shell"
+            export SHELL="$zsh_path"
+        else
+            log_warning "Failed to set zsh as default shell"
+        fi
+    else
+        log_warning "Cannot change default shell in non-interactive mode without sudo"
+        log_info "Run 'sudo chsh -s $zsh_path $USER' manually to set zsh as your default shell"
+    fi
+}
+
 # ============================================================================
 # Oh My Tmux Installation
 # ============================================================================
@@ -770,7 +832,8 @@ main() {
     echo "║                  (Powered by GNU Stow)                         ║"
     echo "╚════════════════════════════════════════════════════════════════╝"
     echo ""
-
+    # Check for sudo access upfront
+    check_sudo
     # Check if running on macOS
     if [[ "$(uname)" != "Darwin" ]]; then
         log_error "This script is intended for macOS only."
@@ -790,6 +853,7 @@ main() {
     install_oh_my_zsh
     install_zsh_plugins
     configure_zshrc
+    set_default_shell
 
     # Setup tmux with Oh My Tmux (uses stow for tmux.conf.local)
     install_oh_my_tmux
