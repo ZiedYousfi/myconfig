@@ -40,66 +40,11 @@ jobs:
             -x "*__pycache__*" \
             -x "*.pyc"
 
-      - name: Generate release notes
-        id: release_notes
-        run: |
-          cat << 'EOF' > release_notes.md
-          ## Quick Start
-
-          Download and run the bootstrap script with one command:
-
-          ### macOS
-          ```bash
-          curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/bootstrap.sh | bash -s -- macos
-          ```
-
-          ### Ubuntu Server
-          ```bash
-          curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/bootstrap.sh | bash -s -- ubuntu
-          ```
-
-          ### Interactive Mode
-          ```bash
-          curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/bootstrap.sh | bash
-          ```
-
-          ## What's Included
-
-          - Complete dotfiles configuration (zsh, nvim, tmux, yazi, zed, ghostty)
-          - Platform-specific setup scripts
-          - Automated installation of development tools and packages
-          - Idempotent setup - safe to run multiple times
-
-          ## Manual Installation
-
-          If you prefer to download and inspect before running:
-
-          ```bash
-          # Download the archive
-          curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.tag_name }}/setup-config.zip
-
-          # Extract
-          unzip setup-config.zip -d setup-config
-          cd setup-config
-
-          # Run the appropriate install script
-          # For macOS:
-          ./macos/install.sh
-
-          # For Ubuntu Server:
-          ./ubuntu-server/install.sh
-          ```
-
-          ---
-          See [SPECS.md](https://github.com/${{ github.repository }}/blob/main/SPECS.md) for full configuration details.
-          EOF
-
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.tag.outputs.tag_name }}
-          name: Release ${{ steps.tag.outputs.tag_name }}
-          body_path: release_notes.md
+          name: ${{ steps.tag.outputs.tag_name }}
           files: setup-config.zip
           draft: false
           prerelease: false
