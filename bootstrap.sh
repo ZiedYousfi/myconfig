@@ -224,6 +224,47 @@ cleanup() {
     log_success "Cleanup complete"
 }
 
+ensure_dependencies() {
+    local platform="$1"
+    local missing_deps=()
+
+    if ! command -v curl &> /dev/null; then
+        missing_deps+=("curl")
+    fi
+
+    if ! command -v unzip &> /dev/null; then
+        missing_deps+=("unzip")
+    fi
+
+    if [ ${#missing_deps[@]} -eq 0 ]; then
+        return 0
+    fi
+
+    log_info "Missing required dependencies: ${missing_deps[*]}"
+
+    case $platform in
+        ubuntu)
+            log_info "Installing missing dependencies via apt-get..."
+            sudo apt-get update
+            sudo apt-get install -y "${missing_deps[@]}"
+            ;;
+        macos)
+            if command -v brew &> /dev/null; then
+                log_info "Installing missing dependencies via Homebrew..."
+                brew install "${missing_deps[@]}"
+            else
+                log_error "Missing dependencies ${missing_deps[*]} and Homebrew is not installed."
+                log_info "Please install Homebrew or manually install: ${missing_deps[*]}"
+                exit 1
+            fi
+            ;;
+        *)
+            log_error "Please manually install the following dependencies: ${missing_deps[*]}"
+            exit 1
+            ;;
+    esac
+}
+
 main() {
     print_banner
 
@@ -268,16 +309,8 @@ main() {
     log_info "Selected platform: ${BOLD}${platform}${NC}"
     echo ""
 
-    # Check for required commands
-    if ! command -v curl &> /dev/null; then
-        log_error "curl is required but not installed"
-        exit 1
-    fi
-
-    if ! command -v unzip &> /dev/null; then
-        log_error "unzip is required but not installed"
-        exit 1
-    fi
+    # Ensure required dependencies are installed
+    ensure_dependencies "$platform"
 
     # Get latest release
     local release_tag=$(get_latest_release_tag)
