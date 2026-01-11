@@ -1,0 +1,109 @@
+name: Bug Report
+description: Report a problem with the setup or bootstrap process
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this issue! Please fill out the information below to help us debug the problem.
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: Which platform are you installing on?
+      options:
+        - macOS
+        - Ubuntu Server
+        - Other Linux
+        - Other (please specify)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: installation-method
+    attributes:
+      label: Installation Method
+      description: How did you run the installation?
+      options:
+        - Bootstrap script (one-command)
+        - Manual installation (cloned repo)
+        - Downloaded release archive
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Please describe the issue you encountered.
+      placeholder: Tell us what went wrong!
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+      description: What was the expected behavior?
+      placeholder: What should have happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Run command '...'
+        2. See error '...'
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs
+      description: Please paste any error messages or logs
+      render: shell
+      placeholder: Paste error messages here
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Which version/tag did you install?
+      placeholder: "e.g., v1.0.0 or main branch"
+
+  - type: textarea
+    id: system-info
+    attributes:
+      label: System Information
+      description: Please provide system details
+      placeholder: |
+        - OS Version: macOS 14.0 / Ubuntu 22.04
+        - Shell: zsh 5.9
+        - Terminal: iTerm2 / Terminal.app / etc
+      value: |
+        - OS Version:
+        - Shell:
+        - Terminal:
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checklist
+      description: Please verify these items before submitting
+      options:
+        - label: I have checked existing issues for duplicates
+          required: true
+        - label: I have included error logs (if applicable)
+          required: false
+        - label: I can reproduce this issue consistently
+          required: false
