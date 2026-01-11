@@ -80,6 +80,9 @@ update_system() {
 install_brew_package() {
     local package="$1"
 
+    # Ensure Homebrew is in PATH
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" 2>/dev/null || true
+
     if brew list "$package" &>/dev/null; then
         log_success "$package is already installed"
     else
@@ -118,8 +121,8 @@ install_rustup() {
         log_success "Rustup is already installed"
     else
         log_info "Installing Rust via rustup..."
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        source "$HOME/.cargo/env"
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+        source "$HOME/.cargo/env" 2>/dev/null || true
         log_success "Rust installed"
     fi
 }
@@ -130,7 +133,7 @@ install_bun() {
         log_success "Bun is already installed"
     else
         log_info "Installing Bun..."
-        curl -fsSL https://bun.sh/install | bash
+        curl -fsSL https://bun.sh/install | bash -s -- -y </dev/null
         export BUN_INSTALL="$HOME/.bun"
         export PATH="$BUN_INSTALL/bin:$PATH"
         log_success "Bun installed"
@@ -168,7 +171,7 @@ install_uv() {
         log_success "uv is already installed"
     else
         log_info "Installing uv..."
-        curl -LsSf https://astral.sh/uv/install.sh | sh
+        curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --no-modify-path </dev/null
         export PATH="$HOME/.cargo/bin:$PATH"
         log_success "uv installed"
     fi
@@ -179,8 +182,17 @@ install_meson() {
         log_success "meson is already installed"
     else
         log_info "Installing meson via uv..."
-        uv tool install meson
-        log_success "meson installed"
+        # Ensure uv is in PATH
+        export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
+        if command -v uv &>/dev/null; then
+            uv tool install meson 2>/dev/null || {
+                log_warning "Failed to install meson via uv, skipping..."
+                return 0
+            }
+            log_success "meson installed"
+        else
+            log_warning "uv not found, skipping meson installation"
+        fi
     fi
 }
 
@@ -189,8 +201,17 @@ install_conan() {
         log_success "conan is already installed"
     else
         log_info "Installing conan via uv..."
-        uv tool install conan
-        log_success "conan installed"
+        # Ensure uv is in PATH
+        export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
+        if command -v uv &>/dev/null; then
+            uv tool install conan 2>/dev/null || {
+                log_warning "Failed to install conan via uv, skipping..."
+                return 0
+            }
+            log_success "conan installed"
+        else
+            log_warning "uv not found, skipping conan installation"
+        fi
     fi
 }
 
@@ -217,20 +238,30 @@ install_packages() {
     install_wget
     install_gcc
     install_unzip
+
+    log_info "Installing shell and terminal tools..."
     install_zsh
     install_tmux
+
+    log_info "Installing editor and programming languages..."
     install_neovim
     install_python
     install_go
     install_llvm
+
+    log_info "Installing Rust toolchain..."
     install_rustup
+
+    log_info "Installing Bun runtime..."
     install_bun
 
     # Java and build tools
+    log_info "Installing Java and build tools..."
     install_openjdk
     install_maven
 
     # Modern CLI tools
+    log_info "Installing modern CLI tools..."
     install_zoxide
     install_eza
     install_fd
@@ -240,11 +271,14 @@ install_packages() {
     install_lazygit
     install_btop
     install_fastfetch
+
+    log_info "Installing Python tools..."
     install_uv
     install_meson
     install_conan
 
     # Yazi file manager and dependencies
+    log_info "Installing Yazi file manager and dependencies..."
     install_yazi
     install_ffmpeg
     install_p7zip
@@ -303,57 +337,88 @@ stow_package() {
     done
     echo ""
 
-    # Ask user what to do
-    echo -e "${BLUE}How would you like to resolve this conflict?${NC}"
-    echo "  [a] Adopt   - Keep existing files and bring them into ~/dotfiles"
-    echo "               (Use this if you've customized these configs)"
-    echo "  [o] Override - Delete existing files and use ~/dotfiles versions"
-    echo "               (Use this to get fresh configs from the repo)"
-    echo "  [s] Skip    - Don't stow this package"
-    echo ""
+    # Check if running in interactive mode
+    if [ -t 0 ]; then
+        # Interactive mode - ask user what to do
+        echo -e "${BLUE}How would you like to resolve this conflict?${NC}"
+        echo "  [a] Adopt   - Keep existing files and bring them into ~/dotfiles"
+        echo "               (Use this if you've customized these configs)"
+        echo "  [o] Override - Delete existing files and use ~/dotfiles versions"
+        echo "               (Use this to get fresh configs from the repo)"
+        echo "  [s] Skip    - Don't stow this package"
+        echo ""
 
-    while true; do
-        read -r -p "Your choice [a/o/s]: " choice
-        case "$choice" in
-            [aA])
-                log_info "Adopting existing files for $package..."
-                stow --dir="$USER_DOTFILES_DIR" --target="$target" --adopt "$package"
-                stow --dir="$USER_DOTFILES_DIR" --target="$target" --restow --no-folding "$package"
-                log_success "$package adopted and restowed successfully"
-                return 0
-                ;;
-            [oO])
-                log_info "Overriding existing files for $package..."
-                # Find and remove conflicting files
-                local stow_sim_output
-                stow_sim_output=$(stow --dir="$USER_DOTFILES_DIR" --target="$target" --simulate --restow --no-folding "$package" 2>&1 || true)
+        while true; do
+            read -r -p "Your choice [a/o/s]: " choice
+            case "$choice" in
+                [aA])
+                    log_info "Adopting existing files for $package..."
+                    stow --dir="$USER_DOTFILES_DIR" --target="$target" --adopt "$package"
+                    stow --dir="$USER_DOTFILES_DIR" --target="$target" --restow --no-folding "$package"
+                    log_success "$package adopted and restowed successfully"
+                    return 0
+                    ;;
+                [oO])
+                    log_info "Overriding existing files for $package..."
+                    # Find and remove conflicting files
+                    local stow_sim_output
+                    stow_sim_output=$(stow --dir="$USER_DOTFILES_DIR" --target="$target" --simulate --restow --no-folding "$package" 2>&1 || true)
 
-                local conflicts
-                conflicts=$(echo "$stow_sim_output" | grep -oE "existing target is not owned by stow: [^ ]+" | sed 's/existing target is not owned by stow: //')
-                conflicts="$conflicts $(echo "$stow_sim_output" | grep -oE "over existing target [^ ]+ since" | sed 's/over existing target //' | sed 's/ since//')"
+                    local conflicts
+                    conflicts=$(echo "$stow_sim_output" | grep -oE "existing target is not owned by stow: [^ ]+" | sed 's/existing target is not owned by stow: //')
+                    conflicts="$conflicts $(echo "$stow_sim_output" | grep -oE "over existing target [^ ]+ since" | sed 's/over existing target //' | sed 's/ since//')"
 
-                for conflict_file in $conflicts; do
-                    [ -z "$conflict_file" ] && continue
-                    local full_path="$target/$conflict_file"
-                    if [ -e "$full_path" ] || [ -L "$full_path" ]; then
-                        log_info "Removing $full_path..."
-                        rm -rf "$full_path"
-                    fi
-                done
+                    for conflict_file in $conflicts; do
+                        [ -z "$conflict_file" ] && continue
+                        local full_path="$target/$conflict_file"
+                        if [ -e "$full_path" ] || [ -L "$full_path" ]; then
+                            log_info "Removing $full_path..."
+                            rm -rf "$full_path"
+                        fi
+                    done
 
-                stow --dir="$USER_DOTFILES_DIR" --target="$target" --restow --no-folding "$package"
-                log_success "$package stowed successfully (existing files overridden)"
-                return 0
-                ;;
-            [sS])
-                log_warning "Skipping $package"
-                return 0
-                ;;
-            *)
-                echo "Please enter 'a' for adopt, 'o' for override, or 's' for skip."
-                ;;
-        esac
-    done
+                    stow --dir="$USER_DOTFILES_DIR" --target="$target" --restow --no-folding "$package"
+                    log_success "$package stowed successfully (existing files overridden)"
+                    return 0
+                    ;;
+                [sS])
+                    log_warning "Skipping $package"
+                    return 0
+                    ;;
+                *)
+                    echo "Please enter 'a' for adopt, 'o' for override, or 's' for skip."
+                    ;;
+            esac
+        done
+    else
+        # Non-interactive mode - use adopt strategy (safer default)
+        log_info "Non-interactive mode: adopting existing files for $package..."
+        stow --dir="$USER_DOTFILES_DIR" --target="$target" --adopt "$package" 2>&1 || {
+            log_warning "Failed to adopt $package, trying to override..."
+            # Find and remove conflicting files
+            local stow_sim_output
+            stow_sim_output=$(stow --dir="$USER_DOTFILES_DIR" --target="$target" --simulate --restow --no-folding "$package" 2>&1 || true)
+
+            local conflicts
+            conflicts=$(echo "$stow_sim_output" | grep -oE "existing target is not owned by stow: [^ ]+" | sed 's/existing target is not owned by stow: //')
+            conflicts="$conflicts $(echo "$stow_sim_output" | grep -oE "over existing target [^ ]+ since" | sed 's/over existing target //' | sed 's/ since//')"
+
+            for conflict_file in $conflicts; do
+                [ -z "$conflict_file" ] && continue
+                local full_path="$target/$conflict_file"
+                if [ -e "$full_path" ] || [ -L "$full_path" ]; then
+                    log_info "Removing $full_path..."
+                    rm -rf "$full_path"
+                fi
+            done
+        }
+        stow --dir="$USER_DOTFILES_DIR" --target="$target" --restow --no-folding "$package" 2>&1 || {
+            log_warning "Failed to stow $package, skipping..."
+            return 0
+        }
+        log_success "$package stowed successfully"
+        return 0
+    fi
 }
 
 # ============================================================================
@@ -432,8 +497,15 @@ set_default_shell() {
         log_success "Zsh is already the default shell"
     else
         log_info "Setting zsh as default shell..."
-        chsh -s "$(which zsh)"
-        log_success "Zsh set as default shell"
+        # Try to change shell, but handle cases where it requires password
+        if [ -t 0 ]; then
+            # Interactive mode - can prompt for password
+            chsh -s "$(which zsh)" && log_success "Zsh set as default shell" || log_warning "Failed to set zsh as default shell (requires password)"
+        else
+            # Non-interactive mode - skip if requires password
+            log_warning "Cannot change default shell in non-interactive mode"
+            log_info "Run 'chsh -s \$(which zsh)' manually to set zsh as your default shell"
+        fi
     fi
 }
 
