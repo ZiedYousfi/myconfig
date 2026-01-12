@@ -114,9 +114,9 @@ function Set-StartupShortcut {
     $startupFolder = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"
     $shortcutPath = Join-Path $startupFolder "$Name.lnk"
 
+    # Always recreate shortcut to ensure it points to the correct path
     if (Test-Path $shortcutPath) {
-        Write-Log "Shortcut already exists: $shortcutPath" -Level 'INFO'
-        return
+        Remove-Item -Path $shortcutPath -Force
     }
 
     $wshell = New-Object -ComObject WScript.Shell
@@ -204,12 +204,51 @@ function Install-WindowsWM {
     Copy-Item -Path "$WindowsDotfilesDir\zebar\*" -Destination $zebarConfigDir -Recurse -Force
     Write-Log "Copied Zebar widgets to: $zebarConfigDir" -Level 'SUCCESS'
 
-    $glazewmExePath = "$env:LOCALAPPDATA\Programs\glazewm\glazewm.exe"
-    if (Test-Path $glazewmExePath) {
-        Set-StartupShortcut -Name "GlazeWM" -TargetPath $glazewmExePath -Arguments "start"
+    Write-Log ""
+    Write-Log "Setting up startup shortcuts..." -Level 'INFO'
+
+    # 1. GlazeWM
+    $glazewmExePath = ""
+    if (Test-Command "glazewm") {
+        $glazewmExePath = (Get-Command glazewm).Source
+    }
+
+    if (-not $glazewmExePath -or -not (Test-Path $glazewmExePath)) {
+        $paths = @(
+            "$env:LOCALAPPDATA\Programs\glazewm\glazewm.exe",
+            "$env:ProgramFiles\glazewm\glazewm.exe"
+        )
+        foreach ($p in $paths) {
+            if (Test-Path $p) { $glazewmExePath = $p; break }
+        }
+    }
+
+    if ($glazewmExePath -and (Test-Path $glazewmExePath)) {
+        Set-StartupShortcut -Name "GlazeWM" -TargetPath $glazewmExePath
     } else {
-        Write-Log "GlazeWM executable not found at: $glazewmExePath" -Level 'WARNING'
-        Write-Log "GlazeWM may not be installed correctly. Please check installation." -Level 'WARNING'
+        Write-Log "GlazeWM executable not found. Please ensure it is installed." -Level 'WARNING'
+    }
+
+    # 2. Zebar
+    $zebarExePath = ""
+    if (Test-Command "zebar") {
+        $zebarExePath = (Get-Command zebar).Source
+    }
+
+    if (-not $zebarExePath -or -not (Test-Path $zebarExePath)) {
+        $paths = @(
+            "$env:LOCALAPPDATA\Programs\zebar\zebar.exe",
+            "$env:ProgramFiles\zebar\zebar.exe"
+        )
+        foreach ($p in $paths) {
+            if (Test-Path $p) { $zebarExePath = $p; break }
+        }
+    }
+
+    if ($zebarExePath -and (Test-Path $zebarExePath)) {
+        Set-StartupShortcut -Name "Zebar" -TargetPath $zebarExePath
+    } else {
+        Write-Log "Zebar executable not found. Please ensure it is installed." -Level 'WARNING'
     }
 
     Write-Log ""

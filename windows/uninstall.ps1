@@ -110,6 +110,7 @@ function Main {
 
     Write-Log "Removing startup shortcuts..." -Level 'INFO'
     Remove-StartupShortcut -Name "GlazeWM"
+    Remove-StartupShortcut -Name "Zebar"
 
     if ($RemoveWM) {
         Write-Log "" -Level 'WARNING'
