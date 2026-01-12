@@ -23,7 +23,6 @@ curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.
 ### Windows
 
 ```powershell
-# Run directly in PowerShell (recommended)
 powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.ps1 | iex"
 ```
 
