@@ -1,0 +1,25 @@
+# Auto detect text files and normalize line endings to LF in the repository
+* text=auto
+
+# PowerShell files should always use CRLF line endings
+*.ps1 text eol=crlf
+
+# Shell scripts should always use LF line endings
+*.sh text eol=lf
+
+# Explicitly declare text files
+*.md text
+*.yaml text
+*.yml text
+*.json text
+*.css text
+*.html text
+*.txt text
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
