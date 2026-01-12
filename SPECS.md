@@ -18,6 +18,7 @@ Platform-specific implementations are documented in their respective sections.
 - [Development Languages & Runtimes](#development-languages--runtimes)
 - [Platform-Specific: macOS](#platform-specific-macos)
 - [Platform-Specific: Ubuntu Server](#platform-specific-ubuntu-server)
+- [Platform-Specific: Windows](#platform-specific-windows)
 
 ---
 
@@ -281,7 +282,7 @@ zed/
 
 ### Visual Studio Code
 
-GUI editor with extensive extension ecosystem.
+GUI editor with extensive extension ecosystem. Visual Studio Code is used **natively** on Windows.
 
 **Key Extensions:**
 
@@ -323,7 +324,7 @@ System status bar displaying:
 - System stats (CPU, RAM, Battery)
 - Date and time
 - Volume control
-- Quick actions (restart WM, mission control)
+- Quick actions (restart WM, mission control/spaces overview)
 
 **Theme:** Monokai
 
@@ -537,6 +538,37 @@ The dotfiles for Ghostty and Zed are still stowed (for future use if GUI is need
 
 ---
 
+## Platform-Specific: Windows
+
+This section documents components specific to Windows.
+
+### Window Management: Glaze WM
+
+[Glaze WM](https://github.com/glazewm/glazewm) - A tiling window manager for Windows inspired by i3.
+
+| Setting | Value |
+|---------|-------|
+| Layout | Tiling |
+| Command | `glazewm` |
+
+### Status Bar: zebar
+
+[zebar](https://github.com/glazewm/zebar) - A customizable status bar for Windows (usually paired with Glaze WM).
+
+| Setting | Value |
+|---------|-------|
+| Theme | Monokai |
+
+### Windows Subsystem for Linux (WSL)
+
+For all development tools, shell, and CLI utilities, Windows utilizes the **Ubuntu configuration** through WSL.
+
+- **Distribution:** Ubuntu
+- **Configuration:** Shared with [Ubuntu Server](#platform-specific-ubuntu-server)
+- **Integration:** VS Code (native) connects to WSL for development.
+
+---
+
 ## Dotfiles Summary
 
 ### Repository Structure
@@ -557,7 +589,7 @@ setup-config/
 │   └── dotfiles/               # macOS-only dotfiles
 │       ├── sketchybar/
 │       └── yabai/
-└── ubuntu-server/                     # Ubuntu Server-specific
+└── ubuntu-server/               # Ubuntu Server & Windows (WSL) specific
     ├── install.sh
     └── uninstall.sh
 ```
