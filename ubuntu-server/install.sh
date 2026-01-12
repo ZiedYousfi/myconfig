@@ -127,6 +127,22 @@ install_brew_package() {
     fi
 }
 
+install_uv_package() {
+    local package="$1"
+
+    if uv tool list | grep -q "^$package "; then
+        log_success "$package (uv) is already installed"
+    else
+        log_info "Installing $package (uv)..."
+        if uv tool install "$package"; then
+            log_success "$package (uv) installed"
+        else
+            log_error "Failed to install $package (uv)"
+            return 1
+        fi
+    fi
+}
+
 # ============================================================================
 # Individual Package Installation Functions
 # ============================================================================
@@ -145,38 +161,19 @@ install_unzip() { install_brew_package "unzip"; }
 install_neovim() { install_brew_package "neovim"; }
 
 # Python
-install_python() { install_brew_package "python@3.12"; }
+install_python() { install_brew_package "python"; }
 
 # Go
 install_go() { install_brew_package "go"; }
 
 # Rust
-install_rustup() {
-    if command -v rustup &>/dev/null; then
-        log_success "Rustup is already installed"
-    else
-        log_info "Installing Rust via rustup..."
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
-        source "$HOME/.cargo/env" 2>/dev/null || true
-        log_success "Rust installed"
-    fi
-}
+install_rustup() { install_brew_package "rustup-init"; }
 
 # Bun
-install_bun() {
-    if command -v bun &>/dev/null; then
-        log_success "Bun is already installed"
-    else
-        log_info "Installing Bun..."
-        curl -fsSL https://bun.sh/install | bash -s -- -y </dev/null
-        export BUN_INSTALL="$HOME/.bun"
-        export PATH="$BUN_INSTALL/bin:$PATH"
-        log_success "Bun installed"
-    fi
-}
+install_bun() { install_brew_package "oven-sh/bun/bun"; }
 
 # Java and build tools
-install_openjdk() { install_brew_package "openjdk@21"; }
+install_openjdk() { install_brew_package "openjdk"; }
 install_maven() { install_brew_package "maven"; }
 
 # LLVM
@@ -203,63 +200,25 @@ install_fastfetch() { install_brew_package "fastfetch"; }
 
 install_1password_cli() { install_brew_package "1password-cli"; }
 
-install_uv() {
-    if command -v uv &>/dev/null; then
-        log_success "uv is already installed"
-    else
-        log_info "Installing uv..."
-        curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --no-modify-path </dev/null
-        export PATH="$HOME/.cargo/bin:$PATH"
-        log_success "uv installed"
-    fi
-}
+install_uv() { install_brew_package "uv"; }
 
-install_meson() {
-    if command -v meson &>/dev/null; then
-        log_success "meson is already installed"
-    else
-        log_info "Installing meson via uv..."
-        # Ensure uv is in PATH
-        export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
-        if command -v uv &>/dev/null; then
-            uv tool install meson 2>/dev/null || {
-                log_warning "Failed to install meson via uv, skipping..."
-                return 0
-            }
-            log_success "meson installed"
-        else
-            log_warning "uv not found, skipping meson installation"
-        fi
-    fi
-}
+install_meson() { install_uv_package "meson"; }
 
-install_conan() {
-    if command -v conan &>/dev/null; then
-        log_success "conan is already installed"
-    else
-        log_info "Installing conan via uv..."
-        # Ensure uv is in PATH
-        export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
-        if command -v uv &>/dev/null; then
-            uv tool install conan 2>/dev/null || {
-                log_warning "Failed to install conan via uv, skipping..."
-                return 0
-            }
-            log_success "conan installed"
-        else
-            log_warning "uv not found, skipping conan installation"
-        fi
-    fi
-}
+install_conan() { install_uv_package "conan"; }
 
 # Yazi file manager and dependencies
 install_yazi() { install_brew_package "yazi"; }
 
 install_ffmpeg() { install_brew_package "ffmpeg"; }
-install_p7zip() { install_brew_package "p7zip"; }
+install_sevenzip() { install_brew_package "sevenzip"; }
 install_jq() { install_brew_package "jq"; }
 install_poppler() { install_brew_package "poppler"; }
+install_resvg() { install_brew_package "resvg"; }
 install_imagemagick() { install_brew_package "imagemagick"; }
+install_nerd_font_symbols() { install_brew_package "font-symbols-only-nerd-font"; }
+
+# Development tools
+install_opencode() { install_brew_package "sst/tap/opencode"; }
 
 # ============================================================================
 # Install All Packages
@@ -319,10 +278,20 @@ install_packages() {
     log_info "Installing Yazi file manager and dependencies..."
     install_yazi
     install_ffmpeg
-    install_p7zip
+    install_sevenzip
     install_jq
     install_poppler
+    install_resvg
     install_imagemagick
+    install_nerd_font_symbols
+
+    # GUI Applications (optional, may not be available on all Linux systems)
+    install_ghostty
+    install_zed
+    install_vscode
+
+    # Development tools
+    install_opencode
 
     log_success "All packages installed"
 }
