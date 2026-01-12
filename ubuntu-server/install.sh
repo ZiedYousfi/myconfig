@@ -5,7 +5,7 @@
 # Uses Homebrew for package management and GNU Stow for dotfiles
 # Dotfiles are copied to ~/dotfiles and stowed from there
 
-set -e
+# set -e (Disabled to ensure script continues even if some packages fail)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
@@ -119,8 +119,11 @@ install_brew_package() {
         log_success "$package is already installed"
     else
         log_info "Installing $package..."
-        brew install "$package"
-        log_success "$package installed"
+        if brew install "$package"; then
+            log_success "$package installed"
+        else
+            log_error "Failed to install $package"
+        fi
     fi
 }
 

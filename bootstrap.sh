@@ -7,7 +7,7 @@
 #   curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | bash -s -- macos
 #   curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | bash -s -- ubuntu
 
-set -e
+# set -e (Disabled to ensure script continues even if some steps fail)
 
 # Colors for output
 RED='\033[0;31m'
@@ -359,7 +359,7 @@ main() {
 }
 
 # Set up error handling
-trap 'log_error "An error occurred. Cleaning up..."; cleanup; exit 1' ERR
+# trap 'log_error "An error occurred. Cleaning up..."; cleanup; exit 1' ERR
 
 # Run main function
 main "$@"

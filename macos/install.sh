@@ -5,7 +5,7 @@
 # Uses GNU Stow for dotfiles management
 # Dotfiles are copied to ~/dotfiles and stowed from there
 
-set -e
+# set -e (Disabled to ensure script continues even if some packages fail)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
@@ -105,16 +105,24 @@ install_brew_package() {
             log_success "$package (cask) is already installed"
         else
             log_info "Installing $package (cask)..."
-            brew install --cask "$package"
-            log_success "$package (cask) installed"
+            if brew install --cask "$package"; then
+                log_success "$package (cask) installed"
+            else
+                log_error "Failed to install $package (cask)"
+                return 1
+            fi
         fi
     else
         if brew list "$package" &>/dev/null; then
             log_success "$package is already installed"
         else
             log_info "Installing $package..."
-            brew install "$package"
-            log_success "$package installed"
+            if brew install "$package"; then
+                log_success "$package installed"
+            else
+                log_error "Failed to install $package"
+                return 1
+            fi
         fi
     fi
 }
@@ -126,8 +134,12 @@ install_uv_package() {
         log_success "$package (uv) is already installed"
     else
         log_info "Installing $package (uv)..."
-        uv tool install "$package"
-        log_success "$package (uv) installed"
+        if uv tool install "$package"; then
+            log_success "$package (uv) installed"
+        else
+            log_error "Failed to install $package (uv)"
+            return 1
+        fi
     fi
 }
 
@@ -146,7 +158,7 @@ install_python() { install_brew_package "python"; }
 install_go() { install_brew_package "go"; }
 install_llvm() { install_brew_package "llvm"; }
 install_rustup() { install_brew_package "rustup-init"; }
-install_bun() { install_brew_package "bun"; }
+install_bun() { install_brew_package "oven-sh/bun/bun"; }
 
 # Java and build tools
 install_openjdk() { install_brew_package "openjdk"; }
@@ -188,8 +200,11 @@ install_yabai() {
         log_success "yabai is already installed"
     else
         log_info "Installing yabai..."
-        brew install asmvik/formulae/yabai
-        log_success "yabai installed"
+        if brew install asmvik/formulae/yabai; then
+            log_success "yabai installed"
+        else
+            log_error "Failed to install yabai"
+        fi
     fi
 }
 
@@ -199,8 +214,11 @@ install_sketchybar() {
     else
         log_info "Installing sketchybar..."
         brew tap FelixKratz/formulae
-        brew install sketchybar
-        log_success "sketchybar installed"
+        if brew install sketchybar; then
+            log_success "sketchybar installed"
+        else
+            log_error "Failed to install sketchybar"
+        fi
     fi
 }
 
@@ -210,8 +228,11 @@ install_sketchybar_system_stats() {
     else
         log_info "Installing sketchybar-system-stats..."
         brew tap joncrangle/tap
-        brew install sketchybar-system-stats
-        log_success "sketchybar-system-stats installed"
+        if brew install sketchybar-system-stats; then
+            log_success "sketchybar-system-stats installed"
+        else
+            log_error "Failed to install sketchybar-system-stats"
+        fi
     fi
 }
 
@@ -220,8 +241,11 @@ install_opencode() {
         log_success "SST opencode is already installed"
     else
         log_info "Installing SST opencode..."
-        brew install sst/tap/opencode
-        log_success "SST opencode installed"
+        if brew install sst/tap/opencode; then
+            log_success "SST opencode installed"
+        else
+            log_error "Failed to install SST opencode"
+        fi
     fi
 }
 
