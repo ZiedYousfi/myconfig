@@ -314,7 +314,8 @@ main() {
         fi
     else
         # Normalize platform argument
-        case "${platform,,}" in
+        platform=$(echo "$platform" | tr '[:upper:]' '[:lower:]')
+        case "$platform" in
             macos|mac|darwin)
                 platform="macos"
                 ;;
