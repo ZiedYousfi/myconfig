@@ -270,10 +270,10 @@ function Install-WSLUbuntu {
 
 function Main {
     Write-Host ""
-    Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║       Windows Development Environment Setup                         ║" -ForegroundColor Cyan
-    Write-Host "║          (GlazeWM + Zebar + WSL)                        ║" -ForegroundColor Cyan
-    Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "+--------------------------------------------------------------+" -ForegroundColor Cyan
+    Write-Host "|       Windows Development Environment Setup                  |" -ForegroundColor Cyan
+    Write-Host "|          (GlazeWM + Zebar + WSL)                             |" -ForegroundColor Cyan
+    Write-Host "+--------------------------------------------------------------+" -ForegroundColor Cyan
     Write-Host ""
 
     if (-not (Test-Command 'winget')) {
@@ -291,9 +291,9 @@ function Main {
     }
 
     Write-Host ""
-    Write-Host "╔═══════════════════════════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "║                  Installation Complete! 🎉                          ║" -ForegroundColor Green
-    Write-Host "╚═══════════════════════════════════════════════════════════════╝" -ForegroundColor Green
+    Write-Host "+---------------------------------------------------------------+" -ForegroundColor Green
+    Write-Host "|                  Installation Complete!                       |" -ForegroundColor Green
+    Write-Host "+---------------------------------------------------------------+" -ForegroundColor Green
     Write-Host ""
     Write-Log "Next steps:" -Level 'INFO'
     Write-Log "  1. Log out and log back in to start GlazeWM" -Level 'INFO'

@@ -32,22 +32,22 @@ function Write-Log {
         [ValidateSet('INFO', 'SUCCESS', 'WARNING', 'ERROR')][string]$Level = 'INFO'
     )
     switch ($Level) {
-        'SUCCESS' { Write-Host "[✓] $Message" -ForegroundColor $Colors.Success }
+        'SUCCESS' { Write-Host "[OK] $Message" -ForegroundColor $Colors.Success }
         'WARNING' { Write-Host "[WARNING] $Message" -ForegroundColor $Colors.Warning }
-        'ERROR'   { Write-Host "[✗] $Message" -ForegroundColor $Colors.Error }
+        'ERROR'   { Write-Host "[FAIL] $Message" -ForegroundColor $Colors.Error }
         default    { Write-Host "[INFO] $Message" -ForegroundColor $Colors.Info }
     }
 }
 
 function Print-Banner {
     Write-Host @"
-╔═══════════════════════════════════════════════════════════╗
-║                                                           ║
-║        Setup Configuration Bootstrap Script               ║
-║                                                           ║
-║        Automated Development Environment Setup            ║
-║                                                           ║
-╚═══════════════════════════════════════════════════════════╝
++-----------------------------------------------------------+
+|                                                           |
+|        Setup Configuration Bootstrap Script               |
+|                                                           |
+|        Automated Development Environment Setup            |
+|                                                           |
++-----------------------------------------------------------+
 "@ -ForegroundColor Cyan
 }
 
