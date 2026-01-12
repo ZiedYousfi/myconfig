@@ -639,3 +639,5 @@ A consistent Monokai theme is applied across all components:
 - Sketchybar (UI elements)
 - Yazi (file manager flavor)
 - Zed (Zedokai Darker Classic variant)
+- Zebar (status bar)
+- Glaze WM

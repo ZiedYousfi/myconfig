@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" type="text/css" href="./monokai-statusbar.css" />
+  <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-type="module">
+    import React, { useState, useEffect } from 'https://esm.sh/react@18?dev';
+    import { createRoot } from 'https://esm.sh/react-dom@18/client?dev';
+    import * as zebar from 'https://esm.sh/zebar@3.0';
+
+    createRoot(document.getElementById('root')).render(<App />);
+
+    const providers = zebar.createProviderGroup({
+      glazewm: { type: 'glazewm' },
+      cpu: { type: 'cpu', refreshInterval: 2000 },
+      memory: { type: 'memory', refreshInterval: 2000 },
+      battery: { type: 'battery', refreshInterval: 10000 },
+      audio: { type: 'audio' },
+      network: { type: 'network', refreshInterval: 2000 },
+      date: { type: 'date', formatting: 'EEE d MMM' },
+      time: { type: 'date', formatting: 't' }
+    });
+
+    function App() {
+      const [output, setOutput] = useState(providers.outputMap);
+      const [volume, setVolume] = useState(output.audio?.defaultPlaybackDevice?.volume || 50);
+
+      useEffect(() => {
+        providers.onOutput(() => setOutput(providers.outputMap));
+      }, []);
+
+      useEffect(() => {
+        if (output.audio?.defaultPlaybackDevice?.volume != null) {
+          setVolume(output.audio.defaultPlaybackDevice.volume);
+        }
+      }, [output.audio]);
+
+      function getNetworkIcon() {
+        const type = output.network?.defaultInterface?.type;
+        const strength = output.network?.defaultGateway?.signalStrength;
+
+        if (type === 'ethernet') return '🔌';
+        if (type === 'wifi') {
+          if (strength >= 80) return '📶';
+          if (strength >= 65) return '📶';
+          if (strength >= 40) return '📶';
+          return '📶';
+        }
+        return '❌';
+      }
+
+      function getBatteryIcon() {
+        const pct = output.battery?.chargePercent || 0;
+        const charging = output.battery?.isCharging;
+
+        if (pct > 90) return charging ? '🔌🔋' : '🔋';
+        if (pct > 70) return charging ? '🔌🔋' : '🔋';
+        if (pct > 40) return charging ? '🔌🔋' : '🔋';
+        if (pct > 20) return charging ? '🔌🔋' : '🔋';
+        return charging ? '🔌🪫' : '🪫';
+      }
+
+      return (
+        <div className="app">
+          <div className="left">
+            {output.glazewm && (
+              <div className="workspaces">
+                {output.glazewm.currentWorkspaces.map(ws => (
+                  <button
+                    className={`workspace ${ws.hasFocus ? 'focused' : ''} ${ws.isDisplayed ? 'displayed' : ''}`}
+                    onClick={() => output.glazewm.runCommand(`focus --workspace ${ws.name}`)}
+                    key={ws.name}
+                  >
+                    {ws.displayName ?? ws.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="center">
+            <div className="clock">
+              <div className="date">{output.date?.formatted}</div>
+              <div className="time">{output.time?.formatted}</div>
+            </div>
+          </div>
+
+          <div className="right">
+            {output.glazewm && (
+              <button
+                className={`tiling-direction ${output.glazewm.tilingDirection}`}
+                onClick={() => output.glazewm.runCommand('toggle-tiling-direction')}
+              >
+                {output.glazewm.tilingDirection === 'horizontal' ? '↔' : '↕'}
+              </button>
+            )}
+
+            {output.network && (
+              <div className="stat network">
+                {getNetworkIcon()}
+              </div>
+            )}
+
+            {output.audio && (
+              <div className="stat volume">
+                <button className="volume-toggle" onClick={() => {
+                  const newVol = volume > 0 ? 0 : 50;
+                  output.audio.setVolume?.(newVol);
+                  setVolume(newVol);
+                }}>
+                  {volume === 0 ? '🔇' : '🔊'}
+                </button>
+                <span className="value">{volume}%</span>
+              </div>
+            )}
+
+            {output.memory && (
+              <div className={`stat memory ${output.memory.usage > 85 ? 'high-usage' : ''}`}>
+                <span className="icon">💾</span>
+                <span className="value">{Math.round(output.memory.usage)}%</span>
+              </div>
+            )}
+
+            {output.cpu && (
+              <div className={`stat cpu ${output.cpu.usage > 85 ? 'high-usage' : ''}`}>
+                <span className="icon">⚡</span>
+                <span className="value">{Math.round(output.cpu.usage)}%</span>
+              </div>
+            )}
+
+            {output.battery && (
+              <div className="stat battery">
+                {getBatteryIcon()}
+                <span className="value">{Math.round(output.battery.chargePercent)}%</span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+  </script>
+</body>
+</html>

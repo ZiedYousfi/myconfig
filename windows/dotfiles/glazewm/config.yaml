@@ -1,0 +1,297 @@
+# GlazeWM Configuration - Monokai Theme
+# Based on official Monokai color palette
+# Location: %USERPROFILE%\.glzr\glazewm\config.yaml
+
+# ============================================================================
+# Monokai Color Palette
+# ============================================================================
+monokai:
+  background: "#272822"      # Dark background
+  foreground: "#f8f8f2"      # Primary text
+  pink: "#f92672"           # Accents, highlights, focused borders
+  orange: "#fd971f"         # Warnings, secondary accents
+  green: "#a6e22e"          # Success, active states
+  cyan: "#66d9ef"           # Info, links
+  yellow: "#e6db74"         # Strings, emphasis
+  purple: "#ae81ff"         # Numbers, constants
+  comment: "#75715e"         # Secondary text, inactive elements
+
+# ============================================================================
+# General Settings
+# ============================================================================
+general:
+  # Auto-start Zebar status bar
+  startup_commands: ["shell-exec zebar"]
+
+  # Show all windows in taskbar (false = only GlazeWM managed windows)
+  show_all_in_taskbar: false
+
+  # Auto-focus windows under cursor
+  focus_follows_cursor: false
+
+  # Toggle workspace when refocusing on existing workspace
+  toggle_workspace_on_refocus: false
+
+  # Cursor jump behavior
+  cursor_jump:
+    enabled: true
+    trigger: "monitor_focus"
+
+  # Window hiding method for toggling visibility
+  hide_method: "cloak"
+
+  # Show floating windows on top of tiling windows
+  show_floating_on_top: true
+
+# ============================================================================
+# Window Gaps (BSP layout spacing)
+# ============================================================================
+gaps:
+  # Gap between adjacent windows
+  inner_gap: "20px"
+
+  # Gap between windows and screen edges (top right bottom left)
+  outer_gap:
+    top: "20px"
+    right: "0px"
+    bottom: "0px"
+    left: "0px"
+
+  # Scale gaps with DPI (recommended for high-DPI displays)
+  scale_with_dpi: true
+
+# ============================================================================
+# Window Effects (borders, transparency, shadows)
+# ============================================================================
+window_effects:
+  focused_window:
+    # Active window border
+    border:
+      enabled: true
+      color: *monokai.cyan
+      width: "2px"
+
+    # Hide title bar for focused windows (cleaner look)
+    hide_title_bar:
+      enabled: false
+
+    # Window corner style
+    corner_style:
+      enabled: true
+      style: "square"    # Options: "square", "rounded", "squircle"
+
+    # Window transparency (0% = fully opaque, 100% = fully transparent)
+    transparency:
+      enabled: false
+      opacity: "100%"
+
+  other_windows:
+    # Inactive window border
+    border:
+      enabled: true
+      color: *monokai.comment
+      width: "1px"
+
+    hide_title_bar:
+      enabled: false
+
+    corner_style:
+      enabled: true
+      style: "square"
+
+    transparency:
+      enabled: false
+      opacity: "0%"     # Fully opaque for inactive windows
+
+# ============================================================================
+# Workspaces (BSP workspace configuration)
+# ============================================================================
+workspaces:
+  - name: "1"
+    display_name: "1"
+  - name: "2"
+    display_name: "2"
+  - name: "3"
+    display_name: "3"
+  - name: "4"
+    display_name: "4"
+  - name: "5"
+    display_name: "5"
+  - name: "6"
+    display_name: "6"
+  - name: "7"
+    display_name: "7"
+  - name: "8"
+    display_name: "8"
+  - name: "9"
+    display_name: "9"
+
+# ============================================================================
+# Window Rules (application-specific behavior)
+# ============================================================================
+window_rules:
+  # Ignore Zebar (status bar)
+  - commands: ["ignore"]
+    match:
+      - window_process: { equals: "zebar" }
+
+  # Float Task Manager (requires admin)
+  - commands: ["set floating"]
+    match:
+      - window_process: { equals: "Taskmgr" }
+
+  # Float Windows Store apps (XAML islands)
+  - commands: ["set floating"]
+    match:
+      - window_class: { regex: "(ApplicationFrameWindow|Windows.UI.Core.CoreWindow)" }
+
+  # Float Steam and games
+  - commands: ["set floating"]
+    match:
+      - window_process: { regex: "(steam|Content Manager Safe|.*\\.exe)" }
+
+  # Move communication apps to workspace 1
+  - commands: ["move to workspace 1", "focus workspace 1"]
+    match:
+      - window_process: { regex: "(teams|discord|slack|telegram)" }
+
+  # Move browsers to workspace 2
+  - commands: ["move to workspace 2", "focus workspace 2"]
+    match:
+      - window_process: { regex: "(chrome|firefox|edge|brave)" }
+
+  # Move editors to workspace 3
+  - commands: ["move to workspace 3", "focus workspace 3"]
+    match:
+      - window_process: { regex: "(code|nvim|vim)" }
+
+# ============================================================================
+# Keybindings (i3-inspired with Alt modifier)
+# ============================================================================
+keybindings:
+  # Window focus (i3-style hjkl)
+  - commands: ["focus --direction left"]
+    bindings: ["alt+h", "alt+Left"]
+  - commands: ["focus --direction right"]
+    bindings: ["alt+l", "alt+Right"]
+  - commands: ["focus --direction up"]
+    bindings: ["alt+k", "alt+Up"]
+  - commands: ["focus --direction down"]
+    bindings: ["alt+j", "alt+Down"]
+
+  # Move windows (Alt + Shift + hjkl)
+  - commands: ["move --direction left"]
+    bindings: ["alt+shift+h", "alt+shift+Left"]
+  - commands: ["move --direction right"]
+    bindings: ["alt+shift+l", "alt+shift+Right"]
+  - commands: ["move --direction up"]
+    bindings: ["alt+shift+k", "alt+shift+Up"]
+  - commands: ["move --direction down"]
+    bindings: ["alt+shift+j", "alt+shift+Down"]
+
+  # Resize windows (Alt + Ctrl + hjkl)
+  - commands: ["resize --edge left --delta -2%"]
+    bindings: ["alt+ctrl+h"]
+  - commands: ["resize --edge right --delta +2%"]
+    bindings: ["alt+ctrl+l"]
+  - commands: ["resize --edge top --delta -2%"]
+    bindings: ["alt+ctrl+k"]
+  - commands: ["resize --edge bottom --delta +2%"]
+    bindings: ["alt+ctrl+j"]
+
+  # Workspace navigation (Alt + 1-9)
+  - commands: ["focus --workspace 1"]
+    bindings: ["alt+1"]
+  - commands: ["focus --workspace 2"]
+    bindings: ["alt+2"]
+  - commands: ["focus --workspace 3"]
+    bindings: ["alt+3"]
+  - commands: ["focus --workspace 4"]
+    bindings: ["alt+4"]
+  - commands: ["focus --workspace 5"]
+    bindings: ["alt+5"]
+  - commands: ["focus --workspace 6"]
+    bindings: ["alt+6"]
+  - commands: ["focus --workspace 7"]
+    bindings: ["alt+7"]
+  - commands: ["focus --workspace 8"]
+    bindings: ["alt+8"]
+  - commands: ["focus --workspace 9"]
+    bindings: ["alt+9"]
+
+  # Move windows to workspace (Alt + Shift + 1-9)
+  - commands: ["move to workspace 1"]
+    bindings: ["alt+shift+1"]
+  - commands: ["move to workspace 2"]
+    bindings: ["alt+shift+2"]
+  - commands: ["move to workspace 3"]
+    bindings: ["alt+shift+3"]
+  - commands: ["move to workspace 4"]
+    bindings: ["alt+shift+4"]
+  - commands: ["move to workspace 5"]
+    bindings: ["alt+shift+5"]
+  - commands: ["move to workspace 6"]
+    bindings: ["alt+shift+6"]
+  - commands: ["move to workspace 7"]
+    bindings: ["alt+shift+7"]
+  - commands: ["move to workspace 8"]
+    bindings: ["alt+shift+8"]
+  - commands: ["move to workspace 9"]
+    bindings: ["alt+shift+9"]
+
+  # Toggle floating
+  - commands: ["toggle floating"]
+    bindings: ["alt+f"]
+
+  # Toggle fullscreen
+  - commands: ["toggle fullscreen"]
+    bindings: ["alt+shift+f"]
+
+  # Toggle maximize
+  - commands: ["toggle maximize"]
+    bindings: ["alt+m"]
+
+  # Layout cycling
+  - commands: ["cycle layout forward"]
+    bindings: ["alt+space"]
+
+  # Toggle tiling direction (horizontal/vertical)
+  - commands: ["toggle tiling direction"]
+    bindings: ["alt+backspace"]
+
+  # Close window
+  - commands: ["close"]
+    bindings: ["alt+shift+q"]
+
+  # Launch terminal (Windows Terminal)
+  - commands: ["shell-exec wt"]
+    bindings: ["alt+enter"]
+
+  # Launch Windows Terminal in new window
+  - commands: ["shell-exec wt -w 0 nt"]
+    bindings: ["alt+shift+enter"]
+
+  # Restart GlazeWM
+  - commands: ["reload config"]
+    bindings: ["alt+shift+r"]
+
+# ============================================================================
+# Binding Modes (alternative keybinding modes like i3's resize mode)
+# ============================================================================
+binding_modes:
+  - name: "resize"
+    keybindings:
+      - commands: ["resize --edge left --delta -2%"]
+        bindings: ["h", "Left"]
+      - commands: ["resize --edge right --delta +2%"]
+        bindings: ["l", "Right"]
+      - commands: ["resize --edge top --delta -2%"]
+        bindings: ["k", "Up"]
+      - commands: ["resize --edge bottom --delta +2%"]
+        bindings: ["j", "Down"]
+      - commands: ["binding mode none"]
+        bindings: ["Escape", "Enter"]
+
+  # Enter resize mode
+  - commands: ["binding mode resize"]
+    bindings: ["alt+r"]

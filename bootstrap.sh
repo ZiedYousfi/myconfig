@@ -66,6 +66,8 @@ detect_platform() {
         else
             echo "linux"
         fi
+    elif [[ "$OSTYPE" == "msys"* ]] || [[ "$OSTYPE" == "cygwin"* ]] || [[ "$(uname -s)" == "MINGW"* ]] || [[ "$(uname -s)" == "MSYS"* ]]; then
+        echo "windows"
     else
         echo "unknown"
     fi
@@ -76,11 +78,12 @@ prompt_platform() {
     echo "" >&2
     echo "  1) macOS" >&2
     echo "  2) Ubuntu Server" >&2
-    echo "  3) Exit" >&2
+    echo "  3) Windows" >&2
+    echo "  4) Exit" >&2
     echo "" >&2
 
     while true; do
-        read -p "Enter your choice (1-3): " choice
+        read -p "Enter your choice (1-4): " choice
         case $choice in
             1)
                 echo "macos"
@@ -91,11 +94,15 @@ prompt_platform() {
                 return 0
                 ;;
             3)
+                echo "windows"
+                return 0
+                ;;
+            4)
                 log_info "Installation cancelled by user"
                 exit 0
                 ;;
             *)
-                log_error "Invalid choice. Please enter 1, 2, or 3."
+                log_error "Invalid choice. Please enter 1, 2, 3, or 4."
                 ;;
         esac
     done
@@ -203,7 +210,7 @@ run_installation() {
     fi
 
     # Verify copy
-    if [ ! -d "$INSTALL_DIR/ubuntu-server" ] && [ ! -d "$INSTALL_DIR/macos" ]; then
+    if [ ! -d "$INSTALL_DIR/ubuntu-server" ] && [ ! -d "$INSTALL_DIR/macos" ] && [ ! -d "$INSTALL_DIR/windows" ]; then
         log_error "File copy failed or source directory was empty. Check $source_dir"
         exit 1
     fi
@@ -233,6 +240,14 @@ run_installation() {
             fi
             cd "$INSTALL_DIR/ubuntu-server"
             ./install.sh
+            ;;
+        windows)
+            if [ ! -f "$INSTALL_DIR/windows/install.ps1" ]; then
+                log_error "Windows install script not found at $INSTALL_DIR/windows/install.ps1"
+                exit 1
+            fi
+            cd "$INSTALL_DIR/windows"
+            powershell.exe -ExecutionPolicy Bypass -File install.ps1
             ;;
         *)
             log_error "Unsupported platform: $platform"
@@ -281,6 +296,10 @@ ensure_dependencies() {
                 exit 1
             fi
             ;;
+        windows)
+            log_info "Windows detected. No extra dependencies needed."
+            log_info "PowerShell is pre-installed on Windows."
+            ;;
         *)
             log_error "Please manually install the following dependencies: ${missing_deps[*]}"
             exit 1
@@ -322,9 +341,12 @@ main() {
             ubuntu|linux|server)
                 platform="ubuntu"
                 ;;
+            windows|win|mingw*|msys*|cygwin*)
+                platform="windows"
+                ;;
             *)
                 log_error "Unknown platform: $platform"
-                log_info "Supported platforms: macos, ubuntu"
+                log_info "Supported platforms: macos, ubuntu, windows"
                 exit 1
                 ;;
         esac
@@ -354,7 +376,14 @@ main() {
     log_info "Configuration installed to: $INSTALL_DIR"
     log_info "Dotfiles managed from: ~/dotfiles"
     echo "" >&2
-    log_info "Please restart your terminal or run: ${CYAN}source ~/.zshrc${NC}"
+    if [ "$platform" == "windows" ]; then
+        log_info "Windows setup complete!"
+        log_info "GlazeWM and Zebar will start on your next login."
+        log_info "WSL Ubuntu setup will run automatically if installed."
+        log_info "Please restart your computer for all changes to take effect."
+    else
+        log_info "Please restart your terminal or run: ${CYAN}source ~/.zshrc${NC}"
+    fi
     echo "" >&2
 }
 

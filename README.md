@@ -2,7 +2,7 @@
 
 > A modular configuration bank for building reproducible development environments across platforms.
 
-This repository provides automated setup scripts and dotfiles for macOS and Ubuntu Server, enabling consistent development environments with a single command.
+This repository provides automated setup scripts and dotfiles for macOS, Ubuntu Server, and Windows, enabling consistent development environments with a single command.
 
 ## Quick Start
 
@@ -20,6 +20,16 @@ curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.
 curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | bash -s -- ubuntu
 ```
 
+### Windows
+
+```bash
+# Run directly in PowerShell (recommended)
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | iex"
+
+# Or use Git Bash/WSL
+curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | bash -s -- windows
+```
+
 ### Interactive Mode (Auto-detect or Choose)
 
 ```bash
@@ -31,12 +41,12 @@ The bootstrap script will:
 1. Download the latest release
 2. Extract all configuration files
 3. Run the appropriate platform installer
-4. Set up dotfiles using GNU Stow
+4. Set up dotfiles using GNU Stow (macOS/Ubuntu) or copy to Windows locations
 5. Install all necessary tools and packages
 
 ## What Gets Installed
 
-### Common (Both Platforms)
+### Common (macOS & Ubuntu Server)
 
 - **Shell**: Zsh with Oh My Zsh
 - **Terminal**: Ghostty
@@ -59,6 +69,13 @@ The bootstrap script will:
 - Server-optimized tooling
 - Systemd service configurations
 
+### Windows Specific
+
+- Winget packages
+- Window manager: GlazeWM
+- Status bar: Zebar (Monokai theme)
+- WSL Ubuntu integration (if installed)
+
 ## Manual Installation
 
 If you prefer to inspect before running:
@@ -71,6 +88,7 @@ cd myconfig
 # Run the appropriate install script
 ./macos/install.sh          # For macOS
 ./ubuntu-server/install.sh  # For Ubuntu Server
+./windows/install.ps1       # For Windows (PowerShell)
 ```
 
 ## Dotfiles Structure
@@ -117,6 +135,7 @@ Each platform has an uninstall script:
 ```bash
 ./macos/uninstall.sh          # macOS
 ./ubuntu-server/uninstall.sh  # Ubuntu Server
+./windows/uninstall.ps1       # Windows (PowerShell)
 ```
 
 ## Documentation
@@ -127,8 +146,14 @@ See [SPECS.md](SPECS.md) for complete configuration specifications and details a
 
 Minimal requirements - the bootstrap script handles everything else:
 
+**macOS/Ubuntu:**
 - `curl` - for downloading
 - `unzip` - for extracting archives
+- Internet connection
+
+**Windows:**
+- PowerShell 7+ (pre-installed on Windows 10/11)
+- Winget (pre-installed on Windows 10 1709+)
 - Internet connection
 
 ## License
