@@ -663,45 +663,46 @@ configure_vscode() {
     log_info "Configuring VS Code extensions..."
 
     # Define your extensions here
-    local extensions=(
-        "cheshirekow.cmake-format"
-        "davidanson.vscode-markdownlint"
-        "dbaeumer.vscode-eslint"
-        "donjayamanne.githistory"
-        "esbenp.prettier-vscode"
-        "fill-labs.dependi"
-        "geequlim.godot-tools"
-        "github.copilot"
-        "github.copilot-chat"
-        "github.vscode-github-actions"
-        "github.vscode-pull-request-github"
-        "golang.go"
-        "llvm-vs-code-extensions.vscode-clangd"
-        "ms-azuretools.vscode-containers"
-        "ms-azuretools.vscode-docker"
-        "ms-dotnettools.csdevkit"
-        "ms-dotnettools.csharp"
-        "ms-dotnettools.vscode-dotnet-runtime"
-        "ms-python.debugpy"
-        "ms-python.python"
-        "ms-python.vscode-pylance"
-        "ms-python.vscode-python-envs"
-        "ms-vscode.cmake-tools"
-        "ms-vscode.makefile-tools"
-        "oven.bun-vscode"
-        "redhat.java"
-        "redhat.vscode-xml"
-        "rust-lang.rust-analyzer"
-        "sumneko.lua"
-        "svelte.svelte-vscode"
-        "upstash.context7-mcp"
-        "vscjava.vscode-gradle"
-        "vscjava.vscode-java-debug"
-        "vscjava.vscode-java-dependency"
-        "vscjava.vscode-java-pack"
-        "vscjava.vscode-java-test"
-        "vscjava.vscode-maven"
-    )
+        local extensions=(
+            cheshirekow.cmake-format
+            davidanson.vscode-markdownlint
+            dbaeumer.vscode-eslint
+            donjayamanne.githistory
+            esbenp.prettier-vscode
+            fill-labs.dependi
+            geequlim.godot-tools
+            github.copilot
+            github.copilot-chat
+            github.vscode-github-actions
+            github.vscode-pull-request-github
+            golang.go
+            llvm-vs-code-extensions.vscode-clangd
+            ms-azuretools.vscode-containers
+            ms-azuretools.vscode-docker
+            ms-dotnettools.csdevkit
+            ms-dotnettools.csharp
+            ms-dotnettools.vscode-dotnet-runtime
+            ms-python.debugpy
+            ms-python.python
+            ms-python.vscode-pylance
+            ms-python.vscode-python-envs
+            ms-vscode.cmake-tools
+            ms-vscode.makefile-tools
+            oven.bun-vscode
+            redhat.java
+            redhat.vscode-xml
+            rust-lang.rust-analyzer
+            sst-dev.opencode
+            sumneko.lua
+            svelte.svelte-vscode
+            upstash.context7-mcp
+            vscjava.vscode-gradle
+            vscjava.vscode-java-debug
+            vscjava.vscode-java-dependency
+            vscjava.vscode-java-pack
+            vscjava.vscode-java-test
+            vscjava.vscode-maven
+        )
 
     install_vscode_extensions "${extensions[@]}"
     log_success "VS Code configuration complete"
