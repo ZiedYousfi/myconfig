@@ -22,15 +22,14 @@ curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.
 
 ### Windows
 
-```bash
+```powershell
 # Run directly in PowerShell (recommended)
-powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | iex"
-
-# Or use Git Bash/WSL
-curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | bash -s -- windows
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.ps1 | iex"
 ```
 
 ### Interactive Mode (Auto-detect or Choose)
+
+/!\ This does not work on Windows. Use the Windows command above instead.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | bash
