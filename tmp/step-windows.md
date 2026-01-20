@@ -1,13 +1,13 @@
 # The step that I took to set up my config on Windows to know what to do in the scripts
 
-    1. Update PowerShell :
-        - Open PowerShell as Administrator `Start-Process powershell -Verb RunAs`
-        - Run the command: `Invoke-Expression "& { $(Invoke-RestMethod 'https://aka.ms/install-powershell.ps1') } -useMSI -Quiet -EnablePSRemoting"`
-        - Restart PowerShell to apply the update.
+1. Update PowerShell :
+    - Open PowerShell as Administrator `Start-Process powershell -Verb RunAs`
+    - Run the command: `Invoke-Expression "& { $(Invoke-RestMethod 'https://aka.ms/install-powershell.ps1') } -useMSI -Quiet -EnablePSRemoting"`
+    - Restart PowerShell to apply the update.
 
-    2. Set up Windows Terminal :
-        - Download and install Windows Terminal from the Microsoft Store.
-        - Set the JSON to this :
+2. Set up Windows Terminal :
+    - Download and install Windows Terminal from the Microsoft Store.
+    - Set the JSON to this :
 
     ```json
     {
@@ -115,70 +115,70 @@
     }
     ```
 
-    3. Setup OhMyPosh :
-        - Open PowerShell and run the following commands:
+3. Setup OhMyPosh :
+    - Open PowerShell and run the following commands:
 
-        ```powershell
-        winget install JanDeDobbeleer.OhMyPosh -e
-        Install-Module PSReadLine -Force -SkipPublisherCheck
-        Install-Module Terminal-Icons -Force
-        oh-my-posh font install JetBrainsMono
-        ```
+    ```powershell
+    winget install JanDeDobbeleer.OhMyPosh -e
+    Install-Module PSReadLine -Force -SkipPublisherCheck
+    Install-Module Terminal-Icons -Force
+    oh-my-posh font install JetBrainsMono
+    ```
 
-        - Fetch this [file](https://github.com/JanDeDobbeleer/oh-my-posh/blob/main/themes/pure.omp.json) and save it to `C:\Users\<username>\.OhMyPosh\pure.omp.json` by running the following commands:
+    - Fetch this [file](https://github.com/JanDeDobbeleer/oh-my-posh/blob/main/themes/pure.omp.json) and save it to `C:\Users\<username>\.OhMyPosh\pure.omp.json` by running the following commands:
 
-        ```powershell
-        $dir = Join-Path $HOME ".OhMyPosh"
-        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+    ```powershell
+    $dir = Join-Path $HOME ".OhMyPosh"
+    New-Item -ItemType Directory -Path $dir -Force | Out-Null
 
-        Invoke-WebRequest `
-        -Uri "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/pure.omp.json" `
-        -OutFile (Join-Path $dir "pure.omp.json")
-        ```
+    Invoke-WebRequest `
+    -Uri "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/pure.omp.json" `
+    -OutFile (Join-Path $dir "pure.omp.json")
+    ```
 
-        - Create the profile folder if needed and overwrite your PowerShell profile with the config below by running this command:
+    - Create the profile folder if needed and overwrite your PowerShell profile with the config below by running this command:
 
-        ```powershell
-        New-Item -ItemType Directory -Force -Path (Split-Path $PROFILE) | Out-Null
+    ```powershell
+    New-Item -ItemType Directory -Force -Path (Split-Path $PROFILE) | Out-Null
 
-        @'
-        "PROFILE LOADED: $PROFILE" | Write-Host
+    @'
+    "PROFILE LOADED: $PROFILE" | Write-Host
 
-        # --- Oh My Posh (prompt theme) ---
-        oh-my-posh init pwsh --config "$HOME\.OhMyPosh\pure.omp.json" | Invoke-Expression
+    # --- Oh My Posh (prompt theme) ---
+    oh-my-posh init pwsh --config "$HOME\.OhMyPosh\pure.omp.json" | Invoke-Expression
 
-        Import-Module Terminal-Icons
+    Import-Module Terminal-Icons
 
-        # --- PSReadLine (Vi mode + inline autosuggest) ---
-        if (-not (Get-Module -Name PSReadLine)) {
-        Import-Module PSReadLine
-        }
+    # --- PSReadLine (Vi mode + inline autosuggest) ---
+    if (-not (Get-Module -Name PSReadLine)) {
+    Import-Module PSReadLine
+    }
 
-        Set-PSReadLineOption -EditMode Vi
-        Set-PSReadLineOption -PredictionSource History
-        Set-PSReadLineOption -PredictionViewStyle InlineView
-        Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+    Set-PSReadLineOption -EditMode Vi
+    Set-PSReadLineOption -PredictionSource History
+    Set-PSReadLineOption -PredictionViewStyle InlineView
+    Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
 
-        # Cursor shape change (Windows Terminal supports this)
-        # Beam (insertion) / Block (normal)
-        $esc = [char]0x1b
+    # Cursor shape change (Windows Terminal supports this)
+    # Beam (insertion) / Block (normal)
+    $esc = [char]0x1b
 
-        # Try to use ViModeChangeHandler if available
-        if (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue) {
-        try {
-            Set-PSReadLineOption -ViModeIndicator Script
-            Set-PSReadLineOption -ViModeChangeHandler {
-                param($mode)
+    # Try to use ViModeChangeHandler if available
+    if (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue) {
+    try {
+        Set-PSReadLineOption -ViModeIndicator Script
+        Set-PSReadLineOption -ViModeChangeHandler {
+            param($mode)
 
-                switch ($mode) {
-                "Insert" { Write-Host -NoNewline "$esc[5 q" } # beam
-                "Command" { Write-Host -NoNewline "$esc[1 q" } # block
-                default { Write-Host -NoNewline "$esc[5 q" }
-                }
+            switch ($mode) {
+            "Insert" { Write-Host -NoNewline "$esc[5 q" } # beam
+            "Command" { Write-Host -NoNewline "$esc[1 q" } # block
+            default { Write-Host -NoNewline "$esc[5 q" }
             }
-        } catch {
-            # If your PSReadLine doesn't support this handler, ignore
         }
-        }
-        '@ | Set-Content -Path $PROFILE -Encoding utf8
-        ```
+    } catch {
+        # If your PSReadLine doesn't support this handler, ignore
+    }
+    }
+    '@ | Set-Content -Path $PROFILE -Encoding utf8
+    ```
