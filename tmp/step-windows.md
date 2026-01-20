@@ -115,9 +115,17 @@
 }
 ```
 
-3. Install OhMyPosh :
+3. Setup OhMyPosh :
    - Open PowerShell and run the following commands:
 
 ```powershell
 winget install JanDeDobbeleer.OhMyPosh -e
+```
+
+```powershell
+Install-Module PSReadLine -Force -SkipPublisherCheck
+```
+
+```powershell
+ oh-my-posh font install JetBrainsMono
 ```
