@@ -136,7 +136,7 @@
     -OutFile (Join-Path $dir "pure.omp.json")
     ```
 
-    - Create the profile folder if needed and overwrite your PowerShell profile with the config below by running this command:
+    - Create the profile folder if needed and overwrite the PowerShell profile with the config below by running this command:
 
     ```powershell
     New-Item -ItemType Directory -Force -Path (Split-Path $PROFILE) | Out-Null
