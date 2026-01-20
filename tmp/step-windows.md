@@ -192,123 +192,123 @@
 
    - Create a configuration file for GlazeWM at `$HOME\.glzr\config.yaml` with the following content:
 
-   ```yaml
-   general:
-       startup_commands: ['shell-exec zebar']
-       shutdown_commands: ['shell-exec taskkill /IM zebar.exe /F']
-       focus_follows_cursor: false
-       toggle_workspace_on_refocus: false
-       cursor_jump:
-           enabled: true
-           trigger: 'monitor_focus'
-       hide_method: 'cloak'
-       show_all_in_taskbar: false
+```yaml
+general:
+  startup_commands: ['shell-exec zebar']
+  shutdown_commands: ['shell-exec taskkill /IM zebar.exe /F']
+  focus_follows_cursor: false
+  toggle_workspace_on_refocus: false
+  cursor_jump:
+    enabled: true
+    trigger: 'monitor_focus'
+  hide_method: 'cloak'
+  show_all_in_taskbar: false
 
-   gaps:
-       scale_with_dpi: true
-       inner_gap: '20px'
-       outer_gap:
-           # 30px (barre) + 20px (gap) = 50px pour le haut
-           top: '50px'
-           right: '20px'
-           bottom: '20px'
-           left: '20px'
+gaps:
+  scale_with_dpi: true
+  inner_gap: '20px'
+  outer_gap:
+    top: '20px'
+    right: '20px'
+    bottom: '20px'
+    left: '20px'
 
-   window_effects:
-       focused_window:
-           border:
-           enabled: true
-           color: '#A6E22E' # Ton vert signature
-       other_windows:
-           border:
-           enabled: true
-           color: '#2B2B2B' # Bordure discrète pour les fenêtres inactives
+window_effects:
+  focused_window:
+    border:
+      enabled: true
+      color: '#A6E22E'
+  other_windows:
+    border:
+      enabled: true
+      color: '#2B2B2B'
 
-   window_behavior:
-       initial_state: 'tiling'
-       state_defaults:
-           floating:
-           centered: true
-           shown_on_top: false
+window_behavior:
+  initial_state: 'tiling'
+  state_defaults:
+    floating:
+      centered: true
+      shown_on_top: false
 
-   workspaces:
-       - name: '1'
-       - name: '2'
-       - name: '3'
-       - name: '4'
-       - name: '5'
-       - name: '6'
-       - name: '7'
-       - name: '8'
-       - name: '9'
-       - name: '10'
+workspaces:
+  - name: '1'
+  - name: '2'
+  - name: '3'
+  - name: '4'
+  - name: '5'
+  - name: '6'
+  - name: '7'
+  - name: '8'
+  - name: '9'
+  - name: '10'
 
-   window_rules:
-       - commands: ['ignore']
-           match:
-           - window_process: { equals: 'zebar' }
-           - window_title: { regex: '[Pp]icture.in.[Pp]icture' }
-               window_class: { regex: 'Chrome_WidgetWin_1|MozillaDialogClass' }
+window_rules:
+  - commands: ['ignore']
+    match:
+      - window_process: { equals: 'zebar' }
+      - window_title: { regex: '[Pp]icture.in.[Pp]icture' }
+        window_class: { regex: 'Chrome_WidgetWin_1|MozillaDialogClass' }
 
-   mouse_bindings:
-       - modifier: 'alt'
-           button: 'left'
-           command: 'set-move-mode'
-       - modifier: 'alt'
-           button: 'right'
-           command: 'set-resize-mode'
+mouse_bindings:
+  - modifier: 'alt'
+    button: 'left'
+    command: 'set-move-mode'
+  - modifier: 'alt'
+    button: 'right'
+    command: 'set-resize-mode'
 
-   keybindings:
-       - commands: ['focus --direction left']
-           bindings: ['alt+h', 'alt+left']
-       - commands: ['focus --direction right']
-           bindings: ['alt+l', 'alt+right']
-       - commands: ['focus --direction up']
-           bindings: ['alt+k', 'alt+up']
-       - commands: ['focus --direction down']
-           bindings: ['alt+j', 'alt+down']
+keybindings:
+  # Focus
+  - commands: ['focus --direction left']
+    bindings: ['alt+h', 'alt+left']
+  - commands: ['focus --direction right']
+    bindings: ['alt+l', 'alt+right']
+  - commands: ['focus --direction up']
+    bindings: ['alt+k', 'alt+up']
+  - commands: ['focus --direction down']
+    bindings: ['alt+j', 'alt+down']
 
-       # Move
-       - commands: ['move --direction left']
-           bindings: ['alt+shift+h', 'alt+shift+left']
-       - commands: ['move --direction right']
-           bindings: ['alt+shift+l', 'alt+shift+right']
+  # Move
+  - commands: ['move --direction left']
+    bindings: ['alt+shift+h', 'alt+shift+left']
+  - commands: ['move --direction right']
+    bindings: ['alt+shift+l', 'alt+shift+right']
 
-       # Workspaces (1 à 10, avec 0 pour le workspace 10)
-       - commands: ['focus --workspace 1']
-           bindings: ['alt+1']
-       - commands: ['focus --workspace 2']
-           bindings: ['alt+2']
-       - commands: ['focus --workspace 3']
-           bindings: ['alt+3']
-       - commands: ['focus --workspace 4']
-           bindings: ['alt+4']
-       - commands: ['focus --workspace 5']
-           bindings: ['alt+5']
-       - commands: ['focus --workspace 6']
-           bindings: ['alt+6']
-       - commands: ['focus --workspace 7']
-           bindings: ['alt+7']
-       - commands: ['focus --workspace 8']
-           bindings: ['alt+8']
-       - commands: ['focus --workspace 9']
-           bindings: ['alt+9']
-       - commands: ['focus --workspace 10']
-           bindings: ['alt+0']
+  # Workspaces (1 à 10, avec 0 pour le workspace 10)
+  - commands: ['focus --workspace 1']
+    bindings: ['alt+1']
+  - commands: ['focus --workspace 2']
+    bindings: ['alt+2']
+  - commands: ['focus --workspace 3']
+    bindings: ['alt+3']
+  - commands: ['focus --workspace 4']
+    bindings: ['alt+4']
+  - commands: ['focus --workspace 5']
+    bindings: ['alt+5']
+  - commands: ['focus --workspace 6']
+    bindings: ['alt+6']
+  - commands: ['focus --workspace 7']
+    bindings: ['alt+7']
+  - commands: ['focus --workspace 8']
+    bindings: ['alt+8']
+  - commands: ['focus --workspace 9']
+    bindings: ['alt+9']
+  - commands: ['focus --workspace 10']
+    bindings: ['alt+0']
 
-       # Move to Workspace
-       - commands: ['move --workspace 1']
-           bindings: ['alt+shift+1']
-       - commands: ['move --workspace 2']
-           bindings: ['alt+shift+2']
-       - commands: ['move --workspace 10']
-           bindings: ['alt+shift+0']
+  # Move to Workspace
+  - commands: ['move --workspace 1']
+    bindings: ['alt+shift+1']
+  - commands: ['move --workspace 2']
+    bindings: ['alt+shift+2']
+  - commands: ['move --workspace 10']
+    bindings: ['alt+shift+0']
 
-       # Autres raccourcis essentiels
-       - commands: ['close']
-           bindings: ['alt+shift+q']
-       - commands: ['wm-reload-config']
-           bindings: ['alt+shift+r']
-       - commands: ['toggle-floating --centered']
-           bindings: ['alt+shift+space']
-   ```
+  # Autres raccourcis essentiels
+  - commands: ['close']
+    bindings: ['alt+shift+q']
+  - commands: ['wm-reload-config']
+    bindings: ['alt+shift+r']
+  - commands: ['toggle-floating --centered']
+    bindings: ['alt+shift+space']
+```
