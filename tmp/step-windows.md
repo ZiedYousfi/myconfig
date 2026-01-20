@@ -182,3 +182,15 @@
     }
     '@ | Set-Content -Path $PROFILE -Encoding utf8
     ```
+
+4. Setup GlazeWM :
+    - Install GlazeWM by typing the following command in PowerShell:
+
+    ```powershell
+    winget install GlazeWM
+    ```
+
+    - Create a configuration file for GlazeWM at `$HOME\.glzr\config.toml` with the following content:
+
+    ```toml
+    ```
