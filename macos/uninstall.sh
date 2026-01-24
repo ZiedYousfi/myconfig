@@ -127,6 +127,12 @@ remove_yabai_config() {
         log_info "Stopping Yabai service..."
         yabai --stop-service 2>/dev/null || true
     fi
+
+    # Kill borders if running
+    if pgrep -x "borders" > /dev/null; then
+        log_info "Stopping borders..."
+        pkill -x "borders" || true
+    fi
 }
 }
 
@@ -266,6 +272,7 @@ remove_brew_packages() {
 
     # List of packages installed by the setup script (full symmetry with install.sh)
     local packages=(
+        "borders"
         "sst/tap/opencode"
         "joncrangle/tap/sketchybar-system-stats"
         "1password-cli"

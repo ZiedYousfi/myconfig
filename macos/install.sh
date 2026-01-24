@@ -249,6 +249,20 @@ install_opencode() {
     fi
 }
 
+install_borders() {
+    if brew list "FelixKratz/formulae/borders" &>/dev/null; then
+        log_success "borders is already installed"
+    else
+        log_info "Installing borders..."
+        brew tap FelixKratz/formulae
+        if brew install borders; then
+            log_success "borders installed"
+        else
+            log_error "Failed to install borders"
+        fi
+    fi
+}
+
 # ============================================================================
 # Install All Packages
 # ============================================================================
@@ -306,6 +320,7 @@ install_packages() {
     install_yabai
     install_sketchybar
     install_sketchybar_system_stats
+    install_borders
 
     # Development tools
     install_opencode
