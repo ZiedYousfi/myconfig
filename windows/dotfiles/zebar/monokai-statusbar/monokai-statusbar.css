@@ -264,8 +264,9 @@ button {
   color: var(--mono-cyan);
 }
 
-/* Tiling direction button */
-.tiling-direction {
+/* Tiling direction button & Keyboard toggle */
+.tiling-direction,
+.keyboard-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -278,7 +279,8 @@ button {
   transition: all 0.15s ease;
 }
 
-.tiling-direction:hover {
+.tiling-direction:hover,
+.keyboard-toggle:hover {
   background: var(--mono-green);
   color: var(--mono-bg);
 }

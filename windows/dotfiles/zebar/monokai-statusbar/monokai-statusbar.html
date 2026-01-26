@@ -98,6 +98,14 @@
             <div className="left">
               {output.glazewm && (
                 <>
+                  <button
+                    className="keyboard-toggle"
+                    onClick={() => output.glazewm.runCommand("shell-exec osk")}
+                    title="Open Accessibility Keyboard"
+                  >
+                    <i className="nf nf-md-keyboard"></i>
+                  </button>
+
                   <div className="workspaces">
                     {visibleWorkspaces.map((wsName) => {
                       const ws = workspaceMap[wsName];
