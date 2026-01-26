@@ -1,0 +1,296 @@
+@import 'https://www.nerdfonts.com/assets/css/webfont.css';
+
+:root {
+  --mono-bg: #272822;
+  --mono-bg-alpha: rgba(39, 40, 34, 0.94);
+  --mono-surface: #1e1f1c;
+  --mono-fg: #f8f8f2;
+  --mono-pink: #f92672;
+  --mono-orange: #fd971f;
+  --mono-yellow: #e6db74;
+  --mono-green: #a6e22e;
+  --mono-cyan: #66d9ef;
+  --mono-purple: #ae81ff;
+  --mono-comment: #75715e;
+  --mono-hover: #3e3d32;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+body {
+  background: var(--mono-bg-alpha);
+  color: var(--mono-fg);
+  font-family: "Hack Nerd Font", "CaskaydiaMono Nerd Font", "JetBrainsMono Nerd Font", monospace;
+  font-size: 12px;
+  height: 100vh;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button {
+  border: none;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+  color: inherit;
+}
+
+.app {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  padding: 0 8px;
+  overflow: hidden;
+}
+
+/* ========== LEFT SECTION ========== */
+.left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: all 0.15s ease;
+}
+
+.icon-btn.restart {
+  color: var(--mono-cyan);
+}
+
+.icon-btn:hover {
+  background: var(--mono-green);
+}
+
+/* Workspaces */
+.workspaces {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.workspace {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  /* padding: 0 12px; */
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--mono-fg);
+  background: transparent;
+  transition: all 0.15s ease;
+  line-height: 1.3;
+}
+
+.workspace:hover {
+  background: var(--mono-green);
+  color: var(--mono-fg);
+}
+
+.workspace.occupied {
+  color: var(--mono-fg);
+}
+
+.workspace.displayed {
+  color: var(--mono-fg);
+  background: var(--mono-surface);
+}
+
+.workspace.focused {
+  background: var(--mono-pink);
+  color: var(--mono-fg);
+}
+
+.workspace-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
+}
+
+.workspace-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--mono-cyan);
+  background: var(--mono-surface);
+  transition: all 0.15s ease;
+}
+
+.workspace-toggle:hover {
+  background: var(--mono-green);
+}
+
+.workspace-toggle.active {
+  background: var(--mono-pink);
+  color: var(--mono-bg);
+}
+
+/* Chevron separator */
+.chevron {
+  display: flex;
+  align-items: center;
+  color: var(--mono-cyan);
+  font-size: 14px;
+  margin: 0 8px;
+  line-height: 30px;
+}
+
+/* Front app / Window title */
+.front-app {
+  display: flex;
+  align-items: center;
+  color: var(--mono-green);
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 400px;
+  line-height: 30px;
+}
+
+/* ========== CENTER SECTION ========== */
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.clock i {
+  color: var(--mono-cyan);
+  font-size: 14px;
+}
+
+.clock span {
+  color: var(--mono-fg);
+  line-height: 30px;
+}
+
+/* ========== RIGHT SECTION ========== */
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex: 1;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  background: transparent;
+}
+
+.stat .icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.stat .value {
+  color: var(--mono-fg);
+  line-height: 30px;
+}
+
+/* CPU */
+.stat.cpu .icon {
+  color: var(--mono-cyan);
+}
+
+/* Memory / RAM */
+.stat.memory .icon {
+  color: var(--mono-pink);
+}
+
+/* Battery */
+.stat.battery .icon {
+  color: var(--mono-orange);
+}
+
+/* Volume */
+.stat.volume {
+  gap: 4px;
+}
+
+.stat.volume .icon,
+.stat.volume .nf {
+  color: var(--mono-green);
+}
+
+.volume-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--mono-green);
+  transition: all 0.15s ease;
+}
+
+.volume-toggle:hover {
+  color: var(--mono-cyan);
+}
+
+/* Tiling direction button */
+.tiling-direction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--mono-cyan);
+  background: var(--mono-surface);
+  transition: all 0.15s ease;
+}
+
+.tiling-direction:hover {
+  background: var(--mono-green);
+  color: var(--mono-bg);
+}
+
+/* ========== BINDING MODE (if needed) ========== */
+.binding-mode {
+  background: var(--mono-pink);
+  color: var(--mono-bg);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  line-height: 30px;
+}
