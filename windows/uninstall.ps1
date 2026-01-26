@@ -2,18 +2,26 @@
 .SYNOPSIS
     Windows Development Environment Uninstall Script
 .DESCRIPTION
-    Removes GlazeWM, Zebar configurations and startup shortcuts.
-    Note: Does not uninstall packages - only removes configurations.
-.PARAMETER RemoveWM
-    Also remove GlazeWM and Zebar packages via winget
+    Removes configurations and optionally packages installed by install.ps1:
+    - Oh My Posh configuration and PowerShell profile
+    - Windows Terminal settings
+    - GlazeWM and Zebar configurations
+    - Startup shortcuts
+.PARAMETER RemovePackages
+    Also remove installed packages via winget (OhMyPosh, GlazeWM, Zebar)
+.PARAMETER RemoveProfile
+    Remove PowerShell profile
+.PARAMETER RemoveTerminalSettings
+    Remove Windows Terminal settings
 #>
 
 [CmdletBinding()]
 param(
-    [switch]$RemoveWM
+    [switch]$RemovePackages,
+    [switch]$RemoveProfile,
+    [switch]$RemoveTerminalSettings
 )
 
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ErrorActionPreference = 'Stop'
 $Colors = @{
     Info = 'Cyan'
@@ -40,32 +48,16 @@ function Write-Log {
 }
 
 function Remove-StartupShortcut {
-    param(
-        [string]$Name
-    )
+    param([string]$Name)
 
-    $startupFolder = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"
+    $startupFolder = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Startup"
     $shortcutPath = Join-Path $startupFolder "$Name.lnk"
 
     if (Test-Path $shortcutPath) {
         Remove-Item -Path $shortcutPath -Force
-        Write-Log "Removed startup shortcut: $shortcutPath" -Level 'SUCCESS'
+        Write-Log "Removed startup shortcut: $Name" -Level 'SUCCESS'
     } else {
-        Write-Log "Startup shortcut not found: $shortcutPath" -Level 'WARNING'
-    }
-}
-
-function Remove-Config {
-    param(
-        [string]$Path,
-        [string]$Name
-    )
-
-    if (Test-Path $Path) {
-        Remove-Item -Path $Path -Recurse -Force
-        Write-Log "Removed $Name: $Path" -Level 'SUCCESS'
-    } else {
-        Write-Log "$Name not found: $Path" -Level 'WARNING'
+        Write-Log "Startup shortcut not found: $Name" -Level 'INFO'
     }
 }
 
@@ -77,7 +69,7 @@ function Uninstall-Package {
 
     $installed = winget list --exact --id $PackageId 2>$null
 
-    if (-not [string]::IsNullOrEmpty($installed) -and -not ($installed -match 'No installed package found')) {
+    if ($installed -and -not ($installed -match 'No installed package found')) {
         Write-Log "Uninstalling $PackageName..." -Level 'INFO'
         winget uninstall --id $PackageId --accept-source-agreements -e
 
@@ -91,50 +83,102 @@ function Uninstall-Package {
     }
 }
 
+function Remove-SafePath {
+    param(
+        [string]$Path,
+        [string]$Description
+    )
+
+    if (Test-Path $Path) {
+        Remove-Item -Path $Path -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Log "Removed $Description" -Level 'SUCCESS'
+    } else {
+        Write-Log "$Description not found (already removed)" -Level 'INFO'
+    }
+}
+
 function Main {
     Write-Host ""
-    Write-Host "╔════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║         Windows Development Environment Uninstall              ║" -ForegroundColor Cyan
-    Write-Host "╚════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "+--------------------------------------------------------------+" -ForegroundColor Cyan
+    Write-Host "|       Windows Development Environment Uninstall              |" -ForegroundColor Cyan
+    Write-Host "+--------------------------------------------------------------+" -ForegroundColor Cyan
     Write-Host ""
 
-    $glazewmConfigDir = "$env:USERPROFILE\.glzr\glazewm"
-    $zebarConfigDir = "$env:USERPROFILE\.glzr\zebar"
-    $glazewmExePath = "$env:LOCALAPPDATA\Programs\glazewm\glazewm.exe"
-
-    Write-Log "Removing GlazeWM configuration..." -Level 'INFO'
-    Remove-Config -Path $glazewmConfigDir -Name "GlazeWM config"
-
-    Write-Log "Removing Zebar configuration..." -Level 'INFO'
-    Remove-Config -Path $zebarConfigDir -Name "Zebar config"
-
+    # Remove startup shortcuts
     Write-Log "Removing startup shortcuts..." -Level 'INFO'
     Remove-StartupShortcut -Name "GlazeWM"
     Remove-StartupShortcut -Name "Zebar"
 
-    if ($RemoveWM) {
-        Write-Log "" -Level 'WARNING'
-        Write-Log "Removing GlazeWM package..." -Level 'WARNING'
-        Uninstall-Package -PackageId "GlazeWM" -PackageName "GlazeWM"
+    # Remove Oh My Posh configuration
+    Write-Log "Removing Oh My Posh configuration..." -Level 'INFO'
+    $ohMyPoshDir = Join-Path $env:USERPROFILE ".OhMyPosh"
+    Remove-SafePath -Path $ohMyPoshDir -Description "Oh My Posh config directory"
 
-        Write-Log "Removing Zebar package..." -Level 'WARNING'
+    # Remove GlazeWM and Zebar configuration
+    Write-Log "Removing GlazeWM and Zebar configuration..." -Level 'INFO'
+    $glzrDir = Join-Path $env:USERPROFILE ".glzr"
+    Remove-SafePath -Path $glzrDir -Description "GlazeWM/Zebar config directory"
+
+    # Remove PowerShell profile if requested
+    if ($RemoveProfile) {
+        Write-Log "Removing PowerShell profile..." -Level 'INFO'
+        if (Test-Path $PROFILE) {
+            Remove-Item -Path $PROFILE -Force
+            Write-Log "PowerShell profile removed: $PROFILE" -Level 'SUCCESS'
+        } else {
+            Write-Log "PowerShell profile not found" -Level 'INFO'
+        }
+    }
+
+    # Remove Windows Terminal settings if requested
+    if ($RemoveTerminalSettings) {
+        Write-Log "Removing Windows Terminal settings..." -Level 'INFO'
+        $terminalPaths = @(
+            (Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"),
+            (Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json")
+        )
+        foreach ($path in $terminalPaths) {
+            if (Test-Path $path) {
+                Remove-Item -Path $path -Force
+                Write-Log "Removed Windows Terminal settings: $path" -Level 'SUCCESS'
+            }
+        }
+    }
+
+    # Remove packages if requested
+    if ($RemovePackages) {
+        Write-Log "" -Level 'INFO'
+        Write-Log "Removing packages..." -Level 'WARNING'
+
+        Uninstall-Package -PackageId "JanDeDobbeleer.OhMyPosh" -PackageName "Oh My Posh"
+        Uninstall-Package -PackageId "glzr-io.glazewm" -PackageName "GlazeWM"
         Uninstall-Package -PackageId "glzr-io.zebar" -PackageName "Zebar"
     }
 
     Write-Host ""
-    Write-Host "╔════════════════════════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "║                  Uninstall Complete! 🗑️                        ║" -ForegroundColor Green
-    Write-Host "╚════════════════════════════════════════════════════════════╝" -ForegroundColor Green
+    Write-Host "+---------------------------------------------------------------+" -ForegroundColor Green
+    Write-Host "|                  Uninstall Complete!                          |" -ForegroundColor Green
+    Write-Host "+---------------------------------------------------------------+" -ForegroundColor Green
     Write-Host ""
-    Write-Log "Notes:" -Level 'INFO'
-    Write-Log "  - Configuration files have been removed" -Level 'INFO'
-    Write-Log "  - Startup shortcuts have been removed" -Level 'INFO'
-    if ($RemoveWM) {
-        Write-Log "  - Packages have been uninstalled" -Level 'INFO'
-    } else {
-        Write-Log "  - Packages were NOT uninstalled (use -RemoveWM to remove)" -Level 'INFO'
+    Write-Log "What was removed:" -Level 'INFO'
+    Write-Log "  - Startup shortcuts (GlazeWM, Zebar)" -Level 'INFO'
+    Write-Log "  - Oh My Posh configuration (~/.OhMyPosh)" -Level 'INFO'
+    Write-Log "  - GlazeWM/Zebar configuration (~/.glzr)" -Level 'INFO'
+    if ($RemoveProfile) {
+        Write-Log "  - PowerShell profile" -Level 'INFO'
     }
-    Write-Log "  - You may need to log out and log back in for changes to take effect" -Level 'INFO'
+    if ($RemoveTerminalSettings) {
+        Write-Log "  - Windows Terminal settings" -Level 'INFO'
+    }
+    if ($RemovePackages) {
+        Write-Log "  - Packages (OhMyPosh, GlazeWM, Zebar)" -Level 'INFO'
+    } else {
+        Write-Log "" -Level 'INFO'
+        Write-Log "Note: Packages were NOT uninstalled. Use -RemovePackages to remove them." -Level 'INFO'
+    }
+    if (-not $RemoveProfile) {
+        Write-Log "Note: PowerShell profile was NOT removed. Use -RemoveProfile to remove it." -Level 'INFO'
+    }
     Write-Host ""
 }
 
