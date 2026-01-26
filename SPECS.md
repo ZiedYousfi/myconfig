@@ -542,6 +542,38 @@ The dotfiles for Ghostty and Zed are still stowed (for future use if GUI is need
 
 This section documents components specific to Windows.
 
+### Package Manager: Winget
+
+All Windows native packages are installed via **Winget** (Windows Package Manager).
+See [windows/install.ps1](windows/install.ps1) for the complete installation script.
+
+### Shell & Terminal
+
+| Component | Value |
+|-----------|-------|
+| Shell | PowerShell Core (`pwsh`) |
+| Prompt | Oh My Posh (`pure` theme) |
+| Terminal | Windows Terminal |
+| Modules | `PSReadLine`, `Terminal-Icons` |
+
+**PowerShell Profile Features:**
+
+- Vi mode keybindings
+- Prediction source (History)
+- Cursor shape change (Beam for Insert, Block for Normal)
+- Terminal icons for file listings
+
+### Terminal Emulator: Windows Terminal
+
+Native GPU-accelerated terminal for Windows.
+
+| Setting | Value |
+|---------|-------|
+| Color Scheme | Monokai Classic |
+| Font | JetBrainsMono Nerd Font |
+| Background | `#272822` |
+| Opacity | Acrylic enabled |
+
 ### Window Management: Glaze WM
 
 [Glaze WM](https://github.com/glazewm/glazewm) - A tiling window manager for Windows inspired by i3.
@@ -549,15 +581,38 @@ This section documents components specific to Windows.
 | Setting | Value |
 |---------|-------|
 | Layout | Tiling |
-| Command | `glazewm` |
+| Window Gap | 20px |
+| Border Color | `#A6E22E` (Focused) |
+| Shortcut | Alt-based (Alt+H/J/K/L for focus) |
 
-### Status Bar: zebar
+#### Dotfiles Structure
 
-[zebar](https://github.com/glazewm/zebar) - A customizable status bar for Windows (usually paired with Glaze WM).
+```
+windows/dotfiles/
+└── glazewm/
+    └── config.yaml
+```
+
+### Status Bar: Zebar
+
+[Zebar](https://github.com/glazewm/zebar) - Customizable status bar for Windows.
 
 | Setting | Value |
 |---------|-------|
 | Theme | Monokai |
+| Widget | monokai-topbar |
+| Pack | monokai-statusbar |
+
+#### Dotfiles Structure
+
+```
+windows/dotfiles/
+└── zebar/
+    └── monokai-statusbar/
+        ├── monokai-statusbar.css
+        ├── monokai-statusbar.html
+        └── zpack.json
+```
 
 ### Windows Subsystem for Linux (WSL)
 
@@ -589,9 +644,15 @@ setup-config/
 │   └── dotfiles/               # macOS-only dotfiles
 │       ├── sketchybar/
 │       └── yabai/
-└── ubuntu-server/               # Ubuntu Server & Windows (WSL) specific
-    ├── install.sh
-    └── uninstall.sh
+├── ubuntu-server/              # Ubuntu Server & Windows (WSL) specific
+│   ├── install.sh
+│   └── uninstall.sh
+└── windows/                    # Windows-specific
+    ├── install.ps1
+    ├── uninstall.ps1
+    └── dotfiles/               # Windows-only dotfiles
+        ├── glazewm/
+        └── zebar/
 ```
 
 ### Cross-Platform (Shareable)
@@ -615,6 +676,15 @@ These dotfiles are located in `/macos/dotfiles/`:
 |---------|-------------|--------|
 | `yabai` | Window manager config | `~/.config/yabai/` |
 | `sketchybar` | Status bar config | `~/.config/sketchybar/` |
+
+### Windows-Specific
+
+These dotfiles are located in `/windows/dotfiles/`:
+
+| Package | Description | Target |
+|---------|-------------|--------|
+| `glazewm` | Window manager config | `~/.glzr/glazewm/` |
+| `zebar` | Status bar widgets | `~/.glzr/zebar/` |
 
 ---
 
