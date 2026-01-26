@@ -7,7 +7,7 @@
 
 2. Set up Windows Terminal :
    - Download and install Windows Terminal from the Microsoft Store.
-   - Set the JSON to this :
+   - Set the settings JSON to this :
 
    ```json
    {
@@ -312,3 +312,31 @@ keybindings:
   - commands: ['toggle-floating --centered']
     bindings: ['alt+shift+space']
 ```
+
+4. Setup Zebar :
+   - Move the dotfiles folder (windows/dotfiles/zebar/monokai-statusbar/) to `~\.glzr\zebar`
+   - Set `~\.glzr\zebar\settings.json` to this :
+
+   ```json
+   {
+      "$schema": "https://github.com/glzr-io/zebar/raw/v3.1.1/resources/settings-schema.json",
+      "startupConfigs": [
+        {
+          "pack": "monokai-statusbar",
+          "widget": "monokai-topbar",
+          "preset": "default"
+        }
+      ]
+    }
+   ```
+
+5. Set GlazeWM to start on login :
+    - Run the following command in PowerShell :
+
+    ```powershell
+    Start-Process pwsh -Verb RunAs -ArgumentList @(
+      '-NoProfile',
+      '-Command',
+      "`$ErrorActionPreference='Stop'; `$exe='C:\Program Files\glzr.io\GlazeWM\cli\glazewm.exe'; if(!(Test-Path `$exe)){throw 'Introuvable: ' + `$exe}; `$name='GlazeWM (Start on logon)'; `$a=New-ScheduledTaskAction -Execute `$exe -Argument 'start'; `$t=New-ScheduledTaskTrigger -AtLogOn; Register-ScheduledTask -TaskName `$name -Action `$a -Trigger `$t -Description 'Start GlazeWM on user logon' -Force | Out-Null; 'OK: tâche créée: ' + `$name"
+    )
+    ```
