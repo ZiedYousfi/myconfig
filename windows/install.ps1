@@ -521,11 +521,10 @@ function Install-WindowManager {
     $zebarSettings | Set-Content -Path $zebarSettingsPath -Encoding utf8
     Write-Log "Zebar settings configured: $zebarSettingsPath" -Level 'SUCCESS'
 
-    # Setup GlazeWM to start on login using startup shortcut
-    # Note: GlazeWM is configured to start Zebar automatically via its config.yaml
-    Write-Log "Configuring startup shortcut for GlazeWM..." -Level 'INFO'
+    # Setup GlazeWM and Zebar to start on login using startup shortcuts
+    Write-Log "Configuring startup shortcuts for GlazeWM and Zebar..." -Level 'INFO'
 
-    # Remove any registry startup entries (user preference)
+    # Remove any registry startup entries (user preference for shortcuts)
     $runPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
     if (Get-ItemProperty -Path $runPath -Name "GlazeWM" -ErrorAction SilentlyContinue) {
         Remove-ItemProperty -Path $runPath -Name "GlazeWM" -Force
@@ -545,6 +544,14 @@ function Install-WindowManager {
         (Join-Path $env:ProgramFiles "glzr.io\GlazeWM\cli\glazewm.exe")
     )
 
+    # Find Zebar executable
+    $zebarExe = $null
+    $zebarPaths = @(
+        (Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Packages\glzr-io.zebar_Microsoft.Winget.Source_8wekyb3d8bbwe\zebar.exe"),
+        (Join-Path $env:LOCALAPPDATA "Programs\zebar\zebar.exe"),
+        (Join-Path $env:ProgramFiles "glzr.io\Zebar\zebar.exe")
+    )
+
     # Also try to find via winget package location
     $wingetPackagesDir = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Packages"
     if (Test-Path $wingetPackagesDir) {
@@ -554,15 +561,28 @@ function Install-WindowManager {
             $exePath = Get-ChildItem -Path $pkg.FullName -Filter "glazewm.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
             if ($exePath) { $glazewmPaths = @($exePath.FullName) + $glazewmPaths }
         }
+
+        # Check Zebar packages
+        $zebarPackages = Get-ChildItem -Path $wingetPackagesDir -Filter "glzr-io.zebar*" -Directory -ErrorAction SilentlyContinue
+        foreach ($pkg in $zebarPackages) {
+            $exePath = Get-ChildItem -Path $pkg.FullName -Filter "zebar.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($exePath) { $zebarPaths = @($exePath.FullName) + $zebarPaths }
+        }
     }
 
     foreach ($path in $glazewmPaths) {
         if (Test-Path $path) { $glazewmExe = $path; break }
     }
+    foreach ($path in $zebarPaths) {
+        if (Test-Path $path) { $zebarExe = $path; break }
+    }
 
     # Try command path
     if (-not $glazewmExe -and (Test-Command "glazewm")) {
         $glazewmExe = (Get-Command glazewm -ErrorAction SilentlyContinue).Source
+    }
+    if (-not $zebarExe -and (Test-Command "zebar")) {
+        $zebarExe = (Get-Command zebar -ErrorAction SilentlyContinue).Source
     }
 
     # Create GlazeWM startup shortcut
@@ -570,6 +590,13 @@ function Install-WindowManager {
         Set-StartupShortcut -Name "GlazeWM" -TargetPath $glazewmExe
     } else {
         Write-Log "GlazeWM executable not found. Startup shortcut not created." -Level 'WARNING'
+    }
+
+    # Create Zebar startup shortcut
+    if ($zebarExe -and (Test-Path $zebarExe)) {
+        Set-StartupShortcut -Name "Zebar" -TargetPath $zebarExe
+    } else {
+        Write-Log "Zebar executable not found. Startup shortcut not created." -Level 'WARNING'
     }
 
     Write-Log "Window Manager setup complete!" -Level 'SUCCESS'
@@ -685,7 +712,7 @@ function Main {
     Write-Host ""
     Write-Log "Next steps:" -Level 'INFO'
     Write-Log "  1. Restart your terminal or log out/in to apply changes" -Level 'INFO'
-    Write-Log "  2. GlazeWM will start automatically on next login (and launch Zebar)" -Level 'INFO'
+    Write-Log "  2. GlazeWM and Zebar will start automatically via startup shortcuts" -Level 'INFO'
     if (-not $SkipWSL) {
         Write-Log "  3. Open WSL Ubuntu for Linux development tools" -Level 'INFO'
     }

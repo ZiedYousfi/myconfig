@@ -1,6 +1,4 @@
 general:
-  startup_commands: ['shell-exec zebar']
-  shutdown_commands: ['shell-exec taskkill /IM zebar.exe /F']
   focus_follows_cursor: false
   toggle_workspace_on_refocus: false
   cursor_jump:
