@@ -109,6 +109,17 @@ function Main {
     Remove-StartupShortcut -Name "GlazeWM"
     Remove-StartupShortcut -Name "Zebar"
 
+    # Remove any registry startup entries
+    $runPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+    if (Get-ItemProperty -Path $runPath -Name "GlazeWM" -ErrorAction SilentlyContinue) {
+        Remove-ItemProperty -Path $runPath -Name "GlazeWM" -Force
+        Write-Log "Removed GlazeWM registry startup entry" -Level 'SUCCESS'
+    }
+    if (Get-ItemProperty -Path $runPath -Name "Zebar" -ErrorAction SilentlyContinue) {
+        Remove-ItemProperty -Path $runPath -Name "Zebar" -Force
+        Write-Log "Removed Zebar registry startup entry" -Level 'SUCCESS'
+    }
+
     # Remove Oh My Posh configuration
     Write-Log "Removing Oh My Posh configuration..." -Level 'INFO'
     $ohMyPoshDir = Join-Path $env:USERPROFILE ".OhMyPosh"
