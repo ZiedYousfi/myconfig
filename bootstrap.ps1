@@ -80,7 +80,7 @@ function Download-And-Extract {
         $url = "https://github.com/$GithubRepo/releases/download/$Tag/setup-config.zip"
         # Fallback to source code zip if asset not found
         try {
-            $response = Invoke-WebRequest -Uri $url -Method Head -ErrorAction Stop
+            $response = Invoke-WebRequest -Uri $url -Method Head -UseBasicParsing -ErrorAction Stop
         } catch {
             Write-Log "Release asset not found, downloading from source archive..." -Level 'WARNING'
             $url = "https://github.com/$GithubRepo/archive/refs/tags/$Tag.zip"
@@ -88,7 +88,7 @@ function Download-And-Extract {
     }
 
     try {
-        Invoke-WebRequest -Uri $url -OutFile $zipPath
+        Invoke-WebRequest -Uri $url -OutFile $zipPath -UseBasicParsing
         Write-Log "Downloaded successfully" -Level 'SUCCESS'
     } catch {
         Write-Log "Failed to download from $url" -Level 'ERROR'

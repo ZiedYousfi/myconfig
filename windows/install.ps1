@@ -154,7 +154,7 @@ function Install-PowerShellCore {
 
     # Check if pwsh is already installed
     if (Test-Command 'pwsh') {
-        $version = (pwsh -Command '$PSVersionTable.PSVersion.ToString()') 2>$null
+        $version = (pwsh -NoProfile -Command '$PSVersionTable.PSVersion.ToString()') 2>$null
         Write-Log "PowerShell Core is already installed (version: $version)" -Level 'INFO'
         return
     }
@@ -386,7 +386,8 @@ function Install-OhMyPosh {
         try {
             Invoke-WebRequest `
                 -Uri "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/pure.omp.json" `
-                -OutFile $themeFile
+                -OutFile $themeFile `
+                -UseBasicParsing
             Write-Log "Pure theme downloaded" -Level 'SUCCESS'
         } catch {
             Write-Log "Failed to download Pure theme: $_" -Level 'ERROR'
