@@ -110,6 +110,16 @@ function Ensure-Directory {
     }
 }
 
+function Set-TextFileUtf8NoBom {
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string]$Content
+    )
+
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($Path, $Content, $utf8NoBom)
+}
+
 function Set-StartupShortcut {
     param(
         [string]$Name,
@@ -330,7 +340,7 @@ function Install-WindowsTerminal {
 }
 '@
 
-    $terminalSettings | Set-Content -Path $settingsPath -Encoding utf8
+    Set-TextFileUtf8NoBom -Path $settingsPath -Content $terminalSettings
     Write-Log "Windows Terminal settings configured: $settingsPath" -Level 'SUCCESS'
 }
 
@@ -518,7 +528,7 @@ function Install-WindowManager {
 }
 '@
 
-    $zebarSettings | Set-Content -Path $zebarSettingsPath -Encoding utf8
+    Set-TextFileUtf8NoBom -Path $zebarSettingsPath -Content $zebarSettings
     Write-Log "Zebar settings configured: $zebarSettingsPath" -Level 'SUCCESS'
 
     # Setup GlazeWM and Zebar to start on login using startup shortcuts
