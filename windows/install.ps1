@@ -136,11 +136,19 @@ function Set-StartupShortcut {
 }
 
 function Test-WSLUbuntuInstalled {
-    $env:WSL_UTF8 = 1
-    $distros = wsl --list --verbose 2>$null
+    try {
+        if (-not (Test-Command 'wsl')) {
+            return $false
+        }
 
-    if ($distros -match [regex]::Escape('Ubuntu')) {
-        return $true
+        $env:WSL_UTF8 = 1
+        $distros = wsl --list --verbose 2>$null
+
+        if ($distros -match [regex]::Escape('Ubuntu')) {
+            return $true
+        }
+    } catch {
+        return $false
     }
 
     return $false
@@ -594,16 +602,12 @@ function Install-WSLUbuntu {
     $ubuntuInstalled = Test-WSLUbuntuInstalled
 
     if (-not $ubuntuInstalled) {
-        Write-Log "" -Level 'ERROR'
-        Write-Log "WSL Ubuntu is not installed." -Level 'ERROR'
-        Write-Log "" -Level 'ERROR'
-        Write-Log "Please install WSL Ubuntu first:" -Level 'WARNING'
+        Write-Log "WSL Ubuntu is not installed. Skipping WSL setup." -Level 'WARNING'
+        Write-Log "If you want to use WSL, please install it first:" -Level 'INFO'
         Write-Log "  1. Open PowerShell as Administrator" -Level 'INFO'
         Write-Log "  2. Run: wsl --install -d Ubuntu" -Level 'INFO'
-        Write-Log "  3. Restart your computer" -Level 'INFO'
-        Write-Log "  4. Run this script again after installation" -Level 'INFO'
-        Write-Log "" -Level 'ERROR'
-        exit 1
+        Write-Log "  3. Restart your computer and run this script again." -Level 'INFO'
+        return
     }
 
     Write-Log "Found WSL Ubuntu installation" -Level 'SUCCESS'
