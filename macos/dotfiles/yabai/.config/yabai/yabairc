@@ -35,7 +35,7 @@ options=(
  style=round
  width=4.0
  hidpi=on
- active_color=0xffe2e2e3
+ active_color=0xffa6e22e
  inactive_color=0xff414550
 )
 
