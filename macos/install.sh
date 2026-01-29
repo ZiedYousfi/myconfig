@@ -727,6 +727,7 @@ configure_vscode() {
             ms-python.vscode-python-envs
             ms-vscode.cmake-tools
             ms-vscode.makefile-tools
+            ms-vscode.powershell
             oven.bun-vscode
             redhat.java
             redhat.vscode-xml
@@ -735,6 +736,7 @@ configure_vscode() {
             sumneko.lua
             svelte.svelte-vscode
             upstash.context7-mcp
+            usernamehw.errorlens
             vscjava.vscode-gradle
             vscjava.vscode-java-debug
             vscjava.vscode-java-dependency
