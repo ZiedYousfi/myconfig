@@ -1,1 +1,1 @@
-"Not implemented yet"
+"Not implemented yet. But the dotfiles are next to this script, so you can check them out!"
