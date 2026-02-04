@@ -1,6 +1,3 @@
-# PROFILE LOADED
-Write-Host "PROFILE LOADED: $PROFILE"
-
 # --- Oh My Posh (prompt theme) ---
 $ohMyPoshConfig = Join-Path $env:USERPROFILE ".OhMyPosh\pure.omp.json"
 if (Test-Path $ohMyPoshConfig) {
@@ -21,20 +18,25 @@ if (Get-Module -ListAvailable -Name PSReadLine) {
     Set-PSReadLineOption -PredictionViewStyle InlineView
     Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
 
-    # Cursor shape change (Windows Terminal supports this)
-    $esc = [char]0x1b
-
     try {
         Set-PSReadLineOption -ViModeIndicator Script
         Set-PSReadLineOption -ViModeChangeHandler {
             param($mode)
             switch ($mode) {
-                "Insert"  { Write-Host -NoNewline "$([char]0x1b)[5 q" }  # beam
+                "Insert" { Write-Host -NoNewline "$([char]0x1b)[5 q" }  # beam
                 "Command" { Write-Host -NoNewline "$([char]0x1b)[1 q" }  # block
-                default   { Write-Host -NoNewline "$([char]0x1b)[5 q" }
+                default { Write-Host -NoNewline "$([char]0x1b)[5 q" }
             }
         }
-    } catch {
+    }
+    catch {
         # PSReadLine version doesn't support ViModeChangeHandler
     }
 }
+
+Set-Alias -Name lg -Value lazygit
+
+# --- zoxide (smart cd) ---
+# NEED TO STAY AT THE END OF THE FILE !
+
+Invoke-Expression (& { (zoxide init powershell | Out-String) })
