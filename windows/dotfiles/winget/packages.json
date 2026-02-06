@@ -17,7 +17,8 @@
         { "PackageIdentifier": "Rustlang.Rustup" },
         { "PackageIdentifier": "ajeetdsouza.zoxide" },
         { "PackageIdentifier": "junegunn.fzf" },
-        { "PackageIdentifier": "JanDeDobbeleer.OhMyPosh" }
+        { "PackageIdentifier": "JanDeDobbeleer.OhMyPosh" },
+        { "PackageIdentifier": "SST.opencode"}
       ]
     }
   ]
