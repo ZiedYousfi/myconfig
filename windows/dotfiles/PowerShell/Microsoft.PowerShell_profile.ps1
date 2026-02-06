@@ -35,6 +35,7 @@ if (Get-Module -ListAvailable -Name PSReadLine) {
 }
 
 Set-Alias -Name lg -Value lazygit
+Set-Alias -Name oc -Value opencode
 
 # --- zoxide (smart cd) ---
 # NEED TO STAY AT THE END OF THE FILE !
