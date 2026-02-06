@@ -94,7 +94,7 @@ git subtree pull --prefix=dotfiles/nvim/.config/nvim https://github.com/LazyVim/
 
 ## Dotfiles Structure
 
-```
+```bash
 dotfiles/
 ├── ghostty/    # Terminal emulator config
 ├── nvim/       # Neovim configuration
@@ -148,18 +148,14 @@ See [SPECS.md](SPECS.md) for complete configuration specifications and details a
 Minimal requirements - the bootstrap script handles everything else:
 
 **macOS/Ubuntu:**
+
 - `curl` - for downloading
-- `unzip` - for extracting archives
 - Internet connection
 
 **Windows:**
-- PowerShell 7+ (pre-installed on Windows 10/11)
+
 - Winget (pre-installed on Windows 10 1709+)
 - Internet connection
-
-## License
-
-MIT License - see LICENSE file for details
 
 ## Contributing
 
