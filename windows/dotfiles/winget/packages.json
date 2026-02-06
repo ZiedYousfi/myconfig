@@ -18,7 +18,8 @@
         { "PackageIdentifier": "ajeetdsouza.zoxide" },
         { "PackageIdentifier": "junegunn.fzf" },
         { "PackageIdentifier": "JanDeDobbeleer.OhMyPosh" },
-        { "PackageIdentifier": "SST.opencode"}
+        { "PackageIdentifier": "SST.opencode"},
+        { "PackageIdentifier": "Neovim.Neovim" }
       ]
     }
   ]

@@ -36,6 +36,9 @@ if (Get-Module -ListAvailable -Name PSReadLine) {
 
 Set-Alias -Name lg -Value lazygit
 Set-Alias -Name oc -Value opencode
+Set-Alias -Name vim -Value nvim
+Set-Alias -Name vi -Value nvim
+Set-Alias -Name v -Value nvim
 
 # --- zoxide (smart cd) ---
 # NEED TO STAY AT THE END OF THE FILE !
