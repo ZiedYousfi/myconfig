@@ -83,6 +83,9 @@ If you prefer to inspect before running:
 git clone https://github.com/ZiedYousfi/myconfig.git
 cd myconfig
 
+# Update LazyVim starter (vendored in-repo)
+git subtree pull --prefix=dotfiles/nvim/.config/nvim https://github.com/LazyVim/starter main --squash
+
 # Run the appropriate install script
 ./macos/install.sh          # For macOS
 ./ubuntu-server/install.sh  # For Ubuntu Server

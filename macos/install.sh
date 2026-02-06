@@ -630,25 +630,17 @@ install_oh_my_tmux() {
 
 install_lazyvim() {
     local NVIM_CONFIG_DIR="$XDG_CONFIG_HOME/nvim"
+    local LAZYVIM_SOURCE_DIR="$USER_DOTFILES_DIR/nvim/.config/nvim"
+
+    if [ ! -f "$LAZYVIM_SOURCE_DIR/lua/config/lazy.lua" ]; then
+        log_error "LazyVim source is missing in $LAZYVIM_SOURCE_DIR"
+        return 1
+    fi
 
     if [ -d "$NVIM_CONFIG_DIR" ] && [ -f "$NVIM_CONFIG_DIR/lua/config/lazy.lua" ]; then
         log_success "LazyVim is already installed"
     else
-        log_info "Installing LazyVim..."
-
-        # Backup existing config if present
-        if [ -d "$NVIM_CONFIG_DIR" ]; then
-            mv "$NVIM_CONFIG_DIR" "$NVIM_CONFIG_DIR.backup.$(date +%Y%m%d%H%M%S)"
-            log_info "Backed up existing nvim config"
-        fi
-
-        # Clone LazyVim starter
-        git clone https://github.com/LazyVim/starter "$NVIM_CONFIG_DIR"
-
-        # Remove .git directory
-        rm -rf "$NVIM_CONFIG_DIR/.git"
-
-        log_success "LazyVim installed"
+        log_info "Installing LazyVim from repo..."
     fi
 
     # Stow custom Neovim plugins
