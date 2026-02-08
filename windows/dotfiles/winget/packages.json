@@ -19,7 +19,8 @@
         { "PackageIdentifier": "junegunn.fzf" },
         { "PackageIdentifier": "JanDeDobbeleer.OhMyPosh" },
         { "PackageIdentifier": "SST.opencode"},
-        { "PackageIdentifier": "Neovim.Neovim" }
+        { "PackageIdentifier": "Neovim.Neovim" },
+        { "PackageIdentifier": "Ollama.Ollama" }
       ]
     }
   ]
