@@ -52,6 +52,10 @@ function y {
 	Remove-Item -Path $tmp
 }
 
+function reload {
+    . $PROFILE
+}
+
 # --- zoxide (smart cd) ---
 # NEED TO STAY AT THE END OF THE FILE !
 
