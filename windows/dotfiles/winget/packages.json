@@ -18,9 +18,18 @@
         { "PackageIdentifier": "ajeetdsouza.zoxide" },
         { "PackageIdentifier": "junegunn.fzf" },
         { "PackageIdentifier": "JanDeDobbeleer.OhMyPosh" },
-        { "PackageIdentifier": "SST.opencode"},
+        { "PackageIdentifier": "SST.opencode" },
         { "PackageIdentifier": "Neovim.Neovim" },
-        { "PackageIdentifier": "Ollama.Ollama" }
+        { "PackageIdentifier": "Ollama.Ollama" },
+        { "PackageIdentifier": "GnuWin32.Make" },
+        { "PackageIdentifier": "sxyazi.yazi" },
+        { "PackageIdentifier": "Gyan.FFmpeg" },
+        { "PackageIdentifier": "7zip.7zip" },
+        { "PackageIdentifier": "jqlang.jq" },
+        { "PackageIdentifier": "oschwartz10612.Poppler" },
+        { "PackageIdentifier": "sharkdp.fd" },
+        { "PackageIdentifier": "BurntSushi.ripgrep.MSVC" },
+        { "PackageIdentifier": "ImageMagick.ImageMagick" }
       ]
     }
   ]
