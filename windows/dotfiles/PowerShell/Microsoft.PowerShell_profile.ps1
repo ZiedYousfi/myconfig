@@ -39,6 +39,18 @@ Set-Alias -Name oc -Value opencode
 Set-Alias -Name vim -Value nvim
 Set-Alias -Name vi -Value nvim
 Set-Alias -Name v -Value nvim
+Set-Alias -Name grep -Value ripgrep
+Set-Alias -Name rg -Value ripgrep
+
+function y {
+	$tmp = (New-TemporaryFile).FullName
+	yazi.exe $args --cwd-file="$tmp"
+	$cwd = Get-Content -Path $tmp -Encoding UTF8
+	if ($cwd -ne $PWD.Path -and (Test-Path -LiteralPath $cwd -PathType Container)) {
+		Set-Location -LiteralPath (Resolve-Path -LiteralPath $cwd).Path
+	}
+	Remove-Item -Path $tmp
+}
 
 # --- zoxide (smart cd) ---
 # NEED TO STAY AT THE END OF THE FILE !
