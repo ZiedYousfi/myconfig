@@ -1,6 +1,7 @@
 return {
   "Pocco81/auto-save.nvim",
   lazy = false,
+  dependencies = {},
   opts = {
     debounce_delay = 500,
     execution_message = {
