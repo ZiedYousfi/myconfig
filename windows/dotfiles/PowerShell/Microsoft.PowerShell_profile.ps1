@@ -56,6 +56,48 @@ function reload {
     . $PROFILE
 }
 
+function msvcenv {
+    # Déjà chargé ?
+    if (Get-Command cl -ErrorAction SilentlyContinue) {
+        Write-Host "ℹ️ MSVC environment already loaded" -ForegroundColor Yellow
+	return
+    }
+
+    # Cherche vswhere
+    $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+    
+    if (Test-Path $vsWhere) {
+        $installPath = & $vsWhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null
+        
+        if ($installPath) {
+            $launchScript = Join-Path $installPath "Common7\Tools\Launch-VsDevShell.ps1"
+            if (Test-Path $launchScript) {
+                & $launchScript
+                Write-Host "✅ MSVC environment loaded" -ForegroundColor Green
+		return
+            }
+        }
+    }
+
+    # Fallback hardcode
+    $fallbackPaths = @(
+        "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Launch-VsDevShell.ps1"
+        "C:\Program Files\Microsoft Visual Studio\2022\Professional\Common7\Tools\Launch-VsDevShell.ps1"
+        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\Launch-VsDevShell.ps1"
+        "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\Launch-VsDevShell.ps1"
+    )
+
+    foreach ($path in $fallbackPaths) {
+        if (Test-Path $path) {
+            & $path
+            Write-Host "✅ MSVC environment loaded from fallback path" -ForegroundColor Green
+            return
+        }
+    }
+
+    Write-Host "❌ MSVC environment not found. Please ensure Visual Studio with C++ tools is installed." -ForegroundColor Red
+}
+
 # --- zoxide (smart cd) ---
 # NEED TO STAY AT THE END OF THE FILE !
 
