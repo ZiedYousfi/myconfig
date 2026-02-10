@@ -1,0 +1,7 @@
+[plugin]
+deps = []
+
+[[flavor.deps]]
+use = "malick-tammal/monokai"
+rev = "e59f6cb"
+hash = "1f3b51a2d49513f323c7dc655756af77"
