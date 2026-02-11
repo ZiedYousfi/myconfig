@@ -115,6 +115,10 @@ Follow these steps precisely:
 "@ -m github-copilot/gpt-4.1
 }
 
+function update {
+    winget upgrade -r --include-unknown --accept-package-agreements --accept-source-agreements
+}
+
 # --- zoxide (smart cd) ---
 # NEED TO STAY AT THE END OF THE FILE !
 
