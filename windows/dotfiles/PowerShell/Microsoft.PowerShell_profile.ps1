@@ -41,6 +41,7 @@ Set-Alias -Name vi -Value nvim
 Set-Alias -Name v -Value nvim
 Set-Alias -Name grep -Value ripgrep
 Set-Alias -Name rg -Value ripgrep
+Set-Alias -Name which -Value gcm
 
 function y {
 	$tmp = (New-TemporaryFile).FullName
