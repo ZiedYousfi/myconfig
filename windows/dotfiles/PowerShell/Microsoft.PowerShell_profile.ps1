@@ -39,8 +39,7 @@ Set-Alias -Name oc -Value opencode
 Set-Alias -Name vim -Value nvim
 Set-Alias -Name vi -Value nvim
 Set-Alias -Name v -Value nvim
-Set-Alias -Name grep -Value ripgrep
-Set-Alias -Name rg -Value ripgrep
+Set-Alias -Name grep -Value rg
 Set-Alias -Name which -Value gcm
 
 function y {
