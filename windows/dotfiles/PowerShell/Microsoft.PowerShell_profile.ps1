@@ -57,13 +57,6 @@ function reload {
 }
 
 function msvcenv {
-    # Déjà chargé ?
-    if (Get-Command cl -ErrorAction SilentlyContinue) {
-        Write-Host "ℹ️ MSVC environment already loaded" -ForegroundColor Yellow
-	return
-    }
-
-    # Cherche vswhere
     $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 
     if (Test-Path $vsWhere) {
@@ -79,7 +72,6 @@ function msvcenv {
         }
     }
 
-    # Fallback hardcode
     $fallbackPaths = @(
         "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Launch-VsDevShell.ps1"
         "C:\Program Files\Microsoft Visual Studio\2022\Professional\Common7\Tools\Launch-VsDevShell.ps1"
