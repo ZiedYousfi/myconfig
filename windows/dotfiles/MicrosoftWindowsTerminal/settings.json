@@ -1,14 +1,39 @@
 {
     "$help": "https://aka.ms/terminal-documentation",
     "$schema": "https://aka.ms/terminal-profiles-schema",
-    "actions": [],
+    "actions": 
+    [
+        {
+            "command": 
+            {
+                "action": "splitPane"
+            },
+            "id": "User.splitPane.91AB55B1"
+        },
+        {
+            "command": 
+            {
+                "action": "adjustFontSize",
+                "delta": -1
+            },
+            "id": "User.adjustFontSize.E2698FAA"
+        }
+    ],
+    "centerOnLaunch": true,
     "copyFormatting": "none",
     "copyOnSelect": true,
     "defaultProfile": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
+    "disableAnimations": true,
     "firstWindowPreference": "defaultProfile",
     "focusFollowMouse": true,
+    "initialCols": 200,
+    "initialRows": 60,
     "keybindings": 
     [
+        {
+            "id": "User.splitPane.91AB55B1",
+            "keys": "ctrl+/"
+        },
         {
             "id": null,
             "keys": "ctrl+c"
@@ -22,8 +47,16 @@
             "keys": "ctrl+shift+f"
         },
         {
+            "id": "User.adjustFontSize.E2698FAA",
+            "keys": "ctrl+minus"
+        },
+        {
             "id": null,
             "keys": "alt+shift+d"
+        },
+        {
+            "id": "User.splitPane.91AB55B1",
+            "keys": "ctrl+shift+\\"
         }
     ],
     "newTabMenu": 
@@ -96,7 +129,9 @@
             "yellow": "#E6DB74"
         }
     ],
+    "showTabsFullscreen": false,
+    "tabWidthMode": "equal",
     "themes": [],
-    "useAcrylicInTabRow": true,
+    "useAcrylicInTabRow": false,
     "windowingBehavior": "useExisting"
 }

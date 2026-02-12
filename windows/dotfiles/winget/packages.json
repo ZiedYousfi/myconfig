@@ -1,38 +1,128 @@
 {
-  "Sources": [
-    {
-      "SourceDetails": {
-        "Name": "winget",
-        "Identifier": "Microsoft.Winget.Source_8wekyb3d8bbwe",
-        "Argument": "https://cdn.winget.microsoft.com/cache"
-      },
-      "Packages": [
-        { "PackageIdentifier": "CoreyButler.NVMforWindows" },
-        { "PackageIdentifier": "AutoHotkey.AutoHotkey" },
-        { "PackageIdentifier": "Git.Git" },
-        { "PackageIdentifier": "Microsoft.PowerShell" },
-        { "PackageIdentifier": "LLVM.LLVM" },
-        { "PackageIdentifier": "Microsoft.VisualStudio.2022.BuildTools" },
-        { "PackageIdentifier": "JesseDuffield.lazygit" },
-        { "PackageIdentifier": "Rustlang.Rustup" },
-        { "PackageIdentifier": "ajeetdsouza.zoxide" },
-        { "PackageIdentifier": "junegunn.fzf" },
-        { "PackageIdentifier": "JanDeDobbeleer.OhMyPosh" },
-        { "PackageIdentifier": "SST.opencode" },
-        { "PackageIdentifier": "Neovim.Neovim" },
-        { "PackageIdentifier": "Ollama.Ollama" },
-        { "PackageIdentifier": "GnuWin32.Make" },
-        { "PackageIdentifier": "sxyazi.yazi" },
-        { "PackageIdentifier": "Gyan.FFmpeg" },
-        { "PackageIdentifier": "7zip.7zip" },
-        { "PackageIdentifier": "jqlang.jq" },
-        { "PackageIdentifier": "oschwartz10612.Poppler" },
-        { "PackageIdentifier": "sharkdp.fd" },
-        { "PackageIdentifier": "BurntSushi.ripgrep.MSVC" },
-        { "PackageIdentifier": "ImageMagick.ImageMagick" },
-        { "PackageIdentifier": "Python.PythonInstallManager" },
-        { "PackageIdentifier": "Kitware.CMake" }
-      ]
-    }
-  ]
+	"$schema" : "https://aka.ms/winget-packages.schema.2.0.json",
+	"CreationDate" : "2026-02-12T10:03:43.460-00:00",
+	"Sources" : 
+	[
+		{
+			"Packages" : 
+			[
+				{
+					"PackageIdentifier" : "CoreyButler.NVMforWindows"
+				},
+				{
+					"PackageIdentifier" : "7zip.7zip"
+				},
+				{
+					"PackageIdentifier" : "AutoHotkey.AutoHotkey"
+				},
+				{
+					"PackageIdentifier" : "Git.Git"
+				},
+				{
+					"PackageIdentifier" : "ImageMagick.ImageMagick"
+				},
+				{
+					"PackageIdentifier" : "Neovim.Neovim"
+				},
+				{
+					"PackageIdentifier" : "Kitware.CMake"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.PowerShell"
+				},
+				{
+					"PackageIdentifier" : "LLVM.LLVM"
+				},
+				{
+					"PackageIdentifier" : "GnuWin32.Make"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VisualStudio.2022.BuildTools"
+				},
+				{
+					"PackageIdentifier" : "BurntSushi.ripgrep.MSVC"
+				},
+				{
+					"PackageIdentifier" : "Discord.Discord"
+				},
+				{
+					"PackageIdentifier" : "Gyan.FFmpeg"
+				},
+				{
+					"PackageIdentifier" : "JesseDuffield.lazygit"
+				},
+				{
+					"PackageIdentifier" : "Rustlang.Rustup"
+				},
+				{
+					"PackageIdentifier" : "SST.opencode"
+				},
+				{
+					"PackageIdentifier" : "ajeetdsouza.zoxide"
+				},
+				{
+					"PackageIdentifier" : "jqlang.jq"
+				},
+				{
+					"PackageIdentifier" : "junegunn.fzf"
+				},
+				{
+					"PackageIdentifier" : "oschwartz10612.Poppler"
+				},
+				{
+					"PackageIdentifier" : "sxyazi.yazi"
+				},
+				{
+					"PackageIdentifier" : "Ollama.Ollama"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WindowsTerminal"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.WSL"
+				},
+				{
+					"PackageIdentifier" : "Python.PythonInstallManager"
+				},
+				{
+					"PackageIdentifier" : "JanDeDobbeleer.OhMyPosh"
+				}
+			],
+			"SourceDetails" : 
+			{
+				"Argument" : "https://cdn.winget.microsoft.com/cache",
+				"Identifier" : "Microsoft.Winget.Source_8wekyb3d8bbwe",
+				"Name" : "winget",
+				"Type" : "Microsoft.PreIndexed.Package"
+			}
+		},
+		{
+			"Packages" : 
+			[
+				{
+					"PackageIdentifier" : "XPFFTQ037JWMHS"
+				},
+				{
+					"PackageIdentifier" : "XPFFXW40W60KCF"
+				},
+				{
+					"PackageIdentifier" : "XP9KHM4BK9FZ7Q"
+				},
+				{
+					"PackageIdentifier" : "XP89DCGQ3K6VLD"
+				},
+				{
+					"PackageIdentifier" : "9N36PPMP8S23"
+				}
+			],
+			"SourceDetails" : 
+			{
+				"Argument" : "https://storeedgefd.dsx.mp.microsoft.com/v9.0",
+				"Identifier" : "StoreEdgeFD",
+				"Name" : "msstore",
+				"Type" : "Microsoft.Rest"
+			}
+		}
+	],
+	"WinGetVersion" : "1.12.460"
 }
