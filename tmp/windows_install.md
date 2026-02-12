@@ -10,3 +10,4 @@
 - Install JetBrains Mono font : oh-my-posh font install JetBrainsMono
 - Install the Windows Terminal settings : copy <repo>\windows\dotfiles\WindowsTerminal\settings.json $env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json
 - Run [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files (x86)\GnuWin32\bin", "User")
+- Run py install --configure
