@@ -26,8 +26,8 @@
     "disableAnimations": true,
     "firstWindowPreference": "defaultProfile",
     "focusFollowMouse": true,
-    "initialCols": 200,
-    "initialRows": 60,
+    "initialCols": 160,
+    "initialRows": 40,
     "keybindings": 
     [
         {
