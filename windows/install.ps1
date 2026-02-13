@@ -82,7 +82,7 @@ function Install-WingetPackages {
     }
 
     Write-Log "Installing winget packages from $packagesJson..."
-    winget import $packagesJson --accept-source-agreements --accept-package-agreements --ignore-unavailable
+    winget import -i $packagesJson --accept-source-agreements --accept-package-agreements --ignore-unavailable
     Write-Log "Winget packages installed" -Level 'OK'
 }
 
