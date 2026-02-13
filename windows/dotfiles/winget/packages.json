@@ -43,9 +43,6 @@
 					"PackageIdentifier" : "BurntSushi.ripgrep.MSVC"
 				},
 				{
-					"PackageIdentifier" : "Discord.Discord"
-				},
-				{
 					"PackageIdentifier" : "Gyan.FFmpeg"
 				},
 				{
@@ -96,19 +93,6 @@
 				"Type" : "Microsoft.PreIndexed.Package"
 			}
 		},
-		{
-			"Packages" : 
-			[
-			
-			],
-			"SourceDetails" : 
-			{
-				"Argument" : "https://storeedgefd.dsx.mp.microsoft.com/v9.0",
-				"Identifier" : "StoreEdgeFD",
-				"Name" : "msstore",
-				"Type" : "Microsoft.Rest"
-			}
-		}
 	],
 	"WinGetVersion" : "1.12.460"
 }
