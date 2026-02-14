@@ -9,14 +9,13 @@
 .yasb-bar {
   background-color: rgba(39, 40, 34, 0.94);
   padding: 0;
+  height: 32px;
 }
 
 /* ========== CLAVIER VISUEL ========== */
 .osk-btn .label {
   color: #66d9ef;
   background: #1e1f1c;
-  border-radius: 6px;
-  padding: 0 8px;
 }
 
 .osk-btn .label:hover {
@@ -25,17 +24,36 @@
 }
 
 /* ========== WORKSPACES ========== */
-.komorebi-workspaces .widget-container {
-  padding: 0;
+.komorebi-workspaces {
+  background: transparent;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
 }
 
 .komorebi-workspaces .ws-btn {
-  padding: 0 8px;
-  margin: 0 1px;
-  border-radius: 6px;
+  /* Taille fixe en pixels */
+  width: 32px;
+  min-width: 32px;
+  max-width: 32px;
+  height: 28px;
+  min-height: 28px;
+  max-height: 28px;
+  margin: 0 2px;
+  
+  /* Centrage du texte */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  
+  /* Styles de base */
   color: #75715e;
   background: transparent;
   font-size: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .komorebi-workspaces .ws-btn:hover {
@@ -50,15 +68,7 @@
 .komorebi-workspaces .ws-btn.active {
   background: #f92672;
   color: #f8f8f2;
-}
-
-/* ========== ACTIVE LAYOUT ========== */
-.komorebi-active-layout .label {
-  color: #ae81ff;
-  padding: 0 6px;
-}
-
-/* ========== ACTIVE WINDOW ========== */
+}/* ========== ACTIVE WINDOW ========== */
 .active-window-widget .widget-container {
   padding: 0;
 }
