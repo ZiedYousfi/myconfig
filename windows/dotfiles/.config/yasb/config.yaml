@@ -37,7 +37,6 @@ bars:
       left:
         - "osk_button"
         - "komorebi_workspaces"
-        - "komorebi_active_layout"
         - "active_window"
       center:
         - "clock"
@@ -51,8 +50,8 @@ widgets:
   osk_button:
     type: "yasb.custom.CustomWidget"
     options:
-      label: "\uf11c"
-      label_alt: "\uf11c"
+      label: "<span class='icon'>\uf11c</span>"
+      label_alt: "<span class='icon'>\uf11c</span>"
       class_name: "osk-btn"
       exec_options:
         run_cmd: "echo osk"
@@ -73,29 +72,6 @@ widgets:
       hide_if_offline: true
       animation: true
 
-  komorebi_active_layout:
-    type: "komorebi.active_layout.ActiveLayoutWidget"
-    options:
-      hide_if_offline: true
-      label: "{icon}"
-      layout_icons:
-        bsp: "BSP"
-        columns: "COLS"
-        rows: "ROWS"
-        grid: "GRID"
-        vertical_stack: "V-STK"
-        horizontal_stack: "H-STK"
-        ultrawide_vertical_stack: "W-STK"
-        right_main_vertical_stack: "RMV"
-        monocle: "MONO"
-        maximized: "MAX"
-        floating: "FLOAT"
-        paused: "PAUSE"
-      callbacks:
-        on_left: "next_layout"
-        on_middle: "toggle_monocle"
-        on_right: "prev_layout"
-
   active_window:
     type: "yasb.active_window.ActiveWindowWidget"
     options:
@@ -113,16 +89,16 @@ widgets:
   clock:
     type: "yasb.clock.ClockWidget"
     options:
-      label: "{icon}{%d/%m %H:%M}"
-      label_alt: "{%A %d %B %Y %H:%M:%S}"
+      label: "<span class='icon'>\uf017</span> {%d/%m %H:%M}"
+      label_alt: "<span class='icon'>\uf017</span> {%A %d %B %Y %H:%M:%S}"
       callbacks:
         on_left: "toggle_label"
 
   cpu:
     type: "yasb.cpu.CpuWidget"
     options:
-      label: "<span>\uf4bc</span> {info[percent][total]}%"
-      label_alt: "<span>\uf4bc</span> {info[percent][total]}%"
+      label: "<span class='icon'>\uf4bc</span>{info[percent][total]}%"
+      label_alt: "<span class='icon'>\uf4bc</span> {info[percent][total]}%"
       update_interval: 2000
       callbacks:
         on_left: "toggle_label"
@@ -130,8 +106,8 @@ widgets:
   memory:
     type: "yasb.memory.MemoryWidget"
     options:
-      label: "<span>\uf4bc</span> {virtual_mem_percent}%"
-      label_alt: "<span>\uf4bc</span> {virtual_mem_free}"
+      label: "<span class='icon'>\uefc5</span> {virtual_mem_percent}%"
+      label_alt: "<span class='icon'>\uefc5</span> {virtual_mem_free}"
       update_interval: 2000
       callbacks:
         on_left: "toggle_label"
@@ -146,7 +122,7 @@ widgets:
   volume:
     type: "yasb.volume.VolumeWidget"
     options:
-      label: "<span>{icon}</span> {level}"
+      label: "<span class='icon'>{icon}</span> {level}"
       label_alt: "{volume}"
       volume_icons:
         - "\ueee8"

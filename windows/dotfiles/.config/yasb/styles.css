@@ -1,13 +1,12 @@
 /* ========== MONOKAI THEME ========== */
 * {
-  font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
+  font-family: "Segoe UI", monospace;
   font-size: 14px;
   font-weight: bold;
-  color: #f8f8f2;
 }
 
 .yasb-bar {
-  background-color: rgba(39, 40, 34, 0.94);
+  background-color: rgba(39, 40, 34, 1);
   padding: 0;
   height: 32px;
 }
@@ -16,6 +15,8 @@
 .osk-btn .label {
   color: #66d9ef;
   background: #1e1f1c;
+  padding: 2 2px;
+  border-radius: 3px;
 }
 
 .osk-btn .label:hover {
@@ -32,7 +33,6 @@
 }
 
 .komorebi-workspaces .ws-btn {
-  /* Taille fixe en pixels */
   width: 32px;
   min-width: 32px;
   max-width: 32px;
@@ -41,13 +41,11 @@
   max-height: 28px;
   margin: 0 2px;
   
-  /* Centrage du texte */
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
   
-  /* Styles de base */
   color: #75715e;
   background: transparent;
   font-size: 14px;
@@ -68,7 +66,18 @@
 .komorebi-workspaces .ws-btn.active {
   background: #f92672;
   color: #f8f8f2;
-}/* ========== ACTIVE WINDOW ========== */
+
+}
+
+/* ========== LAYOUTS ========== */
+.komorebi-layouts {
+  background: transparent;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+}
+
+/* ========== ACTIVE WINDOW ========== */
 .active-window-widget .widget-container {
   padding: 0;
 }
@@ -85,6 +94,7 @@
 /* ========== CLOCK ========== */
 .clock-widget .label {
   color: #f8f8f2;
+  padding: 0 6px;
 }
 
 /* ========== CPU ========== */
@@ -121,4 +131,9 @@
 
 .volume-widget .label span {
   color: #a6e22e;
+}
+.icon {
+  font-family: "JetBrainsMono NF";
+  font-weight: normal;
+  margin-right: 4px;
 }
