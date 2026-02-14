@@ -1,37 +1,48 @@
 # --- Oh My Posh (prompt theme) ---
 $ohMyPoshConfig = Join-Path $env:USERPROFILE ".OhMyPosh\pure.omp.json"
-if (Test-Path $ohMyPoshConfig) {
-    oh-my-posh init pwsh --config $ohMyPoshConfig | Invoke-Expression
+if (Test-Path $ohMyPoshConfig)
+{
+  oh-my-posh init pwsh --config $ohMyPoshConfig | Invoke-Expression
 }
 
 # --- Terminal-Icons ---
-if (Get-Module -ListAvailable -Name Terminal-Icons) {
-    Import-Module Terminal-Icons
+if (Get-Module -ListAvailable -Name Terminal-Icons)
+{
+  Import-Module Terminal-Icons
 }
 
 # --- PSReadLine (Vi mode + inline autosuggest) ---
-if (Get-Module -ListAvailable -Name PSReadLine) {
-    Import-Module PSReadLine
+if (Get-Module -ListAvailable -Name PSReadLine)
+{
+  Import-Module PSReadLine
 
-    Set-PSReadLineOption -EditMode Vi
-    Set-PSReadLineOption -PredictionSource History
-    Set-PSReadLineOption -PredictionViewStyle InlineView
-    Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+  Set-PSReadLineOption -EditMode Vi
+  Set-PSReadLineOption -PredictionSource History
+  Set-PSReadLineOption -PredictionViewStyle InlineView
+  Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
 
-    try {
-        Set-PSReadLineOption -ViModeIndicator Script
-        Set-PSReadLineOption -ViModeChangeHandler {
-            param($mode)
-            switch ($mode) {
-                "Insert" { Write-Host -NoNewline "$([char]0x1b)[5 q" }  # beam
-                "Command" { Write-Host -NoNewline "$([char]0x1b)[1 q" }  # block
-                default { Write-Host -NoNewline "$([char]0x1b)[5 q" }
-            }
+  try
+  {
+    Set-PSReadLineOption -ViModeIndicator Script
+    Set-PSReadLineOption -ViModeChangeHandler {
+      param($mode)
+      switch ($mode)
+      {
+        "Insert"
+        { Write-Host -NoNewline "$([char]0x1b)[5 q" 
+        }  # beam
+        "Command"
+        { Write-Host -NoNewline "$([char]0x1b)[1 q" 
+        }  # block
+        default
+        { Write-Host -NoNewline "$([char]0x1b)[5 q" 
         }
+      }
     }
-    catch {
-        # PSReadLine version doesn't support ViModeChangeHandler
-    }
+  } catch
+  {
+    # PSReadLine version doesn't support ViModeChangeHandler
+  }
 }
 
 Set-Alias -Name lg -Value lazygit
@@ -42,56 +53,66 @@ Set-Alias -Name v -Value nvim
 Set-Alias -Name grep -Value rg
 Set-Alias -Name which -Value gcm
 
-function y {
-	$tmp = (New-TemporaryFile).FullName
-	yazi.exe $args --cwd-file="$tmp"
-	$cwd = Get-Content -Path $tmp -Encoding UTF8
-	if ($cwd -ne $PWD.Path -and (Test-Path -LiteralPath $cwd -PathType Container)) {
-		Set-Location -LiteralPath (Resolve-Path -LiteralPath $cwd).Path
-	}
-	Remove-Item -Path $tmp
+function y
+{
+  $tmp = (New-TemporaryFile).FullName
+  yazi.exe $args --cwd-file="$tmp"
+  $cwd = Get-Content -Path $tmp -Encoding UTF8
+  if ($cwd -ne $PWD.Path -and (Test-Path -LiteralPath $cwd -PathType Container))
+  {
+    Set-Location -LiteralPath (Resolve-Path -LiteralPath $cwd).Path
+  }
+  Remove-Item -Path $tmp
 }
 
-function reload {
-    . $PROFILE
+function reload
+{
+  . $PROFILE
 }
 
-function msvcenv {
-    $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+function msvcenv
+{
+  $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 
-    if (Test-Path $vsWhere) {
-        $installPath = & $vsWhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null
+  if (Test-Path $vsWhere)
+  {
+    $installPath = & $vsWhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null
 
-        if ($installPath) {
-            $launchScript = Join-Path $installPath "Common7\Tools\Launch-VsDevShell.ps1"
-            if (Test-Path $launchScript) {
-                & $launchScript
-                Write-Host "✅ MSVC environment loaded" -ForegroundColor Green
-                return
-            }
-        }
+    if ($installPath)
+    {
+      $launchScript = Join-Path $installPath "Common7\Tools\Launch-VsDevShell.ps1"
+      if (Test-Path $launchScript)
+      {
+        & $launchScript
+        Write-Host "✅ MSVC environment loaded" -ForegroundColor Green
+        return
+      }
     }
+  }
 
-    $fallbackPaths = @(
-        "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Launch-VsDevShell.ps1"
-        "C:\Program Files\Microsoft Visual Studio\2022\Professional\Common7\Tools\Launch-VsDevShell.ps1"
-        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\Launch-VsDevShell.ps1"
-        "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\Launch-VsDevShell.ps1"
-    )
+  $fallbackPaths = @(
+    "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Launch-VsDevShell.ps1"
+    "C:\Program Files\Microsoft Visual Studio\2022\Professional\Common7\Tools\Launch-VsDevShell.ps1"
+    "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\Launch-VsDevShell.ps1"
+    "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\Launch-VsDevShell.ps1"
+  )
 
-    foreach ($path in $fallbackPaths) {
-        if (Test-Path $path) {
-            & $path
-            Write-Host "✅ MSVC environment loaded from fallback path" -ForegroundColor Green
-            return
-        }
+  foreach ($path in $fallbackPaths)
+  {
+    if (Test-Path $path)
+    {
+      & $path
+      Write-Host "✅ MSVC environment loaded from fallback path" -ForegroundColor Green
+      return
     }
+  }
 
-    Write-Host "❌ MSVC environment not found. Please ensure Visual Studio with C++ tools is installed." -ForegroundColor Red
+  Write-Host "❌ MSVC environment not found. Please ensure Visual Studio with C++ tools is installed." -ForegroundColor Red
 }
 
-function aic {
-    opencode run @"
+function aic
+{
+  opencode run @"
 Follow these steps precisely:
 
 1. Run 'git log --oneline -10' to analyze the style and conventions of previous commit messages.
@@ -107,10 +128,46 @@ Follow these steps precisely:
 "@ -m github-copilot/gpt-4.1
 }
 
-function update {
-    winget upgrade -r --include-unknown --accept-package-agreements --accept-source-agreements
+function update
+{
+  winget upgrade -r --include-unknown --accept-package-agreements --accept-source-agreements
 }
 
+function su
+{
+  $currentDir = (Get-Location).Path
+
+  $wtArgs = @(
+    "new-tab",
+    "-p", "PowerShell",
+    "-d", $currentDir,
+    "pwsh",
+    "-NoExit"
+  )
+
+  Start-Process -FilePath "wt.exe" -Verb RunAs -ArgumentList $wtArgs
+}
+
+function ..
+{
+  param (
+    [int]$levels = 1  # Valeur par défaut = 1
+  )
+  
+  if ($levels -lt 1)
+  {
+    Write-Host "Please provide a positive integer for the number of levels to go up." -ForegroundColor Red
+    return
+  }
+
+  $targetPath = (Get-Location).Path
+  for ($i = 0; $i -lt $levels; $i++)
+  {
+    $targetPath = Split-Path -Path $targetPath -Parent
+  }
+  
+  Set-Location -Path $targetPath
+}
 # --- zoxide (smart cd) ---
 # NEED TO STAY AT THE END OF THE FILE !
 
