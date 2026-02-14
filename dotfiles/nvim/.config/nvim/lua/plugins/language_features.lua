@@ -33,6 +33,15 @@ return {
 			local lspconfig = require("lspconfig")
 			lspconfig.util.default_config = vim.tbl_extend("force", lspconfig.util.default_config, {
 				capabilities = capabilities,
+				vim.api.nvim_create_autocmd("LspAttach", {
+					group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+					callback = function(ev)
+						local opts = { buffer = ev.buf }
+						vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+						vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
+						vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+					end,
+				}),
 			})
 		end,
 	},
