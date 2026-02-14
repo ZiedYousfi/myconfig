@@ -1,0 +1,87 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/master/schema.json",
+
+  "app_specific_configuration_path": "$Env:KOMOREBI_CONFIG_HOME/applications.json",
+
+  "window_hiding_behaviour": "Cloak",
+  "cross_monitor_move_behaviour": "Insert",
+  "cross_boundary_behaviour": "Monitor",
+
+  "mouse_follows_focus": false,
+
+  "default_workspace_padding": 16,
+  "default_container_padding": 16,
+
+  "border": true,
+  "border_width": 8,
+  "border_style": "System",
+  "border_colours": {
+    "single": "#A6E22E",
+    "stack": "#66D9EF",
+    "monocle": "#F92672",
+    "floating": "#FD971F",
+    "unfocused": "#2B2B2B"
+  },
+
+  "global_work_area_offset": {
+    "left": 0,
+    "top": 0,
+    "right": 0,
+    "bottom": 0
+  },
+
+  "monitors": [
+    {
+      "workspaces": [
+        { "name": "1", "layout": "BSP" },
+        { "name": "2", "layout": "BSP" },
+        { "name": "3", "layout": "BSP" },
+        { "name": "4", "layout": "BSP" },
+        { "name": "5", "layout": "BSP" },
+        { "name": "6", "layout": "BSP" },
+        { "name": "7", "layout": "BSP" },
+        { "name": "8", "layout": "BSP" },
+        { "name": "9", "layout": "BSP" },
+        { "name": "10", "layout": "BSP" }
+      ]
+    },
+    {
+      "workspaces": [
+        { "name": "1", "layout": "BSP" },
+        { "name": "2", "layout": "BSP" },
+        { "name": "3", "layout": "BSP" },
+        { "name": "4", "layout": "BSP" },
+        { "name": "5", "layout": "BSP" },
+        { "name": "6", "layout": "BSP" },
+        { "name": "7", "layout": "BSP" },
+        { "name": "8", "layout": "BSP" },
+        { "name": "9", "layout": "BSP" },
+        { "name": "10", "layout": "BSP" }
+      ]
+    },
+    {
+      "workspaces": [
+        { "name": "1", "layout": "BSP" },
+        { "name": "2", "layout": "BSP" },
+        { "name": "3", "layout": "BSP" },
+        { "name": "4", "layout": "BSP" },
+        { "name": "5", "layout": "BSP" },
+        { "name": "6", "layout": "BSP" },
+        { "name": "7", "layout": "BSP" },
+        { "name": "8", "layout": "BSP" },
+        { "name": "9", "layout": "BSP" },
+        { "name": "10", "layout": "BSP" }
+      ]
+    }
+  ],
+
+  "floating_applications": [
+    { "kind": "Title", "id": "Picture-in-Picture", "matching_strategy": "Regex" },
+    { "kind": "Class", "id": "Chrome_WidgetWin_1", "matching_strategy": "Equals" },
+    { "kind": "Class", "id": "MozillaDialogClass", "matching_strategy": "Equals" }
+  ],
+
+  "ignore_rules": [
+    { "kind": "Exe", "id": "zebar.exe", "matching_strategy": "Equals" }
+  ]
+}

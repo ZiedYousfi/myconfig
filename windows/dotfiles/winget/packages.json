@@ -83,6 +83,15 @@
 				},
 				{
 					"PackageIdentifier" : "JanDeDobbeleer.OhMyPosh"
+				},
+				{
+					"PackageIdentifier" : "LGUG2Z.komorebi"
+				},
+				{
+					"PackageIdentifier" : "LGUG2Z.whkd"
+				},
+				{
+					"PackageIdentifier" : "AmN.yasb"
 				}
 			],
 			"SourceDetails" : 

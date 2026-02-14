@@ -1,0 +1,114 @@
+/* ========== MONOKAI THEME ========== */
+* {
+  font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
+  font-size: 14px;
+  font-weight: bold;
+  color: #f8f8f2;
+}
+
+.yasb-bar {
+  background-color: rgba(39, 40, 34, 0.94);
+  padding: 0;
+}
+
+/* ========== CLAVIER VISUEL ========== */
+.osk-btn .label {
+  color: #66d9ef;
+  background: #1e1f1c;
+  border-radius: 6px;
+  padding: 0 8px;
+}
+
+.osk-btn .label:hover {
+  background: #a6e22e;
+  color: #272822;
+}
+
+/* ========== WORKSPACES ========== */
+.komorebi-workspaces .widget-container {
+  padding: 0;
+}
+
+.komorebi-workspaces .ws-btn {
+  padding: 0 8px;
+  margin: 0 1px;
+  border-radius: 6px;
+  color: #75715e;
+  background: transparent;
+  font-size: 14px;
+}
+
+.komorebi-workspaces .ws-btn:hover {
+  background: #a6e22e;
+  color: #272822;
+}
+
+.komorebi-workspaces .ws-btn.populated {
+  color: #f8f8f2;
+}
+
+.komorebi-workspaces .ws-btn.active {
+  background: #f92672;
+  color: #f8f8f2;
+}
+
+/* ========== ACTIVE LAYOUT ========== */
+.komorebi-active-layout .label {
+  color: #ae81ff;
+  padding: 0 6px;
+}
+
+/* ========== ACTIVE WINDOW ========== */
+.active-window-widget .widget-container {
+  padding: 0;
+}
+
+.active-window-widget .label {
+  color: #a6e22e;
+  padding-left: 8px;
+}
+
+.active-window-widget .icon {
+  padding-left: 8px;
+}
+
+/* ========== CLOCK ========== */
+.clock-widget .label {
+  color: #f8f8f2;
+}
+
+/* ========== CPU ========== */
+.cpu-widget .label {
+  color: #66d9ef;
+  padding: 0 6px;
+}
+
+.cpu-widget .label span {
+  color: #66d9ef;
+}
+
+/* ========== MEMORY ========== */
+.memory-widget .label {
+  color: #f92672;
+  padding: 0 6px;
+}
+
+.memory-widget .label span {
+  color: #f92672;
+}
+
+/* ========== BATTERY ========== */
+.battery-widget .label {
+  color: #fd971f;
+  padding: 0 6px;
+}
+
+/* ========== VOLUME ========== */
+.volume-widget .label {
+  color: #a6e22e;
+  padding: 0 6px;
+}
+
+.volume-widget .label span {
+  color: #a6e22e;
+}
