@@ -98,6 +98,9 @@
         },
         {
           "PackageIdentifier" : "XAMPPRocky.tokei"
+        },
+        {
+          "PackageIdentifier" : "GoLang.Go"
         }
 			],
 			"SourceDetails" : 
