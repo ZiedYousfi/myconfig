@@ -95,6 +95,9 @@
         },
         {
           "PackageIdentifier" : "jftuga.less"
+        },
+        {
+          "PackageIdentifier" : "XAMPPRocky.tokei"
         }
 			],
 			"SourceDetails" : 
