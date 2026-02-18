@@ -5,7 +5,7 @@ InstallKeybdHook()
 ; ─────────────────────────────────────────
 ;  CONFIG
 ; ─────────────────────────────────────────
-HOLD_THRESHOLD := 150  ; ms
+HOLD_THRESHOLD := 500  ; ms
 
 homeRowActive      := false
 disabledModeActive := false
