@@ -1,22 +1,25 @@
 /* ========== BLACK & PINK THEME ========== */
 * {
-  font-family: "Iosevka", "JetBrainsMono NF", monospace;
-  font-size: 14px;
-  font-weight: 400;
+  font-family: "Iosevka NF", "JetBrainsMono NF", monospace;
+  font-size: 16px;
+  font-weight: 800;
 }
 
 .yasb-bar {
   background-color: #000000;
   height: 32px;
   width: 100%;
-  border-top: 1px solid #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
 }
 
 /* ========== OSK BUTTON ========== */
 .osk-btn .label {
   color: #a0aabe;
   background: #0a0a0a;
-  padding: 2px 6px;
+  padding: 4px 10px;
   border-radius: 4px;
   border: 1px solid #1a1a1a;
 }
@@ -30,18 +33,18 @@
 /* ========== WORKSPACES ========== */
 .komorebi-workspaces {
   background: transparent;
-  padding: 0 6px;
+  padding: 0 8px;
   display: flex;
   align-items: center;
 }
 
 .komorebi-workspaces .ws-btn {
-  width: 28px;
-  min-width: 28px;
-  max-width: 28px;
-  height: 24px;
-  min-height: 24px;
-  max-height: 24px;
+  width: 34px;
+  min-width: 34px;
+  max-width: 34px;
+  height: 28px;
+  min-height: 28px;
+  max-height: 28px;
   margin: 0 2px;
 
   display: flex;
@@ -75,7 +78,7 @@
 /* ========== LAYOUTS ========== */
 .komorebi-layouts {
   background: transparent;
-  padding: 0 6px;
+  padding: 0 8px;
   display: flex;
   align-items: center;
   color: #4a4f5e;
@@ -88,18 +91,18 @@
 
 .active-window-widget .label {
   color: #d0d6e0;
-  padding-left: 8px;
+  padding: 0 8px;
 }
 
 .active-window-widget .icon {
-  padding-left: 8px;
+  padding: 0 8px;
   color: #ff4ead;
 }
 
 /* ========== CLOCK ========== */
 .clock-widget .label {
   color: #d0d6e0;
-  padding: 0 6px;
+  padding: 0 8px;
 }
 
 .clock-widget .label .icon {
@@ -109,7 +112,7 @@
 /* ========== CPU ========== */
 .cpu-widget .label {
   color: #a0aabe;
-  padding: 0 6px;
+  padding: 0 8px;
 }
 
 .cpu-widget .label span {
@@ -119,7 +122,7 @@
 /* ========== MEMORY ========== */
 .memory-widget .label {
   color: #a0aabe;
-  padding: 0 6px;
+  padding: 0 8px;
 }
 
 .memory-widget .label span {
@@ -129,7 +132,7 @@
 /* ========== BATTERY ========== */
 .battery-widget .label {
   color: #a0aabe;
-  padding: 0 6px;
+  padding: 0 8px;
 }
 
 .battery-widget .label.low {
@@ -139,7 +142,7 @@
 /* ========== VOLUME ========== */
 .volume-widget .label {
   color: #a0aabe;
-  padding: 0 6px;
+  padding: 0 8px;
 }
 
 .volume-widget .label span {
