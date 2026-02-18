@@ -31,8 +31,8 @@
     "keybindings": 
     [
         {
-            "id": "User.splitPane.91AB55B1",
-            "keys": "ctrl+/"
+            "id": null,
+            "keys": "alt+shift+minus"
         },
         {
             "id": null,
@@ -55,8 +55,16 @@
             "keys": "alt+shift+d"
         },
         {
-            "id": "User.splitPane.91AB55B1",
-            "keys": "ctrl+shift+\\"
+            "id": "Terminal.DuplicatePaneDown",
+            "keys": "ctrl+shift+minus"
+        },
+        {
+            "id": "Terminal.DuplicatePaneRight",
+            "keys": "ctrl+shift+plus"
+        },
+        {
+            "id": null,
+            "keys": "alt+shift+plus"
         }
     ],
     "newTabMenu": 
