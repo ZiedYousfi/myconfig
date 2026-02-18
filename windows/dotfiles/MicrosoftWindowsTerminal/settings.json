@@ -32,11 +32,15 @@
     [
         {
             "id": null,
+            "keys": "ctrl+c"
+        },
+        {
+            "id": null,
             "keys": "alt+shift+minus"
         },
         {
             "id": null,
-            "keys": "ctrl+c"
+            "keys": "ctrl+shift+f"
         },
         {
             "id": null,
@@ -44,15 +48,11 @@
         },
         {
             "id": null,
-            "keys": "ctrl+shift+f"
+            "keys": "alt+shift+d"
         },
         {
             "id": "User.adjustFontSize.E2698FAA",
             "keys": "ctrl+minus"
-        },
-        {
-            "id": null,
-            "keys": "alt+shift+d"
         },
         {
             "id": "Terminal.DuplicatePaneDown",
@@ -77,15 +77,19 @@
     {
         "defaults": 
         {
-            "colorScheme": "Monokai Classic",
+            "colorScheme": "BlackPink",
             "font": 
             {
-                "face": "JetBrainsMono Nerd Font"
-            }
+                "face": "Iosevka NF",
+                "size": 16
+            },
+            "opacity": 100,
+            "useAcrylic": false
         },
         "list": 
         [
             {
+                "colorScheme": "BlackPink",
                 "guid": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
                 "hidden": false,
                 "name": "PowerShell",
@@ -114,27 +118,35 @@
     "schemes": 
     [
         {
-            "background": "#272822",
-            "black": "#272822",
-            "blue": "#66D9EF",
-            "brightBlack": "#75715E",
-            "brightBlue": "#66D9EF",
-            "brightCyan": "#A1EFE4",
-            "brightGreen": "#A6E22E",
-            "brightPurple": "#AE81FF",
-            "brightRed": "#FD971F",
-            "brightWhite": "#F9F8F5",
-            "brightYellow": "#E6DB74",
-            "cursorColor": "#F8F8F2",
-            "cyan": "#A1EFE4",
-            "foreground": "#F8F8F2",
-            "green": "#A6E22E",
-            "name": "Monokai Classic",
-            "purple": "#AE81FF",
-            "red": "#F92672",
-            "selectionBackground": "#49483E",
-            "white": "#F8F8F2",
-            "yellow": "#E6DB74"
+            "name": "BlackPink",
+            "background": "#000000",
+            "foreground": "#d0d6e0",
+            "cursorColor": "#ff4ead",
+            "selectionBackground": "#2a0016",
+
+            "black": "#000000",
+            "brightBlack": "#2a2d36",
+
+            "red": "#f87171",
+            "brightRed": "#fca5a5",
+
+            "green": "#4ade80",
+            "brightGreen": "#86efac",
+
+            "yellow": "#facc15",
+            "brightYellow": "#fde047",
+
+            "blue": "#60a5fa",
+            "brightBlue": "#93c5fd",
+
+            "purple": "#ff4ead",
+            "brightPurple": "#ff85c8",
+
+            "cyan": "#22d3ee",
+            "brightCyan": "#67e8f9",
+
+            "white": "#d0d6e0",
+            "brightWhite": "#f0f2f7"
         }
     ],
     "showTabsFullscreen": false,
