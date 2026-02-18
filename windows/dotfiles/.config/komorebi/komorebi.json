@@ -13,14 +13,14 @@
   "default_container_padding": 4,
 
   "border": true,
-  "border_width": 8,
+  "border_width": 4,
   "border_style": "System",
   "border_colours": {
-    "single": "#A6E22E",
-    "stack": "#66D9EF",
-    "monocle": "#F92672",
-    "floating": "#FD971F",
-    "unfocused": "#2B2B2B"
+    "single": "#ff4ead",
+    "stack": "#ff85c8",
+    "monocle": "#a78bfa",
+    "floating": "#60a5fa",
+    "unfocused": "#1a1a1a"
   },
 
   "monitors": [

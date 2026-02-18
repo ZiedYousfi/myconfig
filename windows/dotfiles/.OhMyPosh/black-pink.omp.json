@@ -5,13 +5,13 @@
       "alignment": "left",
       "segments": [
         {
-          "foreground": "#BF616A",
+          "foreground": "#d0d6e0",
           "style": "plain",
           "template": "{{ .UserName }} ",
           "type": "session"
         },
         {
-          "foreground": "#81A1C1",
+          "foreground": "#ff4ead",
           "options": {
             "style": "full"
           },
@@ -26,17 +26,17 @@
       "alignment": "left",
       "segments": [
         {
-          "foreground": "#6C6C6C",
+          "foreground": "#a0aabe",
           "options": {
-            "branch_ahead_icon": "<#88C0D0>\u21e1 </>",
-            "branch_behind_icon": "<#88C0D0>\u21e3 </>",
+            "branch_ahead_icon": "<#ff4ead>\u21e1 </>",
+            "branch_behind_icon": "<#ff4ead>\u21e3 </>",
             "branch_icon": "",
             "fetch_status": true,
             "fetch_upstream_icon": true,
             "github_icon": ""
           },
           "style": "plain",
-          "template": "{{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }}<#FFAFD7>*</>{{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount }}{{ end }} ",
+          "template": "{{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }}<#ff4ead>*</>{{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }}<#4ade80> \uf046 {{ .Staging.String }}</>{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount }}{{ end }} ",
           "type": "git"
         }
       ],
@@ -46,7 +46,7 @@
       "alignment": "left",
       "segments": [
         {
-          "foreground": "#A3BE8C",
+          "foreground": "#facc15",
           "options": {
             "style": "austin"
           },
@@ -62,9 +62,9 @@
       "newline": true,
       "segments": [
         {
-          "foreground": "#B48EAD",
+          "foreground": "#ff4ead",
           "foreground_templates": [
-            "{{ if gt .Code 0 }}#BF616A{{ end }}"
+            "{{ if gt .Code 0 }}#f87171{{ end }}"
           ],
           "options": {
             "always_enabled": true
@@ -79,9 +79,9 @@
   ],
   "console_title_template": "{{if .Root}}(Admin){{end}} {{.PWD}}",
   "transient_prompt": {
-    "foreground": "#B48EAD",
+    "foreground": "#ff4ead",
     "foreground_templates": [
-      "{{ if gt .Code 0 }}#BF616A{{ end }}"
+      "{{ if gt .Code 0 }}#f87171{{ end }}"
     ],
     "template": "\u276f "
   },

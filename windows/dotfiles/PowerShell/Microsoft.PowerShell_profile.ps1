@@ -1,5 +1,5 @@
 # --- Oh My Posh (prompt theme) ---
-$ohMyPoshConfig = Join-Path $env:USERPROFILE ".OhMyPosh\pure.omp.json"
+$ohMyPoshConfig = Join-Path $env:USERPROFILE ".OhMyPosh\black-pink.omp.json"
 if (Test-Path $ohMyPoshConfig)
 {
   oh-my-posh init pwsh --config $ohMyPoshConfig | Invoke-Expression

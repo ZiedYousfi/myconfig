@@ -204,10 +204,10 @@ function Install-OhMyPoshConfig
 }
 
 # ============================================================================
-# JetBrains Mono Font
+# Iosevka Mono Font
 # ============================================================================
 
-function Install-JetBrainsMonoFont
+function Install-IosevkaMonoFont
 {
   if (-not (Test-CommandExists "oh-my-posh"))
   {
@@ -215,9 +215,9 @@ function Install-JetBrainsMonoFont
     return
   }
 
-  Write-Log "Installing JetBrains Mono font..."
-  oh-my-posh font install JetBrainsMono
-  Write-Log "JetBrains Mono font installed" -Level 'OK'
+  Write-Log "Installing Iosevka Mono font..."
+  oh-my-posh font install Iosevka
+  Write-Log "Iosevka Mono font installed" -Level 'OK'
 }
 
 # ============================================================================
@@ -480,7 +480,7 @@ function Main
 
   # Install additional tools and modules
   Install-PSReadLineModule
-  Install-JetBrainsMonoFont
+  Install-IosevkaMonoFont
   Install-TreeSitterCLI
   Install-GnuWin32Path
   Install-PythonSetup

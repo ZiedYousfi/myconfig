@@ -1,27 +1,30 @@
-/* ========== MONOKAI THEME ========== */
+/* ========== BLACK & PINK THEME ========== */
 * {
-  font-family: "Segoe UI", monospace;
+  font-family: "Iosevka", "JetBrainsMono NF", monospace;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 400;
 }
 
 .yasb-bar {
-  background-color: rgba(39, 40, 34, 1);
-  padding: 0;
+  background-color: #000000;
   height: 32px;
+  width: 100%;
+  border-top: 1px solid #1a1a1a;
 }
 
-/* ========== CLAVIER VISUEL ========== */
+/* ========== OSK BUTTON ========== */
 .osk-btn .label {
-  color: #66d9ef;
-  background: #1e1f1c;
-  padding: 2 2px;
-  border-radius: 3px;
+  color: #a0aabe;
+  background: #0a0a0a;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #1a1a1a;
 }
 
 .osk-btn .label:hover {
-  background: #a6e22e;
-  color: #272822;
+  background: #ff4ead1a;
+  color: #ff4ead;
+  border-color: #ff4ead;
 }
 
 /* ========== WORKSPACES ========== */
@@ -33,40 +36,40 @@
 }
 
 .komorebi-workspaces .ws-btn {
-  width: 32px;
-  min-width: 32px;
-  max-width: 32px;
-  height: 28px;
-  min-height: 28px;
-  max-height: 28px;
+  width: 28px;
+  min-width: 28px;
+  max-width: 28px;
+  height: 24px;
+  min-height: 24px;
+  max-height: 24px;
   margin: 0 2px;
-  
+
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
-  
-  color: #75715e;
+
+  color: #4a4f5e;
   background: transparent;
-  font-size: 14px;
-  border-radius: 3px;
+  font-size: 13px;
+  border-radius: 4px;
   flex-shrink: 0;
   box-sizing: border-box;
 }
 
 .komorebi-workspaces .ws-btn:hover {
-  background: #a6e22e;
-  color: #272822;
+  background: #ff4ead1a;
+  color: #ff4ead;
 }
 
 .komorebi-workspaces .ws-btn.populated {
-  color: #f8f8f2;
+  color: #a0aabe;
 }
 
 .komorebi-workspaces .ws-btn.active {
-  background: #f92672;
-  color: #f8f8f2;
-
+  background: #ff4ead1a;
+  color: #ff4ead;
+  border: 1px solid #ff4ead;
 }
 
 /* ========== LAYOUTS ========== */
@@ -75,6 +78,7 @@
   padding: 0 6px;
   display: flex;
   align-items: center;
+  color: #4a4f5e;
 }
 
 /* ========== ACTIVE WINDOW ========== */
@@ -83,57 +87,73 @@
 }
 
 .active-window-widget .label {
-  color: #a6e22e;
+  color: #d0d6e0;
   padding-left: 8px;
 }
 
 .active-window-widget .icon {
   padding-left: 8px;
+  color: #ff4ead;
 }
 
 /* ========== CLOCK ========== */
 .clock-widget .label {
-  color: #f8f8f2;
+  color: #d0d6e0;
   padding: 0 6px;
+}
+
+.clock-widget .label .icon {
+  color: #ff4ead;
 }
 
 /* ========== CPU ========== */
 .cpu-widget .label {
-  color: #66d9ef;
+  color: #a0aabe;
   padding: 0 6px;
 }
 
 .cpu-widget .label span {
-  color: #66d9ef;
+  color: #ff4ead;
 }
 
 /* ========== MEMORY ========== */
 .memory-widget .label {
-  color: #f92672;
+  color: #a0aabe;
   padding: 0 6px;
 }
 
 .memory-widget .label span {
-  color: #f92672;
+  color: #ff4ead;
 }
 
 /* ========== BATTERY ========== */
 .battery-widget .label {
-  color: #fd971f;
+  color: #a0aabe;
   padding: 0 6px;
+}
+
+.battery-widget .label.low {
+  color: #f87171;
 }
 
 /* ========== VOLUME ========== */
 .volume-widget .label {
-  color: #a6e22e;
+  color: #a0aabe;
   padding: 0 6px;
 }
 
 .volume-widget .label span {
-  color: #a6e22e;
+  color: #ff4ead;
 }
+
+.volume-widget .label.muted {
+  color: #4a4f5e;
+}
+
+/* ========== ICON FONT ========== */
 .icon {
-  font-family: "JetBrainsMono NF";
+  font-family: "JetBrainsMono NF", "Iosevka NF", monospace;
   font-weight: normal;
   margin-right: 4px;
+  color: #ff4ead;
 }
