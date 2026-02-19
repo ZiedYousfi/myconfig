@@ -1,21 +1,15 @@
 ﻿#Requires AutoHotkey v2.0
 #SingleInstance Force
 InstallKeybdHook()
+#MaxThreadsPerHotkey 4
 
-; ─────────────────────────────────────────
-;  CONFIG
-; ─────────────────────────────────────────
-HOLD_THRESHOLD := 500  ; ms
+HOLD_THRESHOLD := 400  ; ms
 
 homeRowActive      := false
 disabledModeActive := false
 
-; Map pour tracker le temps de pression de chaque touche
-keyTimers := Map()
+keyStates := Map()
 
-; ─────────────────────────────────────────
-;  TRAY MENU
-; ─────────────────────────────────────────
 A_TrayMenu.Delete()
 A_TrayMenu.Add("Home Row Mods : OFF", ToggleHomeRow)
 A_TrayMenu.Add("Disabled Mode : OFF", ToggleDisabledMode)
@@ -56,96 +50,70 @@ ToggleDisabledMode(*) {
     }
 }
 
-; ─────────────────────────────────────────
-;  UTILITAIRE TAP/HOLD via KeyDown + KeyUp
-;  KeyDown : on note l'heure, on bloque
-;  KeyUp   : on décide tap ou hold
-; ─────────────────────────────────────────
-OnKeyDown(key) {
-    global keyTimers
-    ; On ignore les répétitions auto (touche déjà dans le map)
-    if keyTimers.Has(key)
-        return
-    keyTimers[key] := A_TickCount
-}
+HandleModTap(key, modDown, modUp) {
+    global keyStates, HOLD_THRESHOLD
 
-OnKeyUp(key, modDown, modUp) {
-    global keyTimers, HOLD_THRESHOLD
-    if !keyTimers.Has(key)
+    if keyStates.Has(key)
         return
-    elapsed := A_TickCount - keyTimers[key]
-    keyTimers.Delete(key)
+    keyStates[key] := { tick: A_TickCount, modSent: false }
 
-    if (elapsed < HOLD_THRESHOLD) {
-        ; Tap → envoie le caractère
-        Send("{Blind}{" key "}")
-    } else {
-        ; Hold → le mod a déjà été envoyé au down, on le relâche
-        Send(modUp)
+    ih := InputHook("L0 T" . (HOLD_THRESHOLD / 1000))
+    ih.KeyOpt("{" . key . "}", "S")
+    ih.Start()
+
+    released := KeyWait(key, "T" . (HOLD_THRESHOLD / 1000))
+    ih.Stop()
+
+    if keyStates.Has(key) {
+        state := keyStates[key]
+        keyStates.Delete(key)
+
+        if released {
+            SendEvent("{Blind}{" . key . "}")
+        } else {
+            SendEvent(modDown)
+            KeyWait(key)
+            SendEvent(modUp)
+        }
     }
 }
 
-OnKeyDownMod(key, modDown) {
-    global keyTimers, HOLD_THRESHOLD
-    if keyTimers.Has(key)
-        return
-    keyTimers[key] := A_TickCount
-    ; On attend le seuil en arrière-plan via SetTimer
-    SetTimer(() => CheckHold(key, modDown), -HOLD_THRESHOLD)
-}
-
-CheckHold(key, modDown) {
-    global keyTimers, HOLD_THRESHOLD
-    if !keyTimers.Has(key)
-        return
-    if (A_TickCount - keyTimers[key] >= HOLD_THRESHOLD) {
-        if GetKeyState(key, "P")  ; toujours appuyée ?
-            Send(modDown)
-    }
-}
-
-; ─────────────────────────────────────────
-;  HOME ROW MODS — ISO QWERTY
-;  A=Super  S=Alt  D=Ctrl  F=Shift
-;  J=Shift  K=Ctrl  L=Alt  ;=Super
-; ─────────────────────────────────────────
 SetHomeRowHotkeys(state) {
     for key, mods in Map(
         "a", ["{LWin Down}", "{LWin Up}"],
-        "s", ["{Alt Down}", "{Alt Up}"],
-        "d", ["{Ctrl Down}", "{Ctrl Up}"],
-        "f", ["{Shift Down}", "{Shift Up}"],
-        "j", ["{Shift Down}", "{Shift Up}"],
-        "k", ["{Ctrl Down}", "{Ctrl Up}"],
-        "l", ["{Alt Down}", "{Alt Up}"],
-        ";", ["{LWin Down}", "{LWin Up}"]
+        "s", ["{LAlt Down}", "{LAlt Up}"],
+        "d", ["{LCtrl Down}", "{LCtrl Up}"],
+        "f", ["{LShift Down}", "{LShift Up}"],
+        "j", ["{RShift Down}", "{RShift Up}"],
+        "k", ["{RCtrl Down}", "{RCtrl Up}"],
+        "l", ["{RAlt Down}", "{RAlt Up}"],
+        ";", ["{RWin Down}", "{RWin Up}"]
     ) {
         modDown := mods[1], modUp := mods[2]
-        HotKey("$" key, ((k, md) => (*) => OnKeyDownMod(k, md))(key, modDown), state)
-        HotKey("$" key " up", ((k, md, mu) => (*) => OnKeyUp(k, md, mu))(key, modDown, modUp), state)
+        HotKey(
+            "*$" . key,
+            ((k, md, mu) => (*) => HandleModTap(k, md, mu))(key, modDown, modUp),
+            state
+        )
     }
 }
 
-; ─────────────────────────────────────────
-;  DISABLED MODE — ISO QWERTY
-;  X=Super  D=Alt  E=Ctrl  3=Shift
-; ─────────────────────────────────────────
 SetDisabledModeHotkeys(state) {
     for key, mods in Map(
         "x", ["{LWin Down}", "{LWin Up}"],
-        "d", ["{Alt Down}", "{Alt Up}"],
-        "e", ["{Ctrl Down}", "{Ctrl Up}"],
-        "3", ["{Shift Down}", "{Shift Up}"]
+        "d", ["{LAlt Down}", "{LAlt Up}"],
+        "e", ["{LCtrl Down}", "{LCtrl Up}"],
+        "f", ["{LShift Down}", "{LShift Up}"]
     ) {
         modDown := mods[1], modUp := mods[2]
-        HotKey("$" key, ((k, md) => (*) => OnKeyDownMod(k, md))(key, modDown), state)
-        HotKey("$" key " up", ((k, md, mu) => (*) => OnKeyUp(k, md, mu))(key, modDown, modUp), state)
+        HotKey(
+            "*$" . key,
+            ((k, md, mu) => (*) => HandleModTap(k, md, mu))(key, modDown, modUp),
+            state
+        )
     }
 }
 
-; ─────────────────────────────────────────
-;  SCRIPT DE BASE
-; ─────────────────────────────────────────
 F17::WheelUp
 F18::WheelDown
 F19::Send("#{Tab}")
