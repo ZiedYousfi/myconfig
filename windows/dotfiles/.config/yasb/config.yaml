@@ -115,8 +115,8 @@ widgets:
   battery:
     type: "yasb.battery.BatteryWidget"
     options:
-      label: "{icon}  {percent}%"
-      label_alt: "{icon}  {percent}% {time_remaining}"
+      label: "<span class='icon'>{icon}</span>  {percent}%"
+      label_alt: "<span class='icon'>{icon}</span>  {percent}% {time_remaining}"
       update_interval: 10000
 
   volume:

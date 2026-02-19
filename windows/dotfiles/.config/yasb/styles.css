@@ -12,22 +12,47 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 8px;
+  padding: 0;
+}
+
+.container-left {
+  padding-left: 0;
+}
+
+.container-center {
+  padding: 0;
+}
+
+.container-right {
+  padding-right: 8px;
 }
 
 /* ========== OSK BUTTON ========== */
+.widget.custom-widget.osk-btn {
+  padding: 0;
+}
+
+.osk-btn .widget-container {
+  padding: 0;
+  margin: 0;
+}
+
 .osk-btn .label {
   color: #a0aabe;
   background: #0a0a0a;
-  padding: 4px 10px;
-  border-radius: 4px;
+  padding: 0 10px;
+  height: 32px;
+  line-height: 32px;
+  border-radius: 0 4px 4px 0;
   border: 1px solid #1a1a1a;
+  border-left: none;
 }
 
 .osk-btn .label:hover {
   background: #ff4ead1a;
   color: #ff4ead;
   border-color: #ff4ead;
+  border-left: none;
 }
 
 /* ========== WORKSPACES ========== */
@@ -133,6 +158,10 @@
 .battery-widget .label {
   color: #a0aabe;
   padding: 0 8px;
+}
+
+.battery-widget .label .icon {
+  color: #ff4ead;
 }
 
 .battery-widget .label.low {
