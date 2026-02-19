@@ -112,20 +112,46 @@ function msvcenv
 
 function aic
 {
-  opencode run @"
-Follow these steps precisely:
+  param(
+    [string]$Model = "github-copilot/gpt-4.1"
+  )
 
-1. Run 'git log --oneline -10' to analyze the style and conventions of previous commit messages.
-2. Run 'git diff --cached --stat' to check if there are any staged changes.
-3. Based on the result:
-   - If there ARE staged changes: commit ONLY the staged changes using 'git commit -m \"<message>\"'.
-   - If there are NO staged changes: stage everything with 'git add -A', then commit using 'git commit -m \"<message>\"'.
-4. The commit message must:
-   - Be comprehensive and descriptive of the actual changes being committed.
-   - Follow the style and conventions observed in the previous commits from step 1.
-   - Use 'git diff --cached' (after staging if applicable) to understand what is being committed.
-5. Do NOT push to remote under any circumstances.
-"@ -m github-copilot/gpt-4.1
+  $gitLog = git log --oneline -10
+  $diffStat = git diff --cached --stat
+  $diff = git diff --cached
+
+  $hasStagedChanges = $null -ne $diffStat -and $diffStat -ne ""
+
+  $stagedNote = if ($hasStagedChanges)
+  {
+    "There ARE staged changes. Commit ONLY the staged changes."
+  } else
+  {
+    "There are NO staged changes. You must stage everything with 'git add -A' first, then commit."
+  }
+
+  $context = @"
+Here is the context you need to write the commit message:
+
+## Last 10 commits (for style/convention reference):
+$gitLog
+
+## Staged diff stat:
+$(if ($diffStat) { $diffStat } else { "(none)" })
+
+## Full staged diff:
+$(if ($diff) { $diff } else { "(none)" })
+
+---
+
+Based on this context:
+- $stagedNote
+- Write a comprehensive and descriptive commit message following the style observed above.
+- Commit using 'git commit -m "<message>"'.
+- Do NOT push to remote under any circumstances.
+"@
+
+  opencode run $context -m $Model
 }
 
 function update
