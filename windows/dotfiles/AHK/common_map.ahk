@@ -50,32 +50,39 @@ ToggleDisabledMode(*) {
     }
 }
 
-HandleModTap(key, modDown, modUp) {
+HandleModTap(key, modDown, modUp, waitKey := "") {
     global keyStates, HOLD_THRESHOLD
+
+    wk := (waitKey != "") ? waitKey : key
 
     if keyStates.Has(key)
         return
-    keyStates[key] := { tick: A_TickCount, modSent: false }
+    keyStates[key] := true
 
-    ih := InputHook("L0 T" . (HOLD_THRESHOLD / 1000))
-    ih.KeyOpt("{" . key . "}", "S")
-    ih.Start()
+    startTime := A_TickCount
+    isHold := false
 
-    released := KeyWait(key, "T" . (HOLD_THRESHOLD / 1000))
-    ih.Stop()
-
-    if keyStates.Has(key) {
-        state := keyStates[key]
-        keyStates.Delete(key)
-
-        if released {
-            SendEvent("{Blind}{" . key . "}")
-        } else {
-            SendEvent(modDown)
-            KeyWait(key)
-            SendEvent(modUp)
+    while GetKeyState(wk, "P") {
+        if (A_TickCount - startTime >= HOLD_THRESHOLD) {
+            isHold := true
+            break
         }
+        Sleep(10)
     }
+
+    if (isHold) {
+        SendEvent(modDown)
+        KeyWait(wk)
+        SendEvent(modUp)
+    } else {
+        ; Désactive brièvement SEULEMENT pour le tap
+        hotkeyName := "*$" . key
+        HotKey(hotkeyName, "Off")
+        SendEvent("{" . key . "}")
+        HotKey(hotkeyName, "On")
+    }
+
+    keyStates.Delete(key)
 }
 
 SetHomeRowHotkeys(state) {
@@ -100,10 +107,10 @@ SetHomeRowHotkeys(state) {
 
 SetDisabledModeHotkeys(state) {
     for key, mods in Map(
-        "x", ["{LWin Down}", "{LWin Up}"],
-        "d", ["{LAlt Down}", "{LAlt Up}"],
-        "e", ["{LCtrl Down}", "{LCtrl Up}"],
-        "f", ["{LShift Down}", "{LShift Up}"]
+        "SC056", ["{LWin Down}", "{LWin Up}"],  ; ou "vkE2"
+        "a",     ["{LAlt Down}", "{LAlt Up}"],
+        "q",     ["{LCtrl Down}", "{LCtrl Up}"],
+        "w",     ["{LShift Down}", "{LShift Up}"]
     ) {
         modDown := mods[1], modUp := mods[2]
         HotKey(
