@@ -121,6 +121,6 @@ SetDisabledModeHotkeys(state) {
     }
 }
 
-F17::WheelUp
-F18::WheelDown
-F19::Send("#{Tab}")
+$F17::Send("{WheelUp}")
+$F18::Send("{WheelDown}")
+$F19::Send("#{Tab}")

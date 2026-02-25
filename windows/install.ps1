@@ -311,8 +311,8 @@ function Install-KomorebiConfig
 
 function Install-AHKScripts
 {
-  $source = Join-Path $WindowsDotfilesDir "AHK"
-  $destination = Join-Path $env:USERPROFILE "AHK"
+  $source = Join-Path $WindowsDotfilesDir "AutoHotkey"
+  $destination = Join-Path $env:USERPROFILE "AutoHotkey"
 
   if (-not (Test-Path $source))
   {
