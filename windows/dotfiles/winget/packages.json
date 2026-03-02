@@ -101,6 +101,9 @@
         },
         {
           "PackageIdentifier" : "GoLang.Go"
+        },
+        {
+          "PackageIdentifier" : "RamenSoftware.Windhawk"
         }
 			],
 			"SourceDetails" : 
