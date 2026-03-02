@@ -1,4 +1,4 @@
-/* ========== BLACK & PINK THEME ========== */
+/* ========== BLACK & PINK THEME ========== */ 
 * {
   font-family: "Iosevka NF", "JetBrainsMono NF", monospace;
   font-size: 16px;
@@ -27,6 +27,80 @@
   padding-right: 8px;
 }
 
+/* ========== TOOLTIP ========== */
+.tooltip {
+  background-color: #0a0a0a;
+  border: 1px solid #ff4ead33;
+  border-radius: 4px;
+  color: #a0aabe;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-family: "Iosevka NF", "JetBrainsMono NF", monospace;
+  font-weight: 600;
+  margin-top: 4px;
+}
+/* ========== GLOBAL MENUS ========== */
+
+/* Context menus (clic droit partout) */
+.context-menu,
+.context-menu.menu-checkbox {
+  background-color: #0a0a0a;
+  border: none;
+  padding: 4px 0;
+  color: #a0aabe;
+}
+
+.context-menu::item {
+  color: #a0aabe;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+.context-menu::item:selected {
+  background-color: #ff4ead1a;
+  color: #ff4ead;
+  border: 1px solid #ff4ead33;
+}
+
+.context-menu::separator {
+  height: 1px;
+  background-color: #1a1a1a;
+}
+
+/* Audio menu (volume widget) */
+.audio-menu {
+  background-color: #0a0a0a;
+}
+
+.audio-container.device {
+  background-color: transparent;
+  border: none;
+  padding: 6px 8px 6px 4px;
+  margin: 2px 0;
+  font-size: 12px;
+  border-radius: 4px;
+  color: #a0aabe;
+}
+
+.audio-container.device:hover {
+  background-color: #ff4ead1a;
+  color: #ff4ead;
+}
+
+/* Volume slider */
+.volume-slider {
+  border: none;
+}
+
+/* Tooltip */
+.tooltip {
+  background-color: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 4px;
+  color: #a0aabe;
+  padding: 6px 12px;
+  font-size: 13px;
+}
 /* ========== OSK BUTTON ========== */
 .widget.custom-widget.osk-btn {
   padding: 0;
