@@ -7,21 +7,28 @@ HOLD_THRESHOLD := 400  ; ms
 
 homeRowActive      := false
 disabledModeActive := false
+valoModeActive     := false
 
 keyStates := Map()
 
 A_TrayMenu.Delete()
 A_TrayMenu.Add("Home Row Mods : OFF", ToggleHomeRow)
 A_TrayMenu.Add("Disabled Mode : OFF", ToggleDisabledMode)
+A_TrayMenu.Add("Valo Mode : OFF", ToggleValoMode)
 A_TrayMenu.Add()
 A_TrayMenu.Add("Quitter", (*) => ExitApp())
 
 ToggleHomeRow(*) {
-    global homeRowActive, disabledModeActive
+    global homeRowActive, disabledModeActive, valoModeActive
     if disabledModeActive {
         disabledModeActive := false
         A_TrayMenu.Rename("Disabled Mode : ON ✅", "Disabled Mode : OFF")
         SetDisabledModeHotkeys("Off")
+    }
+    if valoModeActive {
+        valoModeActive := false
+        A_TrayMenu.Rename("Valo Mode : ON ✅", "Valo Mode : OFF")
+        SetValoModeHotkeys("Off")
     }
     homeRowActive := !homeRowActive
     if homeRowActive {
@@ -34,11 +41,16 @@ ToggleHomeRow(*) {
 }
 
 ToggleDisabledMode(*) {
-    global homeRowActive, disabledModeActive
+    global homeRowActive, disabledModeActive, valoModeActive
     if homeRowActive {
         homeRowActive := false
         A_TrayMenu.Rename("Home Row Mods : ON ✅", "Home Row Mods : OFF")
         SetHomeRowHotkeys("Off")
+    }
+    if valoModeActive {
+        valoModeActive := false
+        A_TrayMenu.Rename("Valo Mode : ON ✅", "Valo Mode : OFF")
+        SetValoModeHotkeys("Off")
     }
     disabledModeActive := !disabledModeActive
     if disabledModeActive {
@@ -47,6 +59,28 @@ ToggleDisabledMode(*) {
     } else {
         A_TrayMenu.Rename("Disabled Mode : ON ✅", "Disabled Mode : OFF")
         SetDisabledModeHotkeys("Off")
+    }
+}
+
+ToggleValoMode(*) {
+    global homeRowActive, disabledModeActive, valoModeActive
+    if homeRowActive {
+        homeRowActive := false
+        A_TrayMenu.Rename("Home Row Mods : ON ✅", "Home Row Mods : OFF")
+        SetHomeRowHotkeys("Off")
+    }
+    if disabledModeActive {
+        disabledModeActive := false
+        A_TrayMenu.Rename("Disabled Mode : ON ✅", "Disabled Mode : OFF")
+        SetDisabledModeHotkeys("Off")
+    }
+    valoModeActive := !valoModeActive
+    if valoModeActive {
+        A_TrayMenu.Rename("Valo Mode : OFF", "Valo Mode : ON ✅")
+        SetValoModeHotkeys("On")
+    } else {
+        A_TrayMenu.Rename("Valo Mode : ON ✅", "Valo Mode : OFF")
+        SetValoModeHotkeys("Off")
     }
 }
 
@@ -75,11 +109,42 @@ HandleModTap(key, modDown, modUp, waitKey := "") {
         KeyWait(wk)
         SendEvent(modUp)
     } else {
-        ; Désactive brièvement SEULEMENT pour le tap
         hotkeyName := "*$" . key
         HotKey(hotkeyName, "Off")
         SendEvent("{" . key . "}")
         HotKey(hotkeyName, "On")
+    }
+
+    keyStates.Delete(key)
+}
+
+; Tap envoie tapKey, Hold envoie modDown/modUp
+HandleModTapCustom(key, tapKey, modDown, modUp, waitKey := "") {
+    global keyStates, HOLD_THRESHOLD
+
+    wk := (waitKey != "") ? waitKey : key
+
+    if keyStates.Has(key)
+        return
+    keyStates[key] := true
+
+    startTime := A_TickCount
+    isHold := false
+
+    while GetKeyState(wk, "P") {
+        if (A_TickCount - startTime >= HOLD_THRESHOLD) {
+            isHold := true
+            break
+        }
+        Sleep(10)
+    }
+
+    if (isHold) {
+        SendEvent(modDown)
+        KeyWait(wk)
+        SendEvent(modUp)
+    } else {
+        SendEvent(tapKey)
     }
 
     keyStates.Delete(key)
@@ -107,7 +172,7 @@ SetHomeRowHotkeys(state) {
 
 SetDisabledModeHotkeys(state) {
     for key, mods in Map(
-        "SC056", ["{LWin Down}", "{LWin Up}"],  ; ou "vkE2"
+        "SC056", ["{LWin Down}", "{LWin Up}"],
         "a",     ["{LAlt Down}", "{LAlt Up}"],
         "q",     ["{LCtrl Down}", "{LCtrl Up}"],
         "w",     ["{LShift Down}", "{LShift Up}"]
@@ -119,6 +184,27 @@ SetDisabledModeHotkeys(state) {
             state
         )
     }
+}
+
+SetValoModeHotkeys(state) {
+    for key, cfg in Map(
+        "2",  ["{q}",  "{e Down}", "{e Up}"],
+        "1",  ["{.}",  "{b Down}", "{b Up}"],
+        "q",  ["{=}",  "{g Down}", "{g Up}"],
+        "F1", ["{i}",  "{f Down}", "{f Up}"],
+        "3",  ["{v}",  "{r Down}", "{r Up}"],
+        "z",  ["{c}",  "{n Down}", "{n Up}"]
+    ) {
+        tapKey := cfg[1], modDown := cfg[2], modUp := cfg[3]
+        HotKey(
+            "*$" . key,
+            ((k, t, md, mu) => (*) => HandleModTapCustom(k, t, md, mu))(key, tapKey, modDown, modUp),
+            state
+        )
+    }
+
+    ; Remap pur s → d (pas de hold/tap, just direct)
+    HotKey("*$s", (*) => SendEvent("{d}"), state)
 }
 
 $F17::Send("{WheelUp}")
