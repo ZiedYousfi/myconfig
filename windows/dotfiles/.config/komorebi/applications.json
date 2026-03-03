@@ -944,15 +944,6 @@
       }
     ]
   },
-  "Google Chrome": {
-    "tray_and_multi_window": [
-      {
-        "kind": "Exe",
-        "id": "chrome.exe",
-        "matching_strategy": "Equals"
-      }
-    ]
-  },
   "Google Drive": {
     "ignore": [
       {

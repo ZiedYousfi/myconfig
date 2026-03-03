@@ -26,55 +26,50 @@
   "monitors": [
     {
       "workspaces": [
-        { "name": "1", "layout": "BSP" },
-        { "name": "2", "layout": "BSP" },
-        { "name": "3", "layout": "BSP" },
-        { "name": "4", "layout": "BSP" },
-        { "name": "5", "layout": "BSP" },
-        { "name": "6", "layout": "BSP" },
-        { "name": "7", "layout": "BSP" },
-        { "name": "8", "layout": "BSP" },
-        { "name": "9", "layout": "BSP" },
-        { "name": "10", "layout": "BSP" }
+        { "name": "1", "layout": "Scrolling" },
+        { "name": "2", "layout": "Scrolling" },
+        { "name": "3", "layout": "Scrolling" },
+        { "name": "4", "layout": "Scrolling" },
+        { "name": "5", "layout": "Scrolling" },
+        { "name": "6", "layout": "Scrolling" },
+        { "name": "7", "layout": "Scrolling" },
+        { "name": "8", "layout": "Scrolling" },
+        { "name": "9", "layout": "Scrolling" },
+        { "name": "10", "layout": "Scrolling" }
       ]
     },
     {
       "workspaces": [
-        { "name": "1", "layout": "BSP" },
-        { "name": "2", "layout": "BSP" },
-        { "name": "3", "layout": "BSP" },
-        { "name": "4", "layout": "BSP" },
-        { "name": "5", "layout": "BSP" },
-        { "name": "6", "layout": "BSP" },
-        { "name": "7", "layout": "BSP" },
-        { "name": "8", "layout": "BSP" },
-        { "name": "9", "layout": "BSP" },
-        { "name": "10", "layout": "BSP" }
+        { "name": "1", "layout": "Scrolling" },
+        { "name": "2", "layout": "Scrolling" },
+        { "name": "3", "layout": "Scrolling" },
+        { "name": "4", "layout": "Scrolling" },
+        { "name": "5", "layout": "Scrolling" },
+        { "name": "6", "layout": "Scrolling" },
+        { "name": "7", "layout": "Scrolling" },
+        { "name": "8", "layout": "Scrolling" },
+        { "name": "9", "layout": "Scrolling" },
+        { "name": "10", "layout": "Scrolling" }
       ]
     },
     {
       "workspaces": [
-        { "name": "1", "layout": "BSP" },
-        { "name": "2", "layout": "BSP" },
-        { "name": "3", "layout": "BSP" },
-        { "name": "4", "layout": "BSP" },
-        { "name": "5", "layout": "BSP" },
-        { "name": "6", "layout": "BSP" },
-        { "name": "7", "layout": "BSP" },
-        { "name": "8", "layout": "BSP" },
-        { "name": "9", "layout": "BSP" },
-        { "name": "10", "layout": "BSP" }
+        { "name": "1", "layout": "Scrolling" },
+        { "name": "2", "layout": "Scrolling" },
+        { "name": "3", "layout": "Scrolling" },
+        { "name": "4", "layout": "Scrolling" },
+        { "name": "5", "layout": "Scrolling" },
+        { "name": "6", "layout": "Scrolling" },
+        { "name": "7", "layout": "Scrolling" },
+        { "name": "8", "layout": "Scrolling" },
+        { "name": "9", "layout": "Scrolling" },
+        { "name": "10", "layout": "Scrolling" }
       ]
     }
   ],
 
   "floating_applications": [
     { "kind": "Title", "id": "Picture-in-Picture", "matching_strategy": "Regex" },
-    { "kind": "Class", "id": "Chrome_WidgetWin_1", "matching_strategy": "Equals" },
-    { "kind": "Class", "id": "MozillaDialogClass", "matching_strategy": "Equals" }
-  ],
-
-  "ignore_rules": [
-    { "kind": "Exe", "id": "zebar.exe", "matching_strategy": "Equals" }
+    { "kind": "Title", "id": "Helper", "matching_strategy": "Regex" }
   ]
 }
