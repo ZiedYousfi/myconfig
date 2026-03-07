@@ -104,6 +104,9 @@
         },
         {
           "PackageIdentifier" : "RamenSoftware.Windhawk"
+        },
+        {
+          "PackageIdentifier" : "Docker.DockerDesktop"
         }
 			],
 			"SourceDetails" : 
