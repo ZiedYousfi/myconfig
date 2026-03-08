@@ -133,6 +133,8 @@ function aic
   $context = @"
 Here is the context you need to write the commit message:
 
+CONSIDER \n AS GIT MALFORMED COMMIT MESSAGES. DO NOT REPEAT THEIR MISTAKES. DO PROPER NEWLINES.
+
 ## Last 10 commits (for style/convention reference):
 $gitLog
 
