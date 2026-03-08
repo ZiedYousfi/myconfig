@@ -188,7 +188,7 @@ SetDisabledModeHotkeys(state) {
 
 SetValoModeHotkeys(state) {
     for key, cfg in Map(
-        "2",  ["{q}",  "{e Down}", "{e Up}"],
+        "2",  ["{e}",  "{q Down}", "{q Up}"],
         "1",  ["{.}",  "{b Down}", "{b Up}"],
         "q",  ["{=}",  "{g Down}", "{g Up}"],
         "F1", ["{i}",  "{f Down}", "{f Up}"],
