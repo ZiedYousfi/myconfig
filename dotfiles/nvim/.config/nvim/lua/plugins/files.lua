@@ -37,8 +37,12 @@ return {
 					else
 						local cur_buf = vim.api.nvim_get_current_buf()
 						api.tree.open()
-						-- Kill the buffer if it's a normal file and the tree successfully opened
-						if vim.bo[cur_buf].buftype == "" and vim.api.nvim_buf_is_valid(cur_buf) then
+
+						local is_normal = vim.bo[cur_buf].buftype == ""
+						local is_valid = vim.api.nvim_buf_is_valid(cur_buf)
+						local is_modified = vim.bo[cur_buf].modified
+
+						if is_normal and is_valid and not is_modified then
 							vim.cmd("bdelete " .. cur_buf)
 						end
 					end

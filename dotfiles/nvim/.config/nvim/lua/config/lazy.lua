@@ -37,6 +37,16 @@ vim.opt.timeout = false
 
 vim.opt.hidden = false
 
+if vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
+	vim.opt.shell = "pwsh"
+	vim.opt.shellcmdflag = "-NoLogo -Command"
+	vim.opt.shellquote = ""
+	vim.opt.shellxquote = ""
+else
+	vim.opt.shell = "zsh"
+	vim.opt.shellcmdflag = "-ic"
+end
+
 -- Auto-close unused buffers when entering a new one
 vim.api.nvim_create_autocmd("BufEnter", {
 	callback = function()
