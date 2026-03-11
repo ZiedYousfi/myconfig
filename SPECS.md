@@ -104,25 +104,23 @@ zsh/
 
 ## Terminal Emulator
 
-### Ghostty
+### WezTerm
 
-Modern, GPU-accelerated terminal emulator.
+Cross-platform, GPU-accelerated terminal emulator.
 
 | Setting | Value |
 |---------|-------|
 | Background | `#000000` |
-| Opacity | `0.75` (75%) |
-| Background blur | `true` |
-| Font size | `18` |
-| Default command | Auto-attach to tmux session |
+| Color scheme | `BlackPink` |
+| Font | `Iosevka NFM` |
+| Font size | `16` |
+| Default command | `pwsh.exe` on Windows |
 
 #### Dotfiles Structure
 
 ```
-ghostty/
-└── .config/
-    └── ghostty/
-        └── config
+wezterm/
+└── .wezterm.lua
 ```
 
 ---
@@ -532,9 +530,7 @@ The Ubuntu Server installation does **not** include:
 - Desktop environment components
 - Yabai (macOS-only window manager)
 - Sketchybar (macOS-only status bar)
-- GUI applications (Ghostty, Zed, VS Code)
-
-The dotfiles for Ghostty and Zed are still stowed (for future use if GUI is needed), but the applications themselves are not installed.
+- GUI applications
 
 ---
 
@@ -553,7 +549,7 @@ See [windows/install.ps1](windows/install.ps1) for the complete installation scr
 |-----------|-------|
 | Shell | PowerShell Core (`pwsh`) |
 | Prompt | Oh My Posh (`pure` theme) |
-| Terminal | Windows Terminal |
+| Terminal | WezTerm |
 | Modules | `PSReadLine`, `Terminal-Icons` |
 
 **PowerShell Profile Features:**
@@ -563,16 +559,16 @@ See [windows/install.ps1](windows/install.ps1) for the complete installation scr
 - Cursor shape change (Beam for Insert, Block for Normal)
 - Terminal icons for file listings
 
-### Terminal Emulator: Windows Terminal
+### Terminal Emulator: WezTerm
 
-Native GPU-accelerated terminal for Windows.
+Cross-platform GPU-accelerated terminal used as the default Windows terminal.
 
 | Setting | Value |
 |---------|-------|
-| Color Scheme | Monokai Classic |
-| Font | JetBrainsMono Nerd Font |
-| Background | `#272822` |
-| Opacity | Acrylic enabled |
+| Color Scheme | BlackPink |
+| Font | Iosevka NFM |
+| Background | `#000000` |
+| Opacity | `1.0` |
 
 ### Window Management: Glaze WM
 
@@ -632,7 +628,7 @@ For all development tools, shell, and CLI utilities, Windows utilizes the **Ubun
 setup-config/
 ├── SPECS.md                    # This specification document
 ├── dotfiles/                   # Shared cross-platform dotfiles
-│   ├── ghostty/
+│   ├── wezterm/
 │   ├── nvim/
 │   ├── tmux/
 │   ├── yazi/
@@ -661,7 +657,7 @@ These dotfiles are located in `/dotfiles/` at the project root and can be used a
 
 | Package | Description | Target |
 |---------|-------------|--------|
-| `ghostty` | Terminal emulator config | `~/.config/ghostty/` |
+| `wezterm` | Terminal emulator config | `~/.wezterm.lua` |
 | `nvim` | Neovim/LazyVim plugins | `~/.config/nvim/` |
 | `tmux` | Tmux customization | `~/.config/tmux/` |
 | `yazi` | File manager theme | `~/.config/yazi/` |

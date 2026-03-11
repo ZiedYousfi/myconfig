@@ -71,7 +71,7 @@ unstow_dotfiles() {
     if command -v stow &>/dev/null && [ -d "$USER_DOTFILES_DIR" ]; then
         log_info "Unstowing dotfiles from $USER_DOTFILES_DIR..."
 
-        for package in ghostty nvim tmux zed zsh yazi; do
+        for package in nvim tmux yazi zsh; do
             if [ -d "$USER_DOTFILES_DIR/$package" ]; then
                 log_info "Unstowing $package..."
                 stow --dir="$USER_DOTFILES_DIR" --target="$HOME" --delete "$package" 2>/dev/null || true

@@ -285,11 +285,6 @@ install_packages() {
     install_imagemagick
     install_nerd_font_symbols
 
-    # GUI Applications (optional, may not be available on all Linux systems)
-    install_ghostty
-    install_zed
-    install_vscode
-
     # Development tools
     install_opencode
 
@@ -307,7 +302,7 @@ setup_user_dotfiles() {
     mkdir -p "$USER_DOTFILES_DIR"
 
     # Copy shared dotfiles (platform-independent) from repo root
-    for package in ghostty nvim tmux zed zsh yazi; do
+    for package in nvim tmux yazi zsh; do
         if [ -d "$SHARED_DOTFILES_DIR/$package" ]; then
             log_info "Copying $package to $USER_DOTFILES_DIR..."
             rsync -a --update "$SHARED_DOTFILES_DIR/$package/" "$USER_DOTFILES_DIR/$package/"
@@ -603,34 +598,6 @@ install_lazyvim() {
 }
 
 # ============================================================================
-# Ghostty Configuration (if present)
-# ============================================================================
-
-configure_ghostty() {
-    if [ -d "$USER_DOTFILES_DIR/ghostty" ]; then
-        log_info "Configuring Ghostty via stow..."
-        stow_package "ghostty"
-        log_success "Ghostty configured"
-    else
-        log_warning "Ghostty dotfiles not found, skipping"
-    fi
-}
-
-# ============================================================================
-# Zed Configuration (if present)
-# ============================================================================
-
-configure_zed() {
-    if [ -d "$USER_DOTFILES_DIR/zed" ]; then
-        log_info "Configuring Zed via stow..."
-        stow_package "zed"
-        log_success "Zed configured"
-    else
-        log_warning "Zed dotfiles not found, skipping"
-    fi
-}
-
-# ============================================================================
 # Yazi Configuration
 # ============================================================================
 
@@ -714,12 +681,6 @@ main() {
 
     # Setup Neovim with LazyVim (uses stow for custom plugins)
     install_lazyvim
-
-    # Configure Ghostty (uses stow - only if installing locally)
-    configure_ghostty
-
-    # Configure Zed editor (uses stow - only if installing locally)
-    configure_zed
 
     # Configure Yazi file manager
     configure_yazi

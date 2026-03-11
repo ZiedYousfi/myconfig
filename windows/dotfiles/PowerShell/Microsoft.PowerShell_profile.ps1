@@ -165,15 +165,14 @@ function su
 {
   $currentDir = (Get-Location).Path
 
-  $wtArgs = @(
-    "new-tab",
-    "-p", "PowerShell",
-    "-d", $currentDir,
-    "pwsh",
+  $weztermArgs = @(
+    "start",
+    "--cwd", $currentDir,
+    "pwsh.exe",
     "-NoExit"
   )
 
-  Start-Process -FilePath "wt.exe" -Verb RunAs -ArgumentList $wtArgs
+  Start-Process -FilePath "wezterm-gui.exe" -Verb RunAs -ArgumentList $weztermArgs
 }
 
 function ..

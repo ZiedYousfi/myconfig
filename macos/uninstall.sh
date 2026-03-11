@@ -51,7 +51,7 @@ confirm_uninstall() {
     echo "  - Oh My Zsh and all plugins"
     echo "  - Oh My Tmux"
     echo "  - LazyVim configuration"
-    echo "  - Ghostty configuration"
+    echo "  - WezTerm configuration"
     echo "  - Stowed dotfiles symlinks"
     echo "  - ~/.dotfiles directory (optionally)"
     echo "  - Homebrew packages installed by the setup"
@@ -73,7 +73,7 @@ unstow_dotfiles() {
     if command -v stow &>/dev/null && [ -d "$USER_DOTFILES_DIR" ]; then
         log_info "Unstowing dotfiles from $USER_DOTFILES_DIR..."
 
-        for package in ghostty nvim tmux zed zsh yazi sketchybar yabai; do
+        for package in nvim tmux wezterm yazi zed zsh sketchybar yabai; do
             if [ -d "$USER_DOTFILES_DIR/$package" ]; then
                 log_info "Unstowing $package..."
                 stow --dir="$USER_DOTFILES_DIR" --target="$HOME" --delete "$package" 2>/dev/null || true
@@ -216,13 +216,13 @@ remove_lazyvim() {
     fi
 }
 
-remove_ghostty_config() {
-    if [ -d "$XDG_CONFIG_HOME/ghostty" ]; then
-        log_info "Removing Ghostty configuration..."
-        rm -rf "$XDG_CONFIG_HOME/ghostty"
-        log_success "Ghostty configuration removed"
+remove_wezterm_config() {
+    if [ -f "$HOME/.wezterm.lua" ] || [ -L "$HOME/.wezterm.lua" ]; then
+        log_info "Removing WezTerm configuration..."
+        rm -f "$HOME/.wezterm.lua"
+        log_success "WezTerm configuration removed"
     else
-        log_info "Ghostty configuration not found, skipping"
+        log_info "WezTerm configuration not found, skipping"
     fi
 }
 
@@ -308,7 +308,7 @@ remove_brew_packages() {
     )
 
     local casks=(
-        "ghostty"
+        "wezterm"
         "zed"
         "visual-studio-code"
         "font-symbols-only-nerd-font"
@@ -399,7 +399,7 @@ main() {
 
 
     # Remove configurations
-    remove_ghostty_config
+    remove_wezterm_config
     remove_zed_config
     remove_yazi_config
     remove_sketchybar_config

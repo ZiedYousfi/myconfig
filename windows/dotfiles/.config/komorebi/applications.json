@@ -3121,11 +3121,11 @@
       }
     ]
   },
-  "Windows Terminal": {
+  "WezTerm": {
     "tray_and_multi_window": [
       {
         "kind": "Exe",
-        "id": "WindowsTerminal.exe",
+        "id": "wezterm-gui.exe",
         "matching_strategy": "Equals"
       }
     ]

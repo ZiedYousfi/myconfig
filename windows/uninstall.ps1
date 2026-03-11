@@ -40,7 +40,7 @@ function Confirm-Uninstall {
     Write-Host "  - Neovim configuration"
     Write-Host "  - Yazi configuration"
     Write-Host "  - Oh My Posh configuration"
-    Write-Host "  - Windows Terminal settings (restored from backup if available)"
+    Write-Host "  - WezTerm configuration (restored from backup if available)"
     Write-Host "  - GlazeWM and Zebar configuration"
     Write-Host "  - AutoHotkey scripts"
     Write-Host "  - PowerShell profile (restored from backup if available)"
@@ -113,33 +113,33 @@ function Remove-OhMyPoshConfig {
 }
 
 # ============================================================================
-# Remove Windows Terminal Settings
+# Remove WezTerm Configuration
 # ============================================================================
 
-function Remove-WindowsTerminalSettings {
-    $settingsPath = Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
+function Remove-WezTermConfig {
+    $configPath = Join-Path $env:USERPROFILE ".wezterm.lua"
 
-    if (-not (Test-Path $settingsPath)) {
-        Write-Log "Windows Terminal settings not found, skipping"
+    if (-not (Test-Path $configPath)) {
+        Write-Log "WezTerm config not found, skipping"
         return
     }
 
     # Try to restore from backup
-    $backups = Get-ChildItem -Path (Split-Path -Parent $settingsPath) -Filter "settings.json.backup.*" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending
+    $backups = Get-ChildItem -Path (Split-Path -Parent $configPath) -Filter ".wezterm.lua.backup.*" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending
     if ($backups.Count -gt 0) {
         $latestBackup = $backups[0].FullName
-        Write-Log "Restoring Windows Terminal settings from backup: $latestBackup"
-        Copy-Item -Path $latestBackup -Destination $settingsPath -Force
-        Write-Log "Windows Terminal settings restored from backup" -Level 'OK'
+        Write-Log "Restoring WezTerm config from backup: $latestBackup"
+        Copy-Item -Path $latestBackup -Destination $configPath -Force
+        Write-Log "WezTerm config restored from backup" -Level 'OK'
 
         # Clean up backups
         foreach ($backup in $backups) {
             Remove-Item -Path $backup.FullName -Force
         }
     } else {
-        Write-Log "Removing Windows Terminal settings..."
-        Remove-Item -Path $settingsPath -Force
-        Write-Log "Windows Terminal settings removed" -Level 'OK'
+        Write-Log "Removing WezTerm config..."
+        Remove-Item -Path $configPath -Force
+        Write-Log "WezTerm config removed" -Level 'OK'
     }
 }
 
@@ -277,7 +277,7 @@ function Remove-WingetPackages {
     Write-Log "Removing winget packages installed by setup..."
 
     # Packages installed by the setup (from packages.json)
-    # Note: We skip critical system tools like PowerShell, WSL, Windows Terminal
+    # Note: We skip critical system tools like PowerShell and WSL
     $packages = @(
         "CoreyButler.NVMforWindows"
         "AutoHotkey.AutoHotkey"
@@ -300,6 +300,7 @@ function Remove-WingetPackages {
         "Ollama.Ollama"
         "Python.PythonInstallManager"
         "JanDeDobbeleer.OhMyPosh"
+        "wez.wezterm"
     )
 
     foreach ($package in $packages) {
@@ -308,9 +309,9 @@ function Remove-WingetPackages {
     }
 
     # Note: We don't remove Git, 7zip, Microsoft.VisualStudio.2022.BuildTools,
-    # Microsoft.PowerShell, Microsoft.WindowsTerminal, Microsoft.WSL
+    # Microsoft.PowerShell, Microsoft.WSL
     # as they may be system dependencies
-    Write-Log "Git, 7zip, VS Build Tools, PowerShell, Windows Terminal, and WSL were NOT removed as they may be system dependencies" -Level 'WARNING'
+    Write-Log "Git, 7zip, VS Build Tools, PowerShell, and WSL were NOT removed as they may be system dependencies" -Level 'WARNING'
 
     Write-Log "Winget packages removed" -Level 'OK'
 }
@@ -332,7 +333,7 @@ function Main {
     Remove-NeovimConfig
     Remove-YaziConfig
     Remove-OhMyPoshConfig
-    Remove-WindowsTerminalSettings
+    Remove-WezTermConfig
     Remove-GlazeWMConfig
     Remove-AHKScripts
     Remove-PowerShellProfile

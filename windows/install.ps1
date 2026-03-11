@@ -221,38 +221,31 @@ function Install-IosevkaMonoFont
 }
 
 # ============================================================================
-# Windows Terminal Settings
+# WezTerm Configuration
 # ============================================================================
 
-function Install-WindowsTerminalSettings
+function Install-WezTermConfig
 {
-  $source = Join-Path $WindowsDotfilesDir "MicrosoftWindowsTerminal\settings.json"
-  $destination = Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
+  $source = Join-Path $SharedDotfilesDir "wezterm\.wezterm.lua"
+  $destination = Join-Path $env:USERPROFILE ".wezterm.lua"
 
   if (-not (Test-Path $source))
   {
-    Write-Log "Windows Terminal settings source not found: $source" -Level 'ERROR'
+    Write-Log "WezTerm config source not found: $source" -Level 'ERROR'
     return
   }
 
-  $destDir = Split-Path -Parent $destination
-  if (-not (Test-Path $destDir))
-  {
-    Write-Log "Windows Terminal is not installed (LocalState dir not found), skipping" -Level 'WARNING'
-    return
-  }
-
-  # Backup existing settings
+  # Backup existing config
   if (Test-Path $destination)
   {
     $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
     $backup = "$destination.backup.$timestamp"
     Copy-Item -Path $destination -Destination $backup -Force
-    Write-Log "Backed up existing Windows Terminal settings to $backup"
+    Write-Log "Backed up existing WezTerm config to $backup"
   }
 
   Copy-DotfileSafe -Source $source -Destination $destination
-  Write-Log "Windows Terminal settings installed" -Level 'OK'
+  Write-Log "WezTerm configuration installed" -Level 'OK'
 }
 
 # ============================================================================
@@ -474,7 +467,7 @@ function Main
   Install-NeovimConfig
   Install-YaziConfig
   Install-OhMyPoshConfig
-  Install-WindowsTerminalSettings
+  Install-WezTermConfig
   Install-KomorebiConfig
   Install-AHKScripts
 

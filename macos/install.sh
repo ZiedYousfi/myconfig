@@ -190,7 +190,7 @@ install_imagemagick() { install_brew_package "imagemagick"; }
 install_nerd_font_symbols() { install_brew_package "font-symbols-only-nerd-font" "true"; }
 
 # Cask applications
-install_ghostty() { install_brew_package "ghostty" "true"; }
+install_wezterm() { install_brew_package "wezterm" "true"; }
 install_zed() { install_brew_package "zed" "true"; }
 install_vscode() { install_brew_package "visual-studio-code" "true"; }
 
@@ -312,7 +312,7 @@ install_packages() {
     install_nerd_font_symbols
 
     # Cask applications
-    install_ghostty
+    install_wezterm
     install_zed
     install_vscode
 
@@ -339,7 +339,7 @@ setup_user_dotfiles() {
     mkdir -p "$USER_DOTFILES_DIR"
 
     # Copy shared dotfiles (platform-independent) from repo root
-    for package in ghostty nvim tmux zed zsh yazi; do
+    for package in nvim tmux wezterm yazi zed zsh; do
         if [ -d "$SHARED_DOTFILES_DIR/$package" ]; then
             log_info "Copying $package (shared) to $USER_DOTFILES_DIR..."
             rsync -a --update "$SHARED_DOTFILES_DIR/$package/" "$USER_DOTFILES_DIR/$package/"
@@ -649,13 +649,13 @@ install_lazyvim() {
 }
 
 # ============================================================================
-# Ghostty Configuration
+# WezTerm Configuration
 # ============================================================================
 
-configure_ghostty() {
-    log_info "Configuring Ghostty via stow..."
-    stow_package "ghostty"
-    log_success "Ghostty configured"
+configure_wezterm() {
+    log_info "Configuring WezTerm via stow..."
+    stow_package "wezterm"
+    log_success "WezTerm configured"
 }
 
 # ============================================================================
@@ -897,8 +897,8 @@ main() {
     # Setup Neovim with LazyVim (uses stow for custom plugins)
     install_lazyvim
 
-    # Configure Ghostty (uses stow)
-    configure_ghostty
+    # Configure WezTerm (uses stow)
+    configure_wezterm
 
     # Configure Zed editor (uses stow)
     configure_zed
