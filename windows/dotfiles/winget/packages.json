@@ -107,6 +107,9 @@
         },
         {
           "PackageIdentifier" : "Docker.DockerDesktop"
+        },
+        {
+          "PackageIdentifier" : "wez.wezterm"
         }
 			],
 			"SourceDetails" : 
