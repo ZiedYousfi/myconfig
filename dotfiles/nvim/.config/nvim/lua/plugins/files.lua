@@ -1,21 +1,20 @@
 return {
-	-- Telescope: fuzzy finder
+	-- FFF: fuzzy finder
 	{
-		"nvim-telescope/telescope.nvim",
-		version = "*",
-		cmd = "Telescope",
-		dependencies = {
-			{ "nvim-lua/plenary.nvim", lazy = true },
-			{ "nvim-telescope/telescope-fzf-native.nvim", build = "make", lazy = true },
-		},
-		keys = {
-			{ "<leader><leader>", "<cmd>Telescope find_files<CR>", desc = "Find files" },
-		},
-		config = function()
-			local telescope = require("telescope")
-			telescope.setup({})
-			pcall(telescope.load_extension, "fzf")
+		"dmtrKovalenko/fff.nvim",
+		build = function()
+			require("fff.download").download_or_build_binary()
 		end,
+		lazy = false,
+		keys = {
+			{
+				"<leader><leader>",
+				function()
+					require("fff").find_files()
+				end,
+				desc = "Find files",
+			},
+		},
 	},
 
 	-- Nvim-tree: file explorer

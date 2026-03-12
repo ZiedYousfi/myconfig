@@ -53,7 +53,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
 		local current = vim.api.nvim_get_current_buf()
 		local buftype = vim.api.nvim_get_option_value("buftype", { buf = current })
 
-		-- Don't run logic if we are in a special buffer (like Telescope, NvimTree, etc.)
+		-- Don't run logic if we are in a special buffer (like FFF, NvimTree, etc.)
 		if buftype ~= "" then
 			return
 		end
