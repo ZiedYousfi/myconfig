@@ -1,8 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/master/schema.json",
-
+  
   "app_specific_configuration_path": "$Env:KOMOREBI_CONFIG_HOME/applications.json",
-
+  
   "window_hiding_behaviour": "Cloak",
   "cross_monitor_move_behaviour": "Insert",
   "cross_boundary_behaviour": "Monitor",
@@ -26,50 +26,50 @@
   "monitors": [
     {
       "workspaces": [
-        { "name": "1", "layout": "Scrolling" },
-        { "name": "2", "layout": "Scrolling" },
-        { "name": "3", "layout": "Scrolling" },
-        { "name": "4", "layout": "Scrolling" },
-        { "name": "5", "layout": "Scrolling" },
-        { "name": "6", "layout": "Scrolling" },
-        { "name": "7", "layout": "Scrolling" },
-        { "name": "8", "layout": "Scrolling" },
-        { "name": "9", "layout": "Scrolling" },
-        { "name": "10", "layout": "Scrolling" }
+        { "name": "1", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "2", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "3", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "4", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "5", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "6", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "7", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "8", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "9", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "10", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } }
       ]
     },
     {
       "workspaces": [
-        { "name": "1", "layout": "Scrolling" },
-        { "name": "2", "layout": "Scrolling" },
-        { "name": "3", "layout": "Scrolling" },
-        { "name": "4", "layout": "Scrolling" },
-        { "name": "5", "layout": "Scrolling" },
-        { "name": "6", "layout": "Scrolling" },
-        { "name": "7", "layout": "Scrolling" },
-        { "name": "8", "layout": "Scrolling" },
-        { "name": "9", "layout": "Scrolling" },
-        { "name": "10", "layout": "Scrolling" }
+        { "name": "1", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "2", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "3", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "4", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "5", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "6", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "7", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "8", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "9", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "10", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } }
       ]
     },
     {
       "workspaces": [
-        { "name": "1", "layout": "Scrolling" },
-        { "name": "2", "layout": "Scrolling" },
-        { "name": "3", "layout": "Scrolling" },
-        { "name": "4", "layout": "Scrolling" },
-        { "name": "5", "layout": "Scrolling" },
-        { "name": "6", "layout": "Scrolling" },
-        { "name": "7", "layout": "Scrolling" },
-        { "name": "8", "layout": "Scrolling" },
-        { "name": "9", "layout": "Scrolling" },
-        { "name": "10", "layout": "Scrolling" }
+        { "name": "1", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "2", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "3", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "4", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "5", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "6", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "7", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "8", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "9", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } },
+        { "name": "10", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 2 } } }
       ]
     }
   ],
 
   "floating_applications": [
     { "kind": "Title", "id": "Picture-in-Picture", "matching_strategy": "Regex" },
-    { "kind": "Title", "id": "Helper", "matching_strategy": "Regex" }
+    { "kind": "Title", "id": "Helper", "matching_strategy": "Contains" }
   ]
 }

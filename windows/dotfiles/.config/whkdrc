@@ -1,6 +1,5 @@
 # ============================================================
 # whkd configuration - Komorebi keybindings
-# Mirrors previous GlazeWM keybindings
 # ============================================================
 #
 .shell pwsh
@@ -50,8 +49,8 @@ alt + shift + 0         : komorebic move-to-workspace 9
 # --- Close window ---
 alt + shift + q         : komorebic close
 
-# --- Reload configuration ---
-alt + shift + r         : komorebic reload-configuration
+# --- Restart Komorebi ---
+alt + shift + r : komorebic stop --whkd; komorebic start --whkd;
 
 # --- Toggle floating ---
 alt + shift + space     : komorebic toggle-float
