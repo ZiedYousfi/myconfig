@@ -4,7 +4,7 @@
 #
 .shell pwsh
 
-alt + i 	       : komorebic toggle-shortcuts
+alt + i 	              : komorebic toggle-shortcuts
 
 # --- Focus ---
 alt + h                 : komorebic focus left
@@ -49,8 +49,11 @@ alt + shift + 0         : komorebic move-to-workspace 9
 # --- Close window ---
 alt + shift + q         : komorebic close
 
+# --- Open terminal ---
+alt + shift + t         : Start-Process wezterm -WindowStyle Hidden
+
 # --- Restart Komorebi ---
-alt + shift + r : komorebic stop --whkd; komorebic start --whkd;
+alt + shift + r         : komorebic stop --whkd; komorebic start --whkd;
 
 # --- Toggle floating ---
 alt + shift + space     : komorebic toggle-float
