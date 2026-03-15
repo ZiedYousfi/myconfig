@@ -41,6 +41,7 @@ bars:
       center:
         - "clock"
       right:
+        - "systray"
         - "cpu"
         - "memory"
         - "battery"
@@ -119,6 +120,22 @@ widgets:
       label_alt: "<span class='icon'>{icon}</span>  {percent}% {time_remaining}"
       update_interval: 10000
 
+  systray:
+    type: "yasb.systray.SystrayWidget"
+    options:
+      class_name: "systray"
+      label_collapsed: "▼"
+      label_expanded: "▶"
+      label_position: "left"
+      icon_size: 16
+      pin_click_modifier: "alt"
+      show_unpinned: false
+      show_unpinned_button: true
+      show_battery: false
+      show_volume: false
+      show_network: false
+      tooltip: true
+
   volume:
     type: "yasb.volume.VolumeWidget"
     options:
@@ -130,6 +147,11 @@ widgets:
         - "\uf027"
         - "\uf027"
         - "\uf028"
+      audio_menu:
+        alignment: "center"
+        direction: "up"
+        offset_top: 6
+        offset_left: 0
       callbacks:
         on_left: "toggle_volume_menu"
         on_right: "exec cmd.exe /c start ms-settings:sound"

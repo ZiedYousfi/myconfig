@@ -72,7 +72,7 @@
   background-color: #0a0a0a;
 }
 
-.audio-container.device {
+.audio-menu .audio-container .device {
   background-color: transparent;
   border: none;
   padding: 6px 8px 6px 4px;
@@ -82,7 +82,13 @@
   color: #a0aabe;
 }
 
-.audio-container.device:hover {
+.audio-menu .audio-container .device.selected {
+  background-color: #ff4ead1a;
+  color: #ff4ead;
+  border: 1px solid #ff4ead33;
+}
+
+.audio-menu .audio-container .device:hover {
   background-color: #ff4ead1a;
   color: #ff4ead;
 }
@@ -240,6 +246,41 @@
 
 .battery-widget .label.low {
   color: #f87171;
+}
+
+/* ========== SYSTRAY ========== */
+.systray {
+  background: transparent;
+  border: none;
+  margin: 0;
+}
+
+.systray .widget-container {
+  padding: 0 4px;
+}
+
+.systray .unpinned-container,
+.systray .pinned-container {
+  background: transparent;
+}
+
+.systray .button,
+.systray .unpinned-visibility-btn {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 2px;
+  margin: 0 2px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: #ff4ead;
+}
+
+.systray .button:hover,
+.systray .unpinned-visibility-btn:hover,
+.systray .unpinned-visibility-btn:checked {
+  background: #ff4ead1a;
+  border-color: #ff4ead33;
 }
 
 /* ========== VOLUME ========== */
