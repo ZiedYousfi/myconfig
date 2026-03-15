@@ -3,6 +3,12 @@
 InstallKeybdHook()
 #MaxThreadsPerHotkey 4
 
+Persistent
+CoordMode "Mouse", "Screen"
+
+; Make the taskbar transparent
+WinSetTransparent 0, "ahk_class Shell_TrayWnd"
+
 HOLD_THRESHOLD := 400  ; ms
 
 homeRowActive      := false

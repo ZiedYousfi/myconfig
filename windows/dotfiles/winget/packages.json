@@ -103,9 +103,6 @@
           "PackageIdentifier" : "GoLang.Go"
         },
         {
-          "PackageIdentifier" : "RamenSoftware.Windhawk"
-        },
-        {
           "PackageIdentifier" : "Docker.DockerDesktop"
         },
         {
