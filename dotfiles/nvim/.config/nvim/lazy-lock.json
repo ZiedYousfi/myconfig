@@ -1,17 +1,17 @@
 {
   "auto-save.nvim": { "branch": "main", "commit": "979b6c82f60cfa80f4cf437d77446d0ded0addf0" },
-  "blink.cmp": { "branch": "main", "commit": "4b18c32adef2898f95cdef6192cbd5796c1a332d" },
+  "blink.cmp": { "branch": "main", "commit": "451168851e8e2466bc97ee3e026c3dcb9141ce07" },
   "conform.nvim": { "branch": "master", "commit": "086a40dc7ed8242c03be9f47fbcee68699cc2395" },
   "copilot.vim": { "branch": "release", "commit": "a12fd5672110c8aa7e3c8419e28c96943ca179be" },
-  "fff.nvim": { "branch": "main", "commit": "736c41ecd618980a81af51ab79ec1767ca0aa7ae" },
+  "fff.nvim": { "branch": "main", "commit": "64861f8142c5ce8c34f9ec73a3d084857182e156" },
   "flash.nvim": { "branch": "main", "commit": "fcea7ff883235d9024dc41e638f164a450c14ca2" },
   "friendly-snippets": { "branch": "main", "commit": "6cd7280adead7f586db6fccbd15d2cac7e2188b9" },
   "lazy.nvim": { "branch": "main", "commit": "306a05526ada86a7b30af95c5cc81ffba93fef97" },
-  "mason-lspconfig.nvim": { "branch": "main", "commit": "a324581a3c83fdacdb9804b79de1cbe00ce18550" },
+  "mason-lspconfig.nvim": { "branch": "main", "commit": "a676ab7282da8d651e175118bcf54483ca11e46d" },
   "mason.nvim": { "branch": "main", "commit": "44d1e90e1f66e077268191e3ee9d2ac97cc18e65" },
-  "nvim-lspconfig": { "branch": "master", "commit": "0203a9608d63eda57679b01e69f33a7b4c34b0d1" },
-  "nvim-tree.lua": { "branch": "master", "commit": "e1ad8b96834779b4c2674ef83be3f1a4ed007358" },
-  "nvim-treesitter": { "branch": "main", "commit": "493890b87a81dfe6a7e577dbc364ae33fa482da9" },
+  "nvim-lspconfig": { "branch": "master", "commit": "1d13d2b0df9a0a02904c76d7ad6810f71d404406" },
+  "nvim-tree.lua": { "branch": "master", "commit": "b3772adec8db61ba9098c5624a0823a77be3a23d" },
+  "nvim-treesitter": { "branch": "main", "commit": "b9f9d692f1c7f0427502a3b84fa25d4bedb29ec1" },
   "nvim-web-devicons": { "branch": "master", "commit": "d7462543c9e366c0d196c7f67a945eaaf5d99414" },
   "tiny-inline-diagnostic.nvim": { "branch": "main", "commit": "ba133b3e932416e4b9507095731a6d7276878fe8" }
 }
