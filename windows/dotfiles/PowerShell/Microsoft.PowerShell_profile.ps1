@@ -149,8 +149,10 @@ $(if ($diff) { $diff } else { "(none)" })
 Based on this context:
 - $stagedNote
 - Write a comprehensive and descriptive commit message following the style observed above.
-- Commit using 'git commit -m "<message>"'.
+- YOU HAVE TO commit using 'git commit -m "<message>"'.
 - Do NOT push to remote under any circumstances.
+
+And remember child: Why use a lot of words when few words do trick... Keep that in mind when writing the commit message. Be concise.
 "@
 
   opencode run $context -m $Model
@@ -165,14 +167,15 @@ function su
 {
   $currentDir = (Get-Location).Path
 
-  $weztermArgs = @(
-    "start",
-    "--cwd", $currentDir,
-    "pwsh.exe",
+  $wtArgs = @(
+    "new-tab",
+    "-p", "PowerShell",
+    "-d", $currentDir,
+    "pwsh",
     "-NoExit"
   )
 
-  Start-Process -FilePath "wezterm-gui.exe" -Verb RunAs -ArgumentList $weztermArgs
+  Start-Process -FilePath "wt.exe" -Verb RunAs -ArgumentList $wtArgs
 }
 
 function ..
@@ -195,6 +198,8 @@ function ..
   
   Set-Location -Path $targetPath
 }
+
+fastfetch.exe
 # --- zoxide (smart cd) ---
 # NEED TO STAY AT THE END OF THE FILE !
 
