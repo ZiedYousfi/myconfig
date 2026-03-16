@@ -249,7 +249,7 @@ function Install-WezTermConfig
 }
 
 # ============================================================================
-# Komorebi, whkd and Zebar Configuration
+# Komorebi and YASB Configuration
 # ============================================================================
 
 function Install-KomorebiConfig
@@ -267,19 +267,6 @@ function Install-KomorebiConfig
     Write-Log "Komorebi configuration installed" -Level 'OK'
   }
 
-  # whkd config -> %USERPROFILE%\.config\whkd\whkdrc
-  $whkdSource = Join-Path $WindowsDotfilesDir ".config\whkd"
-  $whkdDest = Join-Path $env:USERPROFILE ".config\whkd"
-
-  if (-not (Test-Path $whkdSource))
-  {
-    Write-Log "whkd config source not found: $whkdSource" -Level 'ERROR'
-  } else
-  {
-    Copy-DotfileSafe -Source $whkdSource -Destination $whkdDest -Recurse
-    Write-Log "whkd configuration installed" -Level 'OK'
-  }
-
   # YASB config -> %USERPROFILE%\.config\yasb\config.yaml/styles.css
   $yasbSource = Join-Path $WindowsDotfilesDir ".config\yasb"
   $yasbDest = Join-Path $env:USERPROFILE ".config\yasb"
@@ -294,7 +281,7 @@ function Install-KomorebiConfig
   }
 
   [Environment]::SetEnvironmentVariable("KOMOREBI_CONFIG_HOME", "$Env:USERPROFILE\.config\komorebi", "User")
-  komorebic enable-autostart --whkd
+  komorebic enable-autostart
   yasbc enable-autostart
 }
 

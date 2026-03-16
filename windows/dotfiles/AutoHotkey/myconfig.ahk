@@ -178,9 +178,9 @@ SetHomeRowHotkeys(state) {
 
 SetDisabledModeHotkeys(state) {
     for key, mods in Map(
-        "SC056", ["{LWin Down}", "{LWin Up}"],
+        "z",     ["{LWin Down}", "{LWin Up}"],
         "a",     ["{LAlt Down}", "{LAlt Up}"],
-        "q",     ["{LCtrl Down}", "{LCtrl Up}"],
+        "s",     ["{LCtrl Down}", "{LCtrl Up}"],
         "w",     ["{LShift Down}", "{LShift Up}"]
     ) {
         modDown := mods[1], modUp := mods[2]
@@ -189,6 +189,8 @@ SetDisabledModeHotkeys(state) {
             ((k, md, mu) => (*) => HandleModTap(k, md, mu))(key, modDown, modUp),
             state
         )
+        HotKey("*$c", (*) => SendEvent("{F17}"), state)
+        HotKey("*$v", (*) => SendEvent("{F18}"), state)
     }
 }
 
@@ -209,10 +211,74 @@ SetValoModeHotkeys(state) {
         )
     }
 
-    ; Remap pur s → d (pas de hold/tap, just direct)
     HotKey("*$s", (*) => SendEvent("{d}"), state)
 }
 
+; --- Global shortcuts ---
+
+; Helper
+pwsh(cmd) {
+    Run 'pwsh.exe -NoProfile -Command "' cmd '"', , "Hide"
+}
+
+; --- Toggle shortcuts ---
+!i:: pwsh("komorebic toggle-shortcuts")
+
+; --- Focus ---
+!h::
+!Left:: pwsh("komorebic focus left")
+
+!l::
+!Right:: pwsh("komorebic focus right")
+
+!k::
+!Up:: pwsh("komorebic focus up")
+
+!j::
+!Down:: pwsh("komorebic focus down")
+
+; --- Move windows ---
+!+h::
+!+Left:: pwsh("komorebic move left")
+
+!+l::
+!+Right:: pwsh("komorebic move right")
+
+; --- Focus workspace ---
+!1:: pwsh("komorebic focus-workspace 0")
+!2:: pwsh("komorebic focus-workspace 1")
+!3:: pwsh("komorebic focus-workspace 2")
+!4:: pwsh("komorebic focus-workspace 3")
+!5:: pwsh("komorebic focus-workspace 4")
+!6:: pwsh("komorebic focus-workspace 5")
+!7:: pwsh("komorebic focus-workspace 6")
+!8:: pwsh("komorebic focus-workspace 7")
+!9:: pwsh("komorebic focus-workspace 8")
+!0:: pwsh("komorebic focus-workspace 9")
+
+; --- Move window to workspace ---
+!+1:: pwsh("komorebic move-to-workspace 0")
+!+2:: pwsh("komorebic move-to-workspace 1")
+!+3:: pwsh("komorebic move-to-workspace 2")
+!+4:: pwsh("komorebic move-to-workspace 3")
+!+5:: pwsh("komorebic move-to-workspace 4")
+!+6:: pwsh("komorebic move-to-workspace 5")
+!+7:: pwsh("komorebic move-to-workspace 6")
+!+8:: pwsh("komorebic move-to-workspace 7")
+!+9:: pwsh("komorebic move-to-workspace 8")
+!+0:: pwsh("komorebic move-to-workspace 9")
+
+; --- Close window ---
+!+q:: pwsh("komorebic close")
+
+; --- Open terminal ---
+!+t:: Run 'pwsh.exe -NoProfile -Command "Start-Process wezterm -WindowStyle Hidden"', , "Hide"
+
+; --- Restart Komorebi ---
+!+r:: pwsh("komorebic stop --whkd; komorebic start --whkd")
+
+; --- Toggle floating ---
+!+Space:: pwsh("komorebic toggle-float")
 $F17::Send("{WheelUp}")
 $F18::Send("{WheelDown}")
 $F19::Send("#{Tab}")

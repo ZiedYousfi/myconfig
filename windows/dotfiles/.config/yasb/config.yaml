@@ -3,9 +3,9 @@ watch_config: true
 debug: false
 
 komorebi:
-  start_command: "komorebic start --whkd"
-  stop_command: "komorebic stop --whkd"
-  reload_command: "komorebic stop --whkd && komorebic start --whkd"
+  start_command: "komorebic start"
+  stop_command: "komorebic stop"
+  reload_command: "komorebic stop && komorebic start"
 
 bars:
   primary-bar:
