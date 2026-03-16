@@ -107,6 +107,9 @@
         },
         {
           "PackageIdentifier" : "wez.wezterm"
+        },
+        {
+          "PackageIdentifier" : "Fastfetch-cli.Fastfetch"
         }
 			],
 			"SourceDetails" : 
