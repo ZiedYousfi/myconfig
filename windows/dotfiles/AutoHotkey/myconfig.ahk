@@ -237,9 +237,15 @@ pwsh(cmd) {
 !j::
 !Down:: pwsh("komorebic focus down")
 
-; --- Move windows ---
+; --- Move windows --
 !+h::
 !+Left:: pwsh("komorebic move left")
+
+!+j::
+!+Down:: pwsh("komorebic move down")
+
+!+k::
+!+Up:: pwsh("komorebic move up")
 
 !+l::
 !+Right:: pwsh("komorebic move right")
@@ -269,7 +275,10 @@ pwsh(cmd) {
 !+0:: pwsh("komorebic move-to-workspace 9")
 
 ; --- Close window ---
-!+q:: pwsh("komorebic close")
+!q:: pwsh("komorebic close")
+
+; --- Mnimize window ---
+!m:: pwsh("komorebic minimize")
 
 ; --- Open terminal ---
 !+t:: Run 'pwsh.exe -NoProfile -Command "Start-Process wezterm -WindowStyle Hidden"', , "Hide"
@@ -279,6 +288,7 @@ pwsh(cmd) {
 
 ; --- Toggle floating ---
 !+Space:: pwsh("komorebic toggle-float")
+
 $F17::Send("{WheelUp}")
 $F18::Send("{WheelDown}")
 $F19::Send("#{Tab}")
