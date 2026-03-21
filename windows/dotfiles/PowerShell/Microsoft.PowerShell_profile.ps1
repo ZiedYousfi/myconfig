@@ -65,11 +65,6 @@ function y
   Remove-Item -Path $tmp
 }
 
-function reload
-{
-  . $PROFILE
-}
-
 function msvcenv
 {
   $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -181,7 +176,7 @@ function su
 function ..
 {
   param (
-    [int]$levels = 1  # Valeur par défaut = 1
+    [int]$levels = 1
   )
   
   if ($levels -lt 1)
@@ -197,6 +192,102 @@ function ..
   }
   
   Set-Location -Path $targetPath
+}
+
+function repair-winget
+{
+  Install-Module microsoft.winget.client -Force -AllowClobber
+  Import-Module microsoft.winget.client
+  Repair-WinGetPackageManager -Force -Latest
+
+  # Uninstalls and reinstalls selected winget-sourced packages to recreate symlinks in WinGet\Links
+
+  # Auto-elevate to administrator if not already running as admin
+  if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
+  {
+    Write-Host "Not running as administrator. Relaunching elevated..." -ForegroundColor Yellow
+    Start-Process pwsh -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+    exit
+  }
+
+  Write-Host "`nFetching installed packages..." -ForegroundColor Cyan
+
+  $rawOutput = winget list | Out-String -Width 5000
+  $lines = $rawOutput -split "`n" | Where-Object { $_.Trim() -ne "" }
+
+  # Find header line to determine column offsets
+  $headerLine = $lines | Where-Object {
+    $_ -match "\bNom\b|\bName\b" -and $_ -match "\bID\b|\bId\b" -and $_ -match "\bSource\b"
+  } | Select-Object -First 1
+
+  if (-not $headerLine)
+  {
+    Write-Host "Could not find winget list header. Aborting." -ForegroundColor Red
+    exit 1
+  }
+
+  $sourceIndex = $headerLine.IndexOf("Source")
+
+  # Filter lines where the Source column contains "winget"
+  $packages = $lines | Where-Object {
+    $_ -notmatch "^[-\s]+$" -and
+    $_.Length -gt $sourceIndex -and
+    $_.Substring($sourceIndex).Trim() -like "winget*"
+  } | ForEach-Object {
+    $parts = $_ -split "\s{2,}"
+    if ($parts.Count -ge 2)
+    { $parts[1].Trim() 
+    }
+  } | Where-Object { $_ -and $_ -notmatch "^ID$|^Id$" }
+
+  if ($packages.Count -eq 0)
+  {
+    Write-Host "No winget-sourced packages found. Aborting." -ForegroundColor Red
+    exit 1
+  }
+
+  Write-Host "`n$($packages.Count) winget-sourced packages found." -ForegroundColor Yellow
+  Write-Host "A selection window will open — hold Ctrl or Shift to select multiple packages." -ForegroundColor DarkGray
+
+  # Let user pick packages via Out-GridView
+  $selected = $packages | ForEach-Object { [PSCustomObject]@{ ID = $_ } } |
+    Out-GridView -Title "Select packages to reinstall (Ctrl+click for multiple)" -OutputMode Multiple
+
+  if (-not $selected -or $selected.Count -eq 0)
+  {
+    Write-Host "No packages selected. Aborted." -ForegroundColor DarkGray
+    exit 0
+  }
+
+  Write-Host "`n$($selected.Count) package(s) selected:" -ForegroundColor Yellow
+  $selected | ForEach-Object { Write-Host "  - $($_.ID)" }
+
+  $confirm = Read-Host "`nProceed with uninstall + reinstall? (y/N)"
+
+  if ($confirm -notin @("y", "Y", "yes", "Yes"))
+  {
+    Write-Host "Aborted." -ForegroundColor DarkGray
+    exit 0
+  }
+
+  foreach ($pkg in $selected)
+  {
+    Write-Host "`nUninstalling $($pkg.ID)..." -ForegroundColor Magenta
+    winget uninstall --id $pkg.ID --silent --accept-source-agreements 2>&1
+
+    Write-Host "Reinstalling $($pkg.ID)..." -ForegroundColor Blue
+    winget install --id $pkg.ID --silent --force `
+      --accept-package-agreements --accept-source-agreements 2>&1
+  }
+
+  Write-Host "`nDone! Open a new terminal for PATH changes to take effect." -ForegroundColor Green
+}
+
+function reload
+{
+  . $PROFILE
+  $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
+  Clear-host
 }
 
 fastfetch.exe

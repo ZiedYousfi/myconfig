@@ -11,7 +11,10 @@
 				},
 				{
 					"PackageIdentifier" : "KDE.Krita"
-				}
+				},
+        {
+          "PackageIdentifier" : "KDE.Kdenlive"
+        }
 			],
 			"SourceDetails" : 
 			{
