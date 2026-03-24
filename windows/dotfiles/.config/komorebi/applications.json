@@ -3121,11 +3121,11 @@
       }
     ]
   },
-  "WezTerm": {
+  "Windows Terminal": {
     "tray_and_multi_window": [
       {
         "kind": "Exe",
-        "id": "wezterm-gui.exe",
+        "id": "WindowsTerminal.exe",
         "matching_strategy": "Equals"
       }
     ]
@@ -3257,5 +3257,14 @@
         "matching_strategy": "Equals"
       }
     ]
-  }
+  },
+  "Handy": {
+    "ignore": [
+      {
+        "kind": "Exe",
+        "id": "handy",
+        "matching_strategy": "Contains"
+      }
+    ]
+  },
 }
