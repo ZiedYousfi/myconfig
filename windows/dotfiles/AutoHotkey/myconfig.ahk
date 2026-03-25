@@ -284,7 +284,7 @@ pwsh(cmd) {
 !+t:: Run 'pwsh.exe -NoProfile -Command "Start-Process wezterm -WindowStyle Hidden"', , "Hide"
 
 ; --- Restart Komorebi ---
-!+r:: pwsh("komorebic stop --whkd; komorebic start --whkd")
+!+r:: pwsh("komorebic stop; komorebic start --clean-state")
 
 ; --- Toggle floating ---
 !+Space:: pwsh("komorebic toggle-float")
