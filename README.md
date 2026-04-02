@@ -20,10 +20,10 @@ curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.
 curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | bash -s -- ubuntu
 ```
 
-### Windows
+### Windows (cmd.exe)
 
-```powershell
-powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.ps1 | iex"
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -Command "& { $p = Join-Path $env:TEMP 'bootstrap.ps1'; Invoke-WebRequest 'https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.ps1' -OutFile $p; Unblock-File $p; & $p }"
 ```
 
 ### Interactive Mode (Auto-detect or Choose)
