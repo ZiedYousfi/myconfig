@@ -181,6 +181,11 @@ function Install-YaziConfig
   }
 
   Copy-DotfileSafe -Source $source -Destination $destination -Recurse
+  [Environment]::SetEnvironmentVariable(
+    "YAZI_FILE_ONE",
+    "C:\Program Files\Git\usr\bin\file.exe",
+    "User"
+  )
   Write-Log "Yazi configuration installed" -Level 'OK'
 }
 
