@@ -166,8 +166,12 @@ function Download-And-Extract {
     Write-Log "Extracting archive..."
     $extractDir = Join-Path $TempDir "extracted"
     Expand-ZipArchive -ZipPath $zipPath -DestinationPath $extractDir
-    if (Test-Path -LiteralPath $zipPath -ErrorAction SilentlyContinue) {
-        Remove-Item -LiteralPath $zipPath -Force -ErrorAction SilentlyContinue
+    try {
+        if ([System.IO.File]::Exists($zipPath)) {
+            [System.IO.File]::Delete($zipPath)
+        }
+    } catch {
+        Write-Log "Could not remove temporary ZIP file: $($_.Exception.Message)" -Level 'WARNING'
     }
 
     # GitHub archives usually unpack into a single root folder.
