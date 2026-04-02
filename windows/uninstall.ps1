@@ -39,6 +39,7 @@ function Confirm-Uninstall {
     Write-Log "This script will remove:" -Level 'WARNING'
     Write-Host "  - Neovim configuration"
     Write-Host "  - Yazi configuration"
+    Write-Host "  - Lazygit configuration"
     Write-Host "  - Oh My Posh configuration"
     Write-Host "  - WezTerm configuration (restored from backup if available)"
     Write-Host "  - GlazeWM and Zebar configuration"
@@ -93,6 +94,26 @@ function Remove-YaziConfig {
         Write-Log "Yazi configuration removed" -Level 'OK'
     } else {
         Write-Log "Yazi configuration not found, skipping"
+    }
+}
+
+# ============================================================================
+# Remove Lazygit Configuration
+# ============================================================================
+
+function Remove-LazygitConfig {
+    $configPath = Join-Path $env:LOCALAPPDATA "lazygit\config.yml"
+    $configDir = Split-Path -Parent $configPath
+
+    if (Test-Path $configPath) {
+        Write-Log "Removing Lazygit configuration..."
+        Remove-Item -Path $configPath -Force
+        if ((Test-Path $configDir) -and -not (Get-ChildItem -Path $configDir -Force -ErrorAction SilentlyContinue)) {
+            Remove-Item -Path $configDir -Force
+        }
+        Write-Log "Lazygit configuration removed" -Level 'OK'
+    } else {
+        Write-Log "Lazygit configuration not found, skipping"
     }
 }
 
@@ -332,6 +353,7 @@ function Main {
     # Remove configurations (in reverse order of installation)
     Remove-NeovimConfig
     Remove-YaziConfig
+    Remove-LazygitConfig
     Remove-OhMyPoshConfig
     Remove-WezTermConfig
     Remove-GlazeWMConfig

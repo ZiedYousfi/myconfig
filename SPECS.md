@@ -149,6 +149,25 @@ wezterm/
 | `git` | Version control |
 | `lazygit` | Terminal UI for git |
 
+### Lazygit
+
+Terminal UI for git with a shared Black & Pink theme.
+
+| Setting | Value |
+|---------|-------|
+| Theme | Black & Pink |
+| Config location | `$XDG_CONFIG_HOME/lazygit/config.yml` |
+| Windows config location | `%LOCALAPPDATA%\lazygit\config.yml` |
+
+#### Dotfiles Structure
+
+```
+lazygit/
+└── .config/
+    └── lazygit/
+        └── config.yml
+```
+
 ### Tmux
 
 Terminal multiplexer with **Oh My Tmux** configuration.
@@ -658,6 +677,7 @@ These dotfiles are located in `/dotfiles/` at the project root and can be used a
 | Package | Description | Target |
 |---------|-------------|--------|
 | `wezterm` | Terminal emulator config | `~/.wezterm.lua` |
+| `lazygit` | Lazygit theme/config | `~/.config/lazygit/` |
 | `nvim` | Neovim/LazyVim plugins | `~/.config/nvim/` |
 | `tmux` | Tmux customization | `~/.config/tmux/` |
 | `yazi` | File manager theme | `~/.config/yazi/` |

@@ -339,7 +339,7 @@ setup_user_dotfiles() {
     mkdir -p "$USER_DOTFILES_DIR"
 
     # Copy shared dotfiles (platform-independent) from repo root
-    for package in nvim tmux wezterm yazi zed zsh; do
+    for package in lazygit nvim tmux wezterm yazi zed zsh; do
         if [ -d "$SHARED_DOTFILES_DIR/$package" ]; then
             log_info "Copying $package (shared) to $USER_DOTFILES_DIR..."
             rsync -a --update "$SHARED_DOTFILES_DIR/$package/" "$USER_DOTFILES_DIR/$package/"
@@ -844,6 +844,16 @@ configure_yazi() {
 }
 
 # ============================================================================
+# Lazygit Configuration
+# ============================================================================
+
+configure_lazygit() {
+    log_info "Configuring Lazygit via stow..."
+    stow_package "lazygit"
+    log_success "Lazygit configured"
+}
+
+# ============================================================================
 # macOS System Settings
 # ============================================================================
 
@@ -914,6 +924,9 @@ main() {
 
     # Configure Yazi file manager
     configure_yazi
+
+    # Configure Lazygit
+    configure_lazygit
 
     # Configure macOS-specific settings
     configure_macos_settings

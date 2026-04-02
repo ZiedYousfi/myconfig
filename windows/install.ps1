@@ -190,6 +190,33 @@ function Install-YaziConfig
 }
 
 # ============================================================================
+# Lazygit Configuration
+# ============================================================================
+
+function Install-LazygitConfig
+{
+  $source = Join-Path $SharedDotfilesDir "lazygit\.config\lazygit\config.yml"
+  $destination = Join-Path $env:LOCALAPPDATA "lazygit\config.yml"
+
+  if (-not (Test-Path $source))
+  {
+    Write-Log "Lazygit config source not found: $source" -Level 'ERROR'
+    return
+  }
+
+  if (Test-Path $destination)
+  {
+    $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+    $backup = "$destination.backup.$timestamp"
+    Copy-Item -Path $destination -Destination $backup -Force
+    Write-Log "Backed up existing Lazygit config to $backup"
+  }
+
+  Copy-DotfileSafe -Source $source -Destination $destination
+  Write-Log "Lazygit configuration installed" -Level 'OK'
+}
+
+# ============================================================================
 # Oh My Posh Configuration
 # ============================================================================
 
@@ -458,6 +485,7 @@ function Main
   Install-PowerShellProfile
   Install-NeovimConfig
   Install-YaziConfig
+  Install-LazygitConfig
   Install-OhMyPoshConfig
   Install-WezTermConfig
   Install-KomorebiConfig
