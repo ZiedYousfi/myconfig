@@ -1,6 +1,7 @@
 # Windows Development Environment Setup Script
 # This script is idempotent - running it multiple times is safe
 # Dotfiles are copied directly to their target locations (no stow on Windows)
+# Keep the script readable for future maintenance and review.
 
 # $ErrorActionPreference = 'Stop' (Disabled to ensure script continues even if some packages fail)
 
@@ -10,6 +11,7 @@ $SharedDotfilesDir = Join-Path $RepoRoot "dotfiles"
 $WindowsDotfilesDir = Join-Path $ScriptDir "dotfiles"
 
 # Colors
+# Centralize output colors so log messages stay consistent.
 $Colors = @{
   Info    = 'Cyan'
   Success = 'Green'
@@ -52,6 +54,7 @@ function Test-CommandExists
 
 function Copy-DotfileSafe
 {
+  # Copy a file or directory after ensuring the destination tree exists.
   param(
     [string]$Source,
     [string]$Destination,
@@ -115,6 +118,7 @@ function Install-WingetPackages
 
 function Install-PowerShellProfile
 {
+  # Install the profile early so the next shell session picks up prompt changes.
   $source = Join-Path $WindowsDotfilesDir "PowerShell\Microsoft.PowerShell_profile.ps1"
   $destination = $PROFILE
 
@@ -124,7 +128,7 @@ function Install-PowerShellProfile
     return
   }
 
-  # Backup existing profile if it exists and wasn't created by us
+  # Backup existing profile if it exists and does not look like one we created.
   if ((Test-Path $destination) -and -not (Select-String -Path $destination -Pattern "Oh My Posh" -Quiet -ErrorAction SilentlyContinue))
   {
     $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
@@ -134,6 +138,8 @@ function Install-PowerShellProfile
   }
 
   Copy-DotfileSafe -Source $source -Destination $destination
+  # Remove the downloaded-file marker from the installed profile.
+  Unblock-File -Path $destination
   Write-Log "PowerShell profile installed" -Level 'OK'
 }
 
@@ -286,7 +292,7 @@ function Install-WezTermConfig
 
 function Install-KomorebiConfig
 {
-  # Komorebi config -> %USERPROFILE%\.config\komorebi\komorebi.json
+  # Komorebi config lives under the user profile config tree on Windows.
   $komorebiSource = Join-Path $WindowsDotfilesDir ".config\komorebi"
   $komorebiDest = Join-Path $env:USERPROFILE ".config\komorebi"
 
@@ -299,7 +305,7 @@ function Install-KomorebiConfig
     Write-Log "Komorebi configuration installed" -Level 'OK'
   }
 
-  # YASB config -> %USERPROFILE%\.config\yasb\config.yaml/styles.css
+  # YASB config follows the same user-scoped config layout.
   $yasbSource = Join-Path $WindowsDotfilesDir ".config\yasb"
   $yasbDest = Join-Path $env:USERPROFILE ".config\yasb"
 
@@ -445,6 +451,7 @@ function Install-NodeViaNVM
 
 function Install-RegistryTweaks
 {
+  # Apply the Start menu policy tweak from a checked-in .reg file when present.
   $regFile = Join-Path $ScriptDir "DisableRecoStartMenu.reg"
 
   if (-not (Test-Path $regFile))
@@ -478,10 +485,10 @@ function Main
     exit 1
   }
 
-  # Install winget packages first (needed for most other steps)
+  # Install winget packages first because later steps depend on them.
   Install-WingetPackages
 
-  # Copy dotfiles configurations
+  # Copy the core configuration files and directories.
   Install-PowerShellProfile
   Install-NeovimConfig
   Install-YaziConfig
@@ -491,7 +498,7 @@ function Main
   Install-KomorebiConfig
   Install-AHKScripts
 
-  # Install additional tools and modules
+  # Install the supporting tools and modules that the dotfiles expect.
   Install-PSReadLineModule
   Install-IosevkaMonoFont
   Install-TreeSitterCLI
@@ -499,7 +506,7 @@ function Main
   Install-PythonSetup
   Install-NodeViaNVM
 
-  # Apply registry tweaks
+  # Apply the Windows shell and Start menu tweaks last.
   Install-RegistryTweaks
 
   Write-Host ""

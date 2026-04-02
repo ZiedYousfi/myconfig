@@ -10,11 +10,13 @@
 $ErrorActionPreference = 'Stop'
 
 # Repository configuration
+# The bootstrap script only orchestrates download, extraction, and handoff.
 $RepoOwner = "ZiedYousfi"
 $RepoName = "myconfig"
 $GithubRepo = "$RepoOwner/$RepoName"
 
 # Installation directory
+# Keep the extracted repository isolated from the working tree.
 $InstallDir = Join-Path $HOME ".setup-config"
 $TempDir = Join-Path $env:TEMP "setup-config-$pid"
 
@@ -53,6 +55,7 @@ function Print-Banner {
 
 function Get-LatestReleaseTag {
     Write-Log "Fetching latest release information..."
+    # Prefer the latest release, but fall back to the main branch when needed.
     $url = "https://api.github.com/repos/$GithubRepo/releases/latest"
     try {
         $release = Invoke-RestMethod -Uri $url -ErrorAction Stop
@@ -78,7 +81,7 @@ function Download-And-Extract {
     } else {
         Write-Log "Downloading release $Tag..."
         $url = "https://github.com/$GithubRepo/releases/download/$Tag/setup-config.zip"
-        # Fallback to source code zip if asset not found
+        # Fallback to the source archive if the release asset does not exist.
         try {
             $response = Invoke-WebRequest -Uri $url -Method Head -UseBasicParsing -ErrorAction Stop
         } catch {
@@ -104,13 +107,28 @@ function Download-And-Extract {
         exit 1
     }
 
-    # Find the source directory (GitHub zips usually have a root folder)
+    # GitHub archives usually unpack into a single root folder.
     $extractedDirs = Get-ChildItem -Path $TempDir -Directory
     if ($extractedDirs.Count -eq 1) {
         return $extractedDirs[0].FullName
     }
 
     return $TempDir
+}
+
+function Unblock-PowerShellFiles {
+    param([string]$Path)
+
+    if (-not (Test-Path $Path)) {
+        return
+    }
+
+    # Clear the downloaded-file marker from PowerShell content before execution.
+    Get-ChildItem -Path $Path -Recurse -File |
+        Where-Object { $_.Extension -in @('.ps1', '.psm1', '.psd1') } |
+        ForEach-Object {
+            Unblock-File -LiteralPath $_.FullName
+        }
 }
 
 function Run-Installation {
@@ -121,7 +139,7 @@ function Run-Installation {
     Write-Log "Preparing installation directory..."
     Write-Log "Source directory: $SourceDir"
 
-    # Backup existing installation
+    # Preserve any previous install before we replace it.
     if (Test-Path $InstallDir) {
         $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
         $backupDir = "${InstallDir}.backup.$timestamp"
@@ -129,11 +147,12 @@ function Run-Installation {
         Rename-Item -Path $InstallDir -NewName (Split-Path $backupDir -Leaf)
     }
 
-    # Create installation directory and copy files
+    # Stage the repository into the local install directory.
     New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
     Copy-Item -Path "$SourceDir\*" -Destination $InstallDir -Recurse -Force
+    Unblock-PowerShellFiles -Path $InstallDir
 
-    # Verify copy
+    # Verify the Windows installer was copied before we execute it.
     if (!(Test-Path (Join-Path $InstallDir "windows\install.ps1"))) {
         Write-Log "File copy failed or source directory was incomplete. Check $InstallDir" -Level 'ERROR'
         exit 1
@@ -141,7 +160,7 @@ function Run-Installation {
 
     Write-Log "Files copied to $InstallDir" -Level 'SUCCESS'
 
-    # Run the Windows installation script
+    # Hand off to the Windows installer inside the staged repo.
     Write-Log "Starting Windows installation..."
     Write-Host ""
 

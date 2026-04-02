@@ -1,4 +1,5 @@
 # --- Oh My Posh (prompt theme) ---
+# Load the prompt theme first so the rest of the session inherits it.
 $ohMyPoshConfig = Join-Path $env:USERPROFILE ".OhMyPosh\black-pink.omp.json"
 if (Test-Path $ohMyPoshConfig)
 {
@@ -6,12 +7,14 @@ if (Test-Path $ohMyPoshConfig)
 }
 
 # --- Terminal-Icons ---
+# Keep directory listings readable when the module is available.
 if (Get-Module -ListAvailable -Name Terminal-Icons)
 {
   Import-Module Terminal-Icons
 }
 
 # --- PSReadLine (Vi mode + inline autosuggest) ---
+# These settings are optional, so the profile stays usable on older versions.
 if (Get-Module -ListAvailable -Name PSReadLine)
 {
   Import-Module PSReadLine
@@ -53,6 +56,7 @@ Set-Alias -Name v -Value nvim
 Set-Alias -Name grep -Value rg
 Set-Alias -Name which -Value gcm
 
+# Route yazi back to the directory the user chooses.
 function y
 {
   $tmp = (New-TemporaryFile).FullName
@@ -65,6 +69,7 @@ function y
   Remove-Item -Path $tmp
 }
 
+# Load the Visual Studio environment for the current shell when requested.
 function msvcenv
 {
   $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -105,6 +110,7 @@ function msvcenv
   Write-Host "❌ MSVC environment not found. Please ensure Visual Studio with C++ tools is installed." -ForegroundColor Red
 }
 
+# Keep the commit helper local to this profile so it can read the staged diff.
 function aic
 {
   param(
@@ -153,11 +159,13 @@ And remember child: Why use a lot of words when few words do trick... Keep that 
   opencode run $context -m $Model
 }
 
+# Run the fast updater from this shell when the user asks for it.
 function update
 {
   winget upgrade -r --include-unknown --accept-package-agreements --accept-source-agreements
 }
 
+# Open an elevated PowerShell tab in the current directory.
 function su
 {
   $currentDir = (Get-Location).Path
@@ -173,6 +181,7 @@ function su
   Start-Process -FilePath "wt.exe" -Verb RunAs -ArgumentList $wtArgs
 }
 
+# Move up one or more directory levels without leaving the shell.
 function ..
 {
   param (
@@ -194,6 +203,7 @@ function ..
   Set-Location -Path $targetPath
 }
 
+# Repair winget and selectively reinstall packages to refresh broken links.
 function repair-winget
 {
   Install-Module microsoft.winget.client -Force -AllowClobber
@@ -283,6 +293,7 @@ function repair-winget
   Write-Host "`nDone! Open a new terminal for PATH changes to take effect." -ForegroundColor Green
 }
 
+# Re-source the profile and rebuild PATH after edits.
 function reload
 {
   . $PROFILE
@@ -290,8 +301,10 @@ function reload
   Clear-host
 }
 
+# Keep a quick system snapshot at shell startup.
 fastfetch.exe
 # --- zoxide (smart cd) ---
 # NEED TO STAY AT THE END OF THE FILE !
 
+# zoxide must be initialized last so it can wrap directory changes correctly.
 Invoke-Expression (& { (zoxide init powershell | Out-String) })
