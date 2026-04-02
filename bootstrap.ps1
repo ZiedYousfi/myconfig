@@ -238,10 +238,14 @@ function Run-Installation {
 
 function Cleanup {
     Write-Log "Cleaning up temporary files..."
-    if (Test-Path -LiteralPath $TempDir -ErrorAction SilentlyContinue) {
-        Remove-Item -LiteralPath $TempDir -Recurse -Force -ErrorAction SilentlyContinue
+    try {
+        if (Test-Path -LiteralPath $TempDir -ErrorAction SilentlyContinue) {
+            Remove-Item -LiteralPath $TempDir -Recurse -Force -ErrorAction Stop
+        }
+        Write-Log "Cleanup complete" -Level 'SUCCESS'
+    } catch {
+        Write-Log "Temporary cleanup failed: $($_.Exception.Message)" -Level 'WARNING'
     }
-    Write-Log "Cleanup complete" -Level 'SUCCESS'
 }
 
 function Main {
@@ -250,11 +254,7 @@ function Main {
     $tag = Get-LatestReleaseTag
     $extractedDir = Download-And-Extract -Tag $tag
 
-    try {
-        Run-Installation -SourceDir $extractedDir
-    } finally {
-        Cleanup
-    }
+    Run-Installation -SourceDir $extractedDir
 
     Write-Host ""
     Write-Log "Installation complete!" -Level 'SUCCESS'
@@ -265,6 +265,9 @@ function Main {
     Write-Log "WSL Ubuntu setup will run automatically if installed."
     Write-Log "Please restart your computer for all changes to take effect."
     Write-Host ""
+
+    # Cleanup is best-effort and should never invalidate a successful install.
+    Cleanup
 }
 
 # Run main function
