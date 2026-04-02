@@ -166,7 +166,9 @@ function Download-And-Extract {
     Write-Log "Extracting archive..."
     $extractDir = Join-Path $TempDir "extracted"
     Expand-ZipArchive -ZipPath $zipPath -DestinationPath $extractDir
-    Remove-Item -LiteralPath $zipPath -Force
+    if (Test-Path -LiteralPath $zipPath -ErrorAction SilentlyContinue) {
+        Remove-Item -LiteralPath $zipPath -Force -ErrorAction SilentlyContinue
+    }
 
     # GitHub archives usually unpack into a single root folder.
     $extractedDirs = Get-ChildItem -Path $extractDir -Directory
@@ -232,8 +234,8 @@ function Run-Installation {
 
 function Cleanup {
     Write-Log "Cleaning up temporary files..."
-    if (Test-Path $TempDir) {
-        Remove-Item -Path $TempDir -Recurse -Force
+    if (Test-Path -LiteralPath $TempDir -ErrorAction SilentlyContinue) {
+        Remove-Item -LiteralPath $TempDir -Recurse -Force -ErrorAction SilentlyContinue
     }
     Write-Log "Cleanup complete" -Level 'SUCCESS'
 }
