@@ -68,23 +68,39 @@ function Copy-DotfileSafe
   }
 
   $destDir = if ($Recurse)
-  { $Destination 
+  { $Destination
   } else
-  { Split-Path -Parent $Destination 
-  }
-  if (-not (Test-Path $destDir))
-  {
-    New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+  { Split-Path -Parent $Destination
   }
 
-  if ($Recurse)
+  if ([string]::IsNullOrWhiteSpace($destDir))
   {
-    Copy-Item -Path "$Source\*" -Destination $Destination -Recurse -Force
-    Write-Log "Copied $Source -> $Destination" -Level 'OK'
-  } else
+    Write-Log "Destination directory could not be determined for $Destination" -Level 'ERROR'
+    return
+  }
+
+  try
   {
-    Copy-Item -Path $Source -Destination $Destination -Force
+    New-Item -ItemType Directory -Path $destDir -Force -ErrorAction Stop | Out-Null
+  } catch
+  {
+    Write-Log "Failed to create destination directory ${destDir}: $($_.Exception.Message)" -Level 'ERROR'
+    return
+  }
+
+  try
+  {
+    if ($Recurse)
+    {
+      Copy-Item -Path "$Source\*" -Destination $Destination -Recurse -Force -ErrorAction Stop
+    } else
+    {
+      Copy-Item -Path $Source -Destination $Destination -Force -ErrorAction Stop
+    }
     Write-Log "Copied $Source -> $Destination" -Level 'OK'
+  } catch
+  {
+    Write-Log "Failed to copy $Source -> ${Destination}: $($_.Exception.Message)" -Level 'ERROR'
   }
 }
 
