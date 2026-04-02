@@ -66,6 +66,65 @@ function Get-LatestReleaseTag {
     }
 }
 
+function Test-ZipArchive {
+    param([string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return $false
+    }
+
+    try {
+        Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
+        $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
+        try {
+            return $archive.Entries.Count -gt 0
+        } finally {
+            $archive.Dispose()
+        }
+    } catch {
+        Write-Log "Downloaded archive is not a valid ZIP file: $($_.Exception.Message)" -Level 'ERROR'
+        return $false
+    }
+}
+
+function Expand-ZipArchive {
+    param(
+        [string]$ZipPath,
+        [string]$DestinationPath
+    )
+
+    if (Test-Path -LiteralPath $DestinationPath) {
+        Remove-Item -LiteralPath $DestinationPath -Recurse -Force
+    }
+
+    New-Item -ItemType Directory -Path $DestinationPath -Force | Out-Null
+
+    $expandArchiveError = $null
+    try {
+        Expand-Archive -LiteralPath $ZipPath -DestinationPath $DestinationPath -Force
+        return
+    } catch {
+        $expandArchiveError = $_.Exception.Message
+        Write-Log "Expand-Archive failed, retrying with .NET ZIP extraction..." -Level 'WARNING'
+    }
+
+    try {
+        if (Test-Path -LiteralPath $DestinationPath) {
+            Remove-Item -LiteralPath $DestinationPath -Recurse -Force
+        }
+
+        New-Item -ItemType Directory -Path $DestinationPath -Force | Out-Null
+        Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($ZipPath, $DestinationPath)
+    } catch {
+        if ($expandArchiveError) {
+            Write-Log "Expand-Archive error: $expandArchiveError" -Level 'ERROR'
+        }
+        Write-Log "ZIP extraction failed: $($_.Exception.Message)" -Level 'ERROR'
+        exit 1
+    }
+}
+
 function Download-And-Extract {
     param([string]$Tag)
 
@@ -92,28 +151,30 @@ function Download-And-Extract {
 
     try {
         Invoke-WebRequest -Uri $url -OutFile $zipPath -UseBasicParsing
-        Write-Log "Downloaded successfully" -Level 'SUCCESS'
+        $downloadedSize = (Get-Item -LiteralPath $zipPath).Length
+        Write-Log "Downloaded successfully ($downloadedSize bytes)" -Level 'SUCCESS'
     } catch {
         Write-Log "Failed to download from $url" -Level 'ERROR'
         exit 1
     }
 
-    Write-Log "Extracting archive..."
-    try {
-        Expand-Archive -Path $zipPath -DestinationPath $TempDir -Force
-        Remove-Item $zipPath
-    } catch {
-        Write-Log "Failed to extract archive" -Level 'ERROR'
+    if (-not (Test-ZipArchive -Path $zipPath)) {
+        Write-Log "Archive validation failed for $url" -Level 'ERROR'
         exit 1
     }
 
+    Write-Log "Extracting archive..."
+    $extractDir = Join-Path $TempDir "extracted"
+    Expand-ZipArchive -ZipPath $zipPath -DestinationPath $extractDir
+    Remove-Item -LiteralPath $zipPath -Force
+
     # GitHub archives usually unpack into a single root folder.
-    $extractedDirs = Get-ChildItem -Path $TempDir -Directory
+    $extractedDirs = Get-ChildItem -Path $extractDir -Directory
     if ($extractedDirs.Count -eq 1) {
         return $extractedDirs[0].FullName
     }
 
-    return $TempDir
+    return $extractDir
 }
 
 function Unblock-PowerShellFiles {
