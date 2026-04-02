@@ -88,9 +88,6 @@
 					"PackageIdentifier" : "LGUG2Z.komorebi"
 				},
 				{
-					"PackageIdentifier" : "LGUG2Z.whkd"
-				},
-				{
 					"PackageIdentifier" : "AmN.yasb"
         },
         {
@@ -110,6 +107,12 @@
         },
         {
           "PackageIdentifier" : "Fastfetch-cli.Fastfetch"
+        },
+        { 
+          "PackageIdentifier" : "OpenAI.Codex"
+        },
+        {
+          "PackageIdentifier" : "T3Tools.T3Code"
         }
 			],
 			"SourceDetails" : 
