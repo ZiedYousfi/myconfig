@@ -1,75 +1,138 @@
-# --- Oh My Posh (prompt theme) ---
-# Load the prompt theme first so the rest of the session inherits it.
-$ohMyPoshConfig = Join-Path $env:USERPROFILE ".OhMyPosh\black-pink.omp.json"
-if (Test-Path $ohMyPoshConfig)
+# =========================
+# Profile mode detection
+# =========================
+
+$ProfileMode = if ($env:PW_PROFILE_MODE) { $env:PW_PROFILE_MODE } else { "auto" }
+
+$IsInteractiveConsole = (
+  $Host.Name -eq "ConsoleHost" -and
+  -not [Console]::IsInputRedirected -and
+  -not [Console]::IsOutputRedirected
+)
+
+$UseInteractiveProfile = switch ($ProfileMode.ToLowerInvariant())
 {
-  oh-my-posh init pwsh --config $ohMyPoshConfig | Invoke-Expression
+  "full"  { $true }
+  "quiet" { $false }
+  "auto"  { $IsInteractiveConsole }
+  default { $IsInteractiveConsole }
 }
 
-# --- Terminal-Icons ---
-# Keep directory listings readable when the module is available.
-if (Get-Module -ListAvailable -Name Terminal-Icons)
+$IsQuiet = -not $UseInteractiveProfile
+
+# =========================
+# Quiet-safe helpers
+# =========================
+
+function Write-Info($msg)
 {
-  Import-Module Terminal-Icons
-}
-
-# --- PSReadLine (Vi mode + inline autosuggest) ---
-# These settings are optional, so the profile stays usable on older versions.
-if (Get-Module -ListAvailable -Name PSReadLine)
-{
-  Import-Module PSReadLine
-
-  Set-PSReadLineOption -EditMode Vi
-  Set-PSReadLineOption -PredictionSource History
-  Set-PSReadLineOption -PredictionViewStyle InlineView
-  Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
-
-  try
+  if (-not $IsQuiet)
   {
-    Set-PSReadLineOption -ViModeIndicator Script
-    Set-PSReadLineOption -ViModeChangeHandler {
-      param($mode)
-      switch ($mode)
-      {
-        "Insert"
-        { Write-Host -NoNewline "$([char]0x1b)[5 q" 
-        }  # beam
-        "Command"
-        { Write-Host -NoNewline "$([char]0x1b)[1 q" 
-        }  # block
-        default
-        { Write-Host -NoNewline "$([char]0x1b)[5 q" 
-        }
-      }
-    }
-  } catch
-  {
-    # PSReadLine version doesn't support ViModeChangeHandler
+    Write-Host $msg -ForegroundColor Cyan
   }
 }
 
-Set-Alias -Name lg -Value lazygit
-Set-Alias -Name oc -Value opencode
-Set-Alias -Name vim -Value nvim
-Set-Alias -Name vi -Value nvim
-Set-Alias -Name v -Value nvim
-Set-Alias -Name grep -Value rg
-Set-Alias -Name which -Value gcm
+function Write-Success($msg)
+{
+  if (-not $IsQuiet)
+  {
+    Write-Host $msg -ForegroundColor Green
+  }
+}
 
-# Route yazi back to the directory the user chooses.
+function Write-Warn($msg)
+{
+  if (-not $IsQuiet)
+  {
+    Write-Host $msg -ForegroundColor Yellow
+  }
+}
+
+function Write-Err($msg)
+{
+  Write-Host $msg -ForegroundColor Red
+}
+
+# =========================
+# UI / Interactive only
+# =========================
+
+if ($UseInteractiveProfile)
+{
+  # --- Oh My Posh ---
+  $ohMyPoshConfig = Join-Path $env:USERPROFILE ".OhMyPosh\black-pink.omp.json"
+  if (Test-Path $ohMyPoshConfig)
+  {
+    oh-my-posh init pwsh --config $ohMyPoshConfig | Invoke-Expression
+  }
+
+  # --- Terminal Icons ---
+  if (Get-Module -ListAvailable -Name Terminal-Icons)
+  {
+    Import-Module Terminal-Icons
+  }
+
+  # --- PSReadLine ---
+  if (Get-Module -ListAvailable -Name PSReadLine)
+  {
+    Import-Module PSReadLine
+
+    Set-PSReadLineOption -EditMode Vi
+    Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+
+    try
+    {
+      Set-PSReadLineOption -PredictionSource History
+      Set-PSReadLineOption -PredictionViewStyle InlineView
+    } catch {}
+
+    try
+    {
+      Set-PSReadLineOption -ViModeIndicator Script
+      Set-PSReadLineOption -ViModeChangeHandler {
+        param($mode)
+        switch ($mode)
+        {
+          "Insert"  { Write-Host -NoNewline "$([char]0x1b)[5 q" }
+          "Command" { Write-Host -NoNewline "$([char]0x1b)[1 q" }
+          default   { Write-Host -NoNewline "$([char]0x1b)[5 q" }
+        }
+      }
+    } catch {}
+  }
+}
+
+# =========================
+# Aliases (always loaded)
+# =========================
+
+Set-Alias lg lazygit
+Set-Alias oc opencode
+Set-Alias co codex
+Set-Alias vim nvim
+Set-Alias vi nvim
+Set-Alias v nvim
+Set-Alias grep rg
+Set-Alias which gcm
+
+# =========================
+# Core functions
+# =========================
+
 function y
 {
   $tmp = (New-TemporaryFile).FullName
   yazi.exe $args --cwd-file="$tmp"
   $cwd = Get-Content -Path $tmp -Encoding UTF8
+
   if ($cwd -ne $PWD.Path -and (Test-Path -LiteralPath $cwd -PathType Container))
   {
     Set-Location -LiteralPath (Resolve-Path -LiteralPath $cwd).Path
   }
-  Remove-Item -Path $tmp
+
+  Remove-Item $tmp
 }
 
-# Load the Visual Studio environment for the current shell when requested.
 function msvcenv
 {
   $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -84,227 +147,170 @@ function msvcenv
       if (Test-Path $launchScript)
       {
         & $launchScript
-        Write-Host "✅ MSVC environment loaded" -ForegroundColor Green
+        Write-Success "✅ MSVC environment loaded"
         return
       }
     }
   }
 
-  $fallbackPaths = @(
-    "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Launch-VsDevShell.ps1"
-    "C:\Program Files\Microsoft Visual Studio\2022\Professional\Common7\Tools\Launch-VsDevShell.ps1"
-    "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\Launch-VsDevShell.ps1"
-    "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\Launch-VsDevShell.ps1"
-  )
-
-  foreach ($path in $fallbackPaths)
-  {
-    if (Test-Path $path)
-    {
-      & $path
-      Write-Host "✅ MSVC environment loaded from fallback path" -ForegroundColor Green
-      return
-    }
-  }
-
-  Write-Host "❌ MSVC environment not found. Please ensure Visual Studio with C++ tools is installed." -ForegroundColor Red
+  Write-Err "❌ MSVC environment not found."
 }
 
-# Keep the commit helper local to this profile so it can read the staged diff.
+# =========================
+# AI Commit (Codex clean)
+# =========================
+
 function aic
 {
   param(
-    [string]$Model = "github-copilot/gpt-4.1"
+    [string]$Model = "gpt-5.4-mini"
   )
 
+  $branch = git rev-parse --abbrev-ref HEAD
   $gitLog = git log --oneline -10
   $diffStat = git diff --cached --stat
   $diff = git diff --cached
 
-  $hasStagedChanges = $null -ne $diffStat -and $diffStat -ne ""
-
-  $stagedNote = if ($hasStagedChanges)
+  if (-not $diffStat)
   {
-    "There ARE staged changes. Commit ONLY the staged changes."
-  } else
-  {
-    "There are NO staged changes. You must stage everything with 'git add -A' first, then commit."
+    Write-Err "❌ No staged changes. Run git add first."
+    return
   }
 
-  $context = @"
-Here is the context you need to write the commit message:
+  while ($true)
+  {
+    $prompt = @"
+You are writing a git commit message.
 
-CONSIDER \n AS GIT MALFORMED COMMIT MESSAGES. DO NOT REPEAT THEIR MISTAKES. DO PROPER NEWLINES.
+IMPORTANT:
+- NEVER use literal '\n'
+- ALWAYS use real newlines
+- '\n' in commit messages is INVALID
 
-## Last 10 commits (for style/convention reference):
+Branch: $branch
+
+Recent commits:
 $gitLog
 
-## Staged diff stat:
-$(if ($diffStat) { $diffStat } else { "(none)" })
+Diff stat:
+$diffStat
 
-## Full staged diff:
-$(if ($diff) { $diff } else { "(none)" })
+Rules:
+- concise but descriptive
+- follow existing style
+- include branch if relevant (tickets etc)
+- no emojis
+- no fluff
 
----
-
-Based on this context:
-- $stagedNote
-- Write a comprehensive and descriptive commit message following the style observed above.
-- YOU HAVE TO commit using 'git commit -m "<message>"'.
-- Do NOT push to remote under any circumstances.
-
-And remember child: Why use a lot of words when few words do trick... Keep that in mind when writing the commit message. Be concise.
+Return ONLY the commit message.
 "@
 
-  opencode run $context -m $Model
-}
+    $message = $prompt | codex exec `
+      -m $Model `
+      -c model_reasoning_effort="low" `
+      -c temperature=0.2
 
-# Run the fast updater from this shell when the user asks for it.
+    if (-not $message)
+    {
+      Write-Err "❌ Failed to generate commit message."
+      return
+    }
+
+    # 🔥 Fix \n bug just in case model ignores instructions
+    $message = $message -replace '\\n', "`n"
+
+    # Clean trailing spaces
+    $message = $message.Trim()
+
+    Write-Host ""
+    Write-Host "──────────────── commit preview ────────────────" -ForegroundColor DarkGray
+    Write-Host $message -ForegroundColor Cyan
+    Write-Host "───────────────────────────────────────────────" -ForegroundColor DarkGray
+    Write-Host ""
+
+    $choice = Read-Host "[Y] yes  |  [R] retry  |  [C] cancel"
+
+    switch ($choice.ToLower())
+    {
+      "y"
+      {
+        git commit -m "$message"
+        Write-Success "✨ Commit created. Go touch grass."
+        return
+      }
+
+      "r"
+      {
+        Write-Info "🔁 Regenerating... maybe the AI had a brain lag."
+        continue
+      }
+
+      "c"
+      {
+        Write-Warn "🚫 Commit cancelled. Your changes are safe."
+        return
+      }
+
+      default
+      {
+        Write-Warn "🤨 I said Y / R / C. We retry."
+        continue
+      }
+    }
+  }
+}
+# =========================
+# Misc
+# =========================
+
 function update
 {
   winget upgrade -r --include-unknown --accept-package-agreements --accept-source-agreements
 }
 
-# Open an elevated PowerShell tab in the current directory.
-function su
-{
-  $currentDir = (Get-Location).Path
-
-  $wtArgs = @(
-    "new-tab",
-    "-p", "PowerShell",
-    "-d", $currentDir,
-    "pwsh",
-    "-NoExit"
-  )
-
-  Start-Process -FilePath "wt.exe" -Verb RunAs -ArgumentList $wtArgs
-}
-
-# Move up one or more directory levels without leaving the shell.
 function ..
 {
-  param (
-    [int]$levels = 1
-  )
-  
+  param([int]$levels = 1)
+
   if ($levels -lt 1)
   {
-    Write-Host "Please provide a positive integer for the number of levels to go up." -ForegroundColor Red
+    Write-Err "Please provide a positive number."
     return
   }
 
-  $targetPath = (Get-Location).Path
+  $path = (Get-Location).Path
   for ($i = 0; $i -lt $levels; $i++)
   {
-    $targetPath = Split-Path -Path $targetPath -Parent
+    $path = Split-Path $path -Parent
   }
-  
-  Set-Location -Path $targetPath
+
+  Set-Location $path
 }
 
-# Repair winget and selectively reinstall packages to refresh broken links.
-function repair-winget
-{
-  Install-Module microsoft.winget.client -Force -AllowClobber
-  Import-Module microsoft.winget.client
-  Repair-WinGetPackageManager -Force -Latest
-
-  # Uninstalls and reinstalls selected winget-sourced packages to recreate symlinks in WinGet\Links
-
-  # Auto-elevate to administrator if not already running as admin
-  if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
-  {
-    Write-Host "Not running as administrator. Relaunching elevated..." -ForegroundColor Yellow
-    Start-Process pwsh -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
-    exit
-  }
-
-  Write-Host "`nFetching installed packages..." -ForegroundColor Cyan
-
-  $rawOutput = winget list | Out-String -Width 5000
-  $lines = $rawOutput -split "`n" | Where-Object { $_.Trim() -ne "" }
-
-  # Find header line to determine column offsets
-  $headerLine = $lines | Where-Object {
-    $_ -match "\bNom\b|\bName\b" -and $_ -match "\bID\b|\bId\b" -and $_ -match "\bSource\b"
-  } | Select-Object -First 1
-
-  if (-not $headerLine)
-  {
-    Write-Host "Could not find winget list header. Aborting." -ForegroundColor Red
-    exit 1
-  }
-
-  $sourceIndex = $headerLine.IndexOf("Source")
-
-  # Filter lines where the Source column contains "winget"
-  $packages = $lines | Where-Object {
-    $_ -notmatch "^[-\s]+$" -and
-    $_.Length -gt $sourceIndex -and
-    $_.Substring($sourceIndex).Trim() -like "winget*"
-  } | ForEach-Object {
-    $parts = $_ -split "\s{2,}"
-    if ($parts.Count -ge 2)
-    { $parts[1].Trim() 
-    }
-  } | Where-Object { $_ -and $_ -notmatch "^ID$|^Id$" }
-
-  if ($packages.Count -eq 0)
-  {
-    Write-Host "No winget-sourced packages found. Aborting." -ForegroundColor Red
-    exit 1
-  }
-
-  Write-Host "`n$($packages.Count) winget-sourced packages found." -ForegroundColor Yellow
-  Write-Host "A selection window will open — hold Ctrl or Shift to select multiple packages." -ForegroundColor DarkGray
-
-  # Let user pick packages via Out-GridView
-  $selected = $packages | ForEach-Object { [PSCustomObject]@{ ID = $_ } } |
-    Out-GridView -Title "Select packages to reinstall (Ctrl+click for multiple)" -OutputMode Multiple
-
-  if (-not $selected -or $selected.Count -eq 0)
-  {
-    Write-Host "No packages selected. Aborted." -ForegroundColor DarkGray
-    exit 0
-  }
-
-  Write-Host "`n$($selected.Count) package(s) selected:" -ForegroundColor Yellow
-  $selected | ForEach-Object { Write-Host "  - $($_.ID)" }
-
-  $confirm = Read-Host "`nProceed with uninstall + reinstall? (y/N)"
-
-  if ($confirm -notin @("y", "Y", "yes", "Yes"))
-  {
-    Write-Host "Aborted." -ForegroundColor DarkGray
-    exit 0
-  }
-
-  foreach ($pkg in $selected)
-  {
-    Write-Host "`nUninstalling $($pkg.ID)..." -ForegroundColor Magenta
-    winget uninstall --id $pkg.ID --silent --accept-source-agreements 2>&1
-
-    Write-Host "Reinstalling $($pkg.ID)..." -ForegroundColor Blue
-    winget install --id $pkg.ID --silent --force `
-      --accept-package-agreements --accept-source-agreements 2>&1
-  }
-
-  Write-Host "`nDone! Open a new terminal for PATH changes to take effect." -ForegroundColor Green
-}
-
-# Re-source the profile and rebuild PATH after edits.
 function reload
 {
   . $PROFILE
   $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
-  Clear-host
+
+  if (-not $IsQuiet)
+  {
+    Clear-Host
+  }
 }
 
-# Keep a quick system snapshot at shell startup.
-fastfetch.exe
-# --- zoxide (smart cd) ---
-# NEED TO STAY AT THE END OF THE FILE !
+# =========================
+# Startup (interactive only)
+# =========================
 
-# zoxide must be initialized last so it can wrap directory changes correctly.
-Invoke-Expression (& { (zoxide init powershell | Out-String) })
+if ($UseInteractiveProfile)
+{
+  if (Get-Command fastfetch.exe -ErrorAction SilentlyContinue)
+  {
+    fastfetch.exe
+  }
+
+  if (Get-Command zoxide -ErrorAction SilentlyContinue)
+  {
+    Invoke-Expression (& { (zoxide init powershell | Out-String) })
+  }
+}
