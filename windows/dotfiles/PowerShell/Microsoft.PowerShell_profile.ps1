@@ -183,9 +183,10 @@ function aic
 You are writing a git commit message.
 
 IMPORTANT:
-- NEVER use literal '\n'
-- ALWAYS use real newlines
-- '\n' in commit messages is INVALID
+- NEVER write the two characters \ and n instead of a real newline
+- ALWAYS use real newlines when you want a multiline commit message
+- DO NOT surround the answer with quotes
+- Return ONLY the commit message text, nothing else
 
 Branch: $branch
 
@@ -195,32 +196,52 @@ $gitLog
 Diff stat:
 $diffStat
 
+Full staged diff:
+$diff
+
 Rules:
 - concise but descriptive
 - follow existing style
-- include branch if relevant (tickets etc)
+- include branch name when relevant for ticket/reference context
 - no emojis
 - no fluff
-
-Return ONLY the commit message.
 "@
 
-    $message = $prompt | codex exec `
+    $rawMessage = $prompt | codex exec `
       -m $Model `
-      -c model_reasoning_effort="low" `
+      -c model_reasoning_effort=low `
       -c temperature=0.2
 
-    if (-not $message)
+    if (-not $rawMessage)
     {
       Write-Err "❌ Failed to generate commit message."
       return
     }
 
-    # 🔥 Fix \n bug just in case model ignores instructions
-    $message = $message -replace '\\n', "`n"
+    # Important:
+    # Codex output may arrive as multiple lines collected by PowerShell.
+    # If it's an array, rejoin with REAL newlines.
+    $message = if ($rawMessage -is [System.Array])
+    {
+      ($rawMessage -join "`n")
+    }
+    else
+    {
+      [string]$rawMessage
+    }
 
-    # Clean trailing spaces
+    # Normalize CRLF/LF only. Do not touch literal \n sequences.
+    $message = $message -replace "`r`n", "`n"
+    $message = $message -replace "`r", "`n"
+
+    # Only trim outer whitespace, keep internal formatting intact.
     $message = $message.Trim()
+
+    if ([string]::IsNullOrWhiteSpace($message))
+    {
+      Write-Err "❌ Codex returned an empty commit message."
+      return
+    }
 
     Write-Host ""
     Write-Host "──────────────── commit preview ────────────────" -ForegroundColor DarkGray
@@ -230,35 +251,36 @@ Return ONLY the commit message.
 
     $choice = Read-Host "[Y] yes  |  [R] retry  |  [C] cancel"
 
-    switch ($choice.ToLower())
+    switch ($choice.ToLowerInvariant())
     {
       "y"
       {
-        git commit -m "$message"
-        Write-Success "✨ Commit created. Go touch grass."
+        $message | git commit -F -
+        Write-Success "✨ Commit created. Tiny machine goblin satisfied."
         return
       }
 
       "r"
       {
-        Write-Info "🔁 Regenerating... maybe the AI had a brain lag."
+        Write-Info "🔁 Retrying... maybe the robot was feeling silly."
         continue
       }
 
       "c"
       {
-        Write-Warn "🚫 Commit cancelled. Your changes are safe."
+        Write-Warn "🚫 Commit cancelled. Nothing was committed."
         return
       }
 
       default
       {
-        Write-Warn "🤨 I said Y / R / C. We retry."
+        Write-Warn "🤨 Expected Y, R, or C. Let's try again."
         continue
       }
     }
   }
 }
+
 # =========================
 # Misc
 # =========================
