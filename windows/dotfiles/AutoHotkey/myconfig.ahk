@@ -221,6 +221,10 @@ pwsh(cmd) {
     Run 'pwsh.exe -NoProfile -Command "' cmd '"', , "Hide"
 }
 
+; --- Manage / Unmanage window ---
+!+Enter:: pwsh("komorebic manage")
+!+Backspace:: pwsh("komorebic unmanage")
+
 ; --- Toggle shortcuts ---
 !i:: pwsh("komorebic toggle-shortcuts")
 
