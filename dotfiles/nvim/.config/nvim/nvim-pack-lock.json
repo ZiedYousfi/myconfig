@@ -5,10 +5,15 @@
       "src": "https://github.com/Pocco81/auto-save.nvim",
       "version": "'main'"
     },
-    "blink.cmp": {
-      "rev": "451168851e8e2466bc97ee3e026c3dcb9141ce07",
-      "src": "https://github.com/Saghen/blink.cmp",
+    "blacknpink.nvim": {
+      "rev": "8ae1d7484ad9e3bb7d0cc013194b06b689f63f85",
+      "src": "https://github.com/blacknpink/blacknpink.nvim",
       "version": "'main'"
+    },
+    "blink.cmp": {
+      "rev": "dcde5e7e32b6bae5a7ddf343c1587a8490dbd263",
+      "src": "https://github.com/Saghen/blink.cmp",
+      "version": "'v1'"
     },
     "conform.nvim": {
       "rev": "086a40dc7ed8242c03be9f47fbcee68699cc2395",
@@ -21,7 +26,7 @@
       "version": "'release'"
     },
     "fff.nvim": {
-      "rev": "bb6f32a2ada380711f08bb11ba49e6fab23f191b",
+      "rev": "db4cd2825c32e5e53e12bb8af106ff724d33904e",
       "src": "https://github.com/dmtrKovalenko/fff.nvim",
       "version": "'main'"
     },
@@ -51,7 +56,7 @@
       "version": "'main'"
     },
     "nvim-lspconfig": {
-      "rev": "8e2084bf5e40c79c1f42210a6ef96a0a4793a763",
+      "rev": "9ccd58a7949091c0cc2777d4e92a45a209c808c1",
       "src": "https://github.com/neovim/nvim-lspconfig",
       "version": "'master'"
     },
@@ -61,12 +66,12 @@
       "version": "'master'"
     },
     "nvim-treesitter": {
-      "rev": "c82bf96f0a773d85304feeb695e1e23b2207ac35",
+      "rev": "4916d6592ede8c07973490d9322f187e07dfefac",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
     },
     "nvim-web-devicons": {
-      "rev": "d7462543c9e366c0d196c7f67a945eaaf5d99414",
+      "rev": "40e9d5a6cc3db11b309e39593fc7ac03bb844e38",
       "src": "https://github.com/nvim-tree/nvim-web-devicons",
       "version": "'master'"
     },

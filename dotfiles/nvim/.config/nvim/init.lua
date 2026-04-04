@@ -154,7 +154,7 @@ vim.pack.add({
   gh("folke/lazydev.nvim", "main"),
   gh("neovim/nvim-lspconfig", "master"),
   gh("rafamadriz/friendly-snippets", "main"),
-  gh("Saghen/blink.cmp", "main"),
+  gh("Saghen/blink.cmp", "v1"),
   gh("nvim-treesitter/nvim-treesitter", "main"),
   gh("stevearc/conform.nvim", "master"),
 }, { confirm = false })
@@ -214,7 +214,12 @@ require("blink.cmp").setup({
   sources = {
     default = { "lsp", "path", "snippets", "buffer" },
   },
-  fuzzy = { implementation = "prefer_rust_with_warning" },
+  fuzzy = {
+    implementation = "prefer_rust_with_warning",
+    prebuilt_binaries = {
+      force_version = "v*",
+    },
+  },
 })
 
 require("conform").setup({
@@ -225,11 +230,6 @@ require("conform").setup({
 })
 
 require("mason").setup({})
-require("lazydev").setup({
-  library = {
-    { path = "${3rd}/luv/library", words = { "vim%.uv" } },
-  },
-})
 require("mason-lspconfig").setup({
   automatic_enable = false,
 })
