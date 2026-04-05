@@ -166,12 +166,17 @@ function aic
     [string]$Model = "gpt-5.4-mini"
   )
 
-  $branch = git rev-parse --abbrev-ref HEAD
-  $gitLog = git log --oneline -10
-  $diffStat = git diff --cached --stat
-  $diff = git diff --cached
+  $branch = (git rev-parse --abbrev-ref HEAD) -join "`n"
+  $gitLog = (git log -10 --pretty=format:"<commit>%n%h%n%B%n</commit>") -join "`n"
+  $diffStat = (git diff --cached --stat) -join "`n"
+  $diff = (git diff --cached) -join "`n"
 
-  if (-not $diffStat)
+  $branch = $branch.Replace("`r`n", "`n").Replace("`r", "`n").Trim()
+  $gitLog = $gitLog.Replace("`r`n", "`n").Replace("`r", "`n").Trim()
+  $diffStat = $diffStat.Replace("`r`n", "`n").Replace("`r", "`n").Trim()
+  $diff = $diff.Replace("`r`n", "`n").Replace("`r", "`n").Trim()
+
+  if ([string]::IsNullOrWhiteSpace($diffStat))
   {
     Write-Err "❌ No staged changes. Run git add first."
     return
@@ -183,14 +188,14 @@ function aic
 You are writing a git commit message.
 
 IMPORTANT:
-- NEVER write the two characters \ and n instead of a real newline
 - ALWAYS use real newlines when you want a multiline commit message
 - DO NOT surround the answer with quotes
 - Return ONLY the commit message text, nothing else
 
-Branch: $branch
+Branch:
+$branch
 
-Recent commits:
+Recent commits (subject + body raw):
 $gitLog
 
 Diff stat:
@@ -201,7 +206,9 @@ $diff
 
 Rules:
 - concise but descriptive
-- follow existing style
+- infer the commit style from the recent commits
+- if recent commits include a body, include a body if useful
+- preserve the repository's usual formatting conventions
 - include branch name when relevant for ticket/reference context
 - no emojis
 - no fluff
@@ -218,24 +225,8 @@ Rules:
       return
     }
 
-    # Important:
-    # Codex output may arrive as multiple lines collected by PowerShell.
-    # If it's an array, rejoin with REAL newlines.
-    $message = if ($rawMessage -is [System.Array])
-    {
-      ($rawMessage -join "`n")
-    }
-    else
-    {
-      [string]$rawMessage
-    }
-
-    # Normalize CRLF/LF only. Do not touch literal \n sequences.
-    $message = $message -replace "`r`n", "`n"
-    $message = $message -replace "`r", "`n"
-
-    # Only trim outer whitespace, keep internal formatting intact.
-    $message = $message.Trim()
+    $message = (($rawMessage | ForEach-Object { [string]$_ }) -join "`n")
+    $message = $message.Replace("`r`n", "`n").Replace("`r", "`n").Trim()
 
     if ([string]::IsNullOrWhiteSpace($message))
     {
