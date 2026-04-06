@@ -427,6 +427,36 @@ function Install-GnuWin32Path
 }
 
 # ============================================================================
+# LLVM Path 
+# ===========================================================================
+
+function Install-LLVMPath
+{
+  $llvmBin = "C:\Program Files\LLVM\bin"
+
+  if (-not (Test-Path $llvmBin))
+  {
+    Write-Log "LLVM bin directory not found, skipping PATH setup" -Level 'WARNING'
+    return
+  }
+
+  $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
+  if ($currentPath -like "*LLVM*")
+  {
+    Write-Log "LLVM is already in PATH" -Level 'OK'
+  } else
+  {
+    Write-Log "Adding LLVM to user PATH..."
+    [Environment]::SetEnvironmentVariable(
+      "Path",
+      [Environment]::GetEnvironmentVariable("Path", "Machine") + ";C:\Program Files\LLVM\bin",
+      "Machine"
+    )
+    Write-Log "LLVM added to PATH" -Level 'OK'
+  }
+}
+
+# ============================================================================
 # Python Setup
 # ============================================================================
 
@@ -519,6 +549,7 @@ function Main
   Install-IosevkaMonoFont
   Install-TreeSitterCLI
   Install-GnuWin32Path
+  Install-LLVMPath
   Install-PythonSetup
   Install-NodeViaNVM
 
