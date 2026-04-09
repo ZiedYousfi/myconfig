@@ -376,30 +376,6 @@ function Install-PSReadLineModule
 }
 
 # ============================================================================
-# Tree-sitter CLI
-# ============================================================================
-
-function Install-TreeSitterCLI
-{
-  if (Test-CommandExists "tree-sitter")
-  {
-    Write-Log "tree-sitter-cli is already installed" -Level 'OK'
-    return
-  }
-
-  if (-not (Test-CommandExists "cargo"))
-  {
-    Write-Log "cargo not found, skipping tree-sitter-cli installation" -Level 'WARNING'
-    Write-Log "Install Rust via rustup first, then run: cargo install tree-sitter-cli"
-    return
-  }
-
-  Write-Log "Installing tree-sitter-cli via cargo..."
-  cargo install tree-sitter-cli
-  Write-Log "tree-sitter-cli installed" -Level 'OK'
-}
-
-# ============================================================================
 # GnuWin32 PATH
 # ============================================================================
 
@@ -547,7 +523,6 @@ function Main
   # Install the supporting tools and modules that the dotfiles expect.
   Install-PSReadLineModule
   Install-IosevkaMonoFont
-  Install-TreeSitterCLI
   Install-GnuWin32Path
   Install-LLVMPath
   Install-PythonSetup

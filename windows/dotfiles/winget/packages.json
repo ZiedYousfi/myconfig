@@ -113,6 +113,9 @@
         },
         {
           "PackageIdentifier" : "T3Tools.T3Code"
+        },
+        {
+          "PackageIdentifier" : "tree-sitter.tree-sitter-cli"
         }
 			],
 			"SourceDetails" : 
