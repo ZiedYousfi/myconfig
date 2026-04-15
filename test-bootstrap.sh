@@ -75,6 +75,7 @@ log_info "Checking for required files in archive..."
 required_files=(
     "myconfig-main/bootstrap.sh"
     "myconfig-main/macos/install.sh"
+    "myconfig-main/fedora-everything/install.sh"
     "myconfig-main/ubuntu-server/install.sh"
     "myconfig-main/dotfiles"
     "myconfig-main/SPECS.md"
@@ -108,6 +109,10 @@ fi
 
 if [ -f "myconfig-main/ubuntu-server/install.sh" ]; then
     bash -n "myconfig-main/ubuntu-server/install.sh" && log_success "Ubuntu install.sh: syntax OK"
+fi
+
+if [ -f "myconfig-main/fedora-everything/install.sh" ]; then
+    bash -n "myconfig-main/fedora-everything/install.sh" && log_success "Fedora install.sh: syntax OK"
 fi
 
 # Test bootstrap script syntax

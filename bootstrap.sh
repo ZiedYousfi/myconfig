@@ -6,7 +6,7 @@
 #   curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | bash
 #   curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | bash -s -- macos
 #   curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | bash -s -- ubuntu
-#   curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | bash -s -- arch
+#   curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | bash -s -- fedora
 
 # set -e (Disabled to ensure script continues even if some steps fail)
 
@@ -64,8 +64,10 @@ detect_platform() {
     elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
         if command -v apt-get &> /dev/null; then
             echo "ubuntu"
+        elif command -v dnf &> /dev/null; then
+            echo "fedora"
         elif command -v pacman &> /dev/null; then
-            echo "arch"
+            echo "unknown"
         else
             echo "unknown"
         fi
@@ -81,7 +83,7 @@ prompt_platform() {
     echo "" >&2
     echo "  1) macOS" >&2
     echo "  2) Ubuntu Server" >&2
-    echo "  3) Arch Linux Desktop" >&2
+    echo "  3) Fedora Everything" >&2
     echo "  4) Windows" >&2
     echo "  5) Exit" >&2
     echo "" >&2
@@ -98,7 +100,7 @@ prompt_platform() {
                 return 0
                 ;;
             3)
-                echo "arch"
+                echo "fedora"
                 return 0
                 ;;
             4)
@@ -171,7 +173,7 @@ download_and_extract() {
     local extracted_dir=""
 
     # 1. Try to find a directory containing known platform directories (repo root markers)
-    extracted_dir=$(find . -maxdepth 2 -type d \( -name "ubuntu-server" -o -name "macos" -o -name "arch-desktop" -o -name "windows" \) -exec dirname {} \; | head -n 1)
+    extracted_dir=$(find . -maxdepth 2 -type d \( -name "ubuntu-server" -o -name "macos" -o -name "fedora-everything" -o -name "windows" \) -exec dirname {} \; | head -n 1)
 
     # 2. If not found, check if there's exactly one subdirectory
     if [ -z "$extracted_dir" ] || [ "$extracted_dir" = "." ]; then
@@ -218,7 +220,7 @@ run_installation() {
     fi
 
     # Verify copy
-    if [ ! -d "$INSTALL_DIR/ubuntu-server" ] && [ ! -d "$INSTALL_DIR/macos" ] && [ ! -d "$INSTALL_DIR/arch-desktop" ] && [ ! -d "$INSTALL_DIR/windows" ]; then
+    if [ ! -d "$INSTALL_DIR/ubuntu-server" ] && [ ! -d "$INSTALL_DIR/macos" ] && [ ! -d "$INSTALL_DIR/fedora-everything" ] && [ ! -d "$INSTALL_DIR/windows" ]; then
         log_error "File copy failed or source directory was empty. Check $source_dir"
         exit 1
     fi
@@ -249,12 +251,12 @@ run_installation() {
             cd "$INSTALL_DIR/ubuntu-server"
             ./install.sh
             ;;
-        arch)
-            if [ ! -f "$INSTALL_DIR/arch-desktop/install.sh" ]; then
-                log_error "Arch install script not found at $INSTALL_DIR/arch-desktop/install.sh"
+        fedora)
+            if [ ! -f "$INSTALL_DIR/fedora-everything/install.sh" ]; then
+                log_error "Fedora install script not found at $INSTALL_DIR/fedora-everything/install.sh"
                 exit 1
             fi
-            cd "$INSTALL_DIR/arch-desktop"
+            cd "$INSTALL_DIR/fedora-everything"
             ./install.sh
             ;;
         windows)
@@ -302,9 +304,9 @@ ensure_dependencies() {
             sudo apt-get update
             sudo apt-get install -y "${missing_deps[@]}"
             ;;
-        arch)
-            log_info "Installing missing dependencies via pacman..."
-            sudo pacman -Sy --noconfirm "${missing_deps[@]}"
+        fedora)
+            log_info "Installing missing dependencies via dnf..."
+            sudo dnf install -y "${missing_deps[@]}"
             ;;
         macos)
             if command -v brew &> /dev/null; then
@@ -361,15 +363,15 @@ main() {
             ubuntu|linux|server)
                 platform="ubuntu"
                 ;;
-            arch|archlinux)
-                platform="arch"
+            fedora|fedora-everything)
+                platform="fedora"
                 ;;
             windows|win|mingw*|msys*|cygwin*)
                 platform="windows"
                 ;;
             *)
                 log_error "Unknown platform: $platform"
-                log_info "Supported platforms: macos, ubuntu, arch, windows"
+                log_info "Supported platforms: macos, ubuntu, fedora, windows"
                 exit 1
                 ;;
         esac

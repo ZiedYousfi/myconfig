@@ -2,7 +2,7 @@
 
 > A modular configuration bank for building reproducible development environments across platforms.
 
-This repository provides automated setup scripts and dotfiles for macOS, Ubuntu Server, and Windows, enabling consistent development environments with a single command.
+This repository provides automated setup scripts and dotfiles for macOS, Ubuntu Server, Fedora Everything, and Windows, enabling consistent development environments with a single command.
 
 ## Quick Start
 
@@ -18,6 +18,12 @@ curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | bash -s -- ubuntu
+```
+
+### Fedora Everything
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.sh | bash -s -- fedora
 ```
 
 ### Windows (cmd.exe)
@@ -52,7 +58,7 @@ The bootstrap script will:
 
 ## Uninstalling
 
-Each platform has an uninstall script:
+Available uninstall scripts:
 
 ```bash
 ./macos/uninstall.sh          # macOS
@@ -63,12 +69,13 @@ Each platform has an uninstall script:
 ## Documentation
 
 See [SPECS.md](SPECS.md) for complete configuration specifications and details about all installed components.
+For the Fedora Niri target, see [fedora-everything/README.md](fedora-everything/README.md).
 
 ## Requirements
 
 Minimal requirements - the bootstrap script handles everything else:
 
-**macOS/Ubuntu:**
+**macOS/Ubuntu/Fedora:**
 
 - `curl` - for downloading
 - Internet connection
