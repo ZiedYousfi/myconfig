@@ -57,8 +57,9 @@ hotkey-overlay {
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
 spawn-at-startup "mako"
+spawn-at-startup "waybar"
 
-animation {
+animations {
     off
 }
 

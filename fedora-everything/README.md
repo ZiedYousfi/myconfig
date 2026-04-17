@@ -23,7 +23,7 @@ curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.
 ## What It Configures
 
 - Installs `grub2-efi-x64`, `shim-x64`, `efibootmgr`, and `rEFInd`
-- Installs the base Wayland stack for `niri`, `greetd`, `gtkgreet`, `foot`, `fuzzel`, `mako`, screenshots, audio, portals, and the build dependencies needed for `wvkbd` when Fedora does not package it
+- Installs the base Wayland stack for `niri`, `waybar`, `greetd`, `gtkgreet`, `foot`, `fuzzel`, `mako`, screenshots, audio, portals, and the build dependencies needed for `wvkbd` when Fedora does not package it
 - Installs the shared CLI base used by the repo profile such as `stow`, `zsh`, `neovim`, `tmux`, `fd-find`, `ripgrep`, `fzf`, `zoxide`, and `jq`
 - Tries to install extra shared CLI tools such as `lazygit`, `eza`, `bat`, and `fastfetch` when they are available for the current Fedora release
 - Installs `Iosevka Nerd Font` for the shared WezTerm profile and Yazi icons
@@ -36,6 +36,7 @@ curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.
   - `niri`
   - `nvim`
   - `tmux`
+  - `waybar`
   - `wezterm`
   - `lazygit`
   - `zed`
@@ -65,6 +66,8 @@ Fedora does not install repo files directly into place anymore.
 - `~/.zshrc` is installed directly from the repo and the shared `zieds` plugin is synced into `~/.oh-my-zsh/custom/plugins/zieds`
 - `~/.config/yazi` is installed directly from the repo because Yazi expects its config files at the top level of that directory on Linux
 - `~/.config/niri` is also stowed unless `~/.config/niri/config.kdl` already exists as a regular file, in which case the installer leaves the existing session config untouched
+- `~/.config/waybar` is stowed from the shared repo package and the shared `niri` config starts `waybar` at session startup
+- The shared `niri` config also starts `wvkbd-mobintl` at session startup so the on-screen keyboard is already open after login
 
 The only non-stowed pieces are third-party upstream checkouts:
 

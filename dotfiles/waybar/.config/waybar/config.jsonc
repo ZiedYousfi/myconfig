@@ -1,0 +1,113 @@
+{
+  "layer": "top",
+  "position": "bottom",
+  "height": 32,
+  "spacing": 0,
+  "gtk-layer-shell": true,
+  "modules-left": [
+    "custom/osk",
+    "custom/overview",
+    "custom/workspace-prev",
+    "custom/workspace-next",
+    "niri/window"
+  ],
+  "modules-center": [
+    "clock"
+  ],
+  "modules-right": [
+    "tray",
+    "cpu",
+    "memory",
+    "battery",
+    "wireplumber"
+  ],
+  "custom/osk": {
+    "format": "",
+    "tooltip": false,
+    "on-click": "sh -c 'if pgrep -x wvkbd-mobintl >/dev/null; then pkill -x wvkbd-mobintl; else wvkbd-mobintl >/dev/null 2>&1 & fi'"
+  },
+  "custom/overview": {
+    "format": "",
+    "tooltip-format": "Overview",
+    "on-click": "niri msg action toggle-overview"
+  },
+  "custom/workspace-prev": {
+    "format": "",
+    "tooltip-format": "Previous workspace",
+    "on-click": "niri msg action focus-workspace-up"
+  },
+  "custom/workspace-next": {
+    "format": "",
+    "tooltip-format": "Next workspace",
+    "on-click": "niri msg action focus-workspace-down"
+  },
+  "niri/window": {
+    "format": "{title}",
+    "icon": true,
+    "icon-size": 14,
+    "separate-outputs": true
+  },
+  "clock": {
+    "interval": 1,
+    "format": "<span color='#ff4ead'></span> {:%d/%m %H:%M}",
+    "format-alt": "<span color='#ff4ead'></span> {:%A %d %B %Y %H:%M:%S}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "year",
+      "mode-mon-col": 3,
+      "weeks-pos": "right",
+      "on-scroll": 1,
+      "on-click-right": "mode",
+      "format": {
+        "months": "<span color='#ff4ead'><b>{}</b></span>",
+        "days": "<span color='#d0d6e0'><b>{}</b></span>",
+        "weeks": "<span color='#4a4f5e'><b>W{}</b></span>",
+        "weekdays": "<span color='#a0aabe'><b>{}</b></span>",
+        "today": "<span color='#ff4ead'><b><u>{}</u></b></span>"
+      }
+    }
+  },
+  "cpu": {
+    "interval": 2,
+    "format": "<span color='#ff4ead'></span> {usage}%",
+    "tooltip": false
+  },
+  "memory": {
+    "interval": 2,
+    "format": "<span color='#ff4ead'></span> {percentage}%",
+    "tooltip-format": "{used:0.1f} GiB / {total:0.1f} GiB"
+  },
+  "battery": {
+    "interval": 10,
+    "states": {
+      "warning": 30,
+      "critical": 15
+    },
+    "format": "<span color='#ff4ead'>{icon}</span> {capacity}%",
+    "format-charging": "<span color='#ff4ead'></span> {capacity}%",
+    "format-plugged": "<span color='#ff4ead'></span> {capacity}%",
+    "format-icons": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "tray": {
+    "icon-size": 16,
+    "spacing": 8,
+    "show-passive-items": false
+  },
+  "wireplumber": {
+    "format": "<span color='#ff4ead'>{icon}</span> {volume}%",
+    "format-muted": "<span color='#4a4f5e'>󰖁</span> muted",
+    "format-icons": [
+      "󰕿",
+      "󰖀",
+      "󰕾"
+    ],
+    "scroll-step": 2,
+    "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+  }
+}

@@ -20,6 +20,7 @@ SHARED_DOTFILE_PACKAGES=(
     niri
     nvim
     tmux
+    waybar
     wezterm
     yazi
     zed
@@ -31,6 +32,7 @@ STOW_PACKAGES=(
     niri
     nvim
     tmux
+    waybar
     wezterm
     zed
 )
@@ -218,6 +220,7 @@ install_packages() {
         greetd \
         gtkgreet \
         niri \
+        waybar \
         foot \
         fuzzel \
         mako \
@@ -581,7 +584,7 @@ configure_yazi() {
 }
 
 configure_shared_apps() {
-    for package in niri nvim wezterm lazygit zed; do
+    for package in niri nvim waybar wezterm lazygit zed; do
         stow_package "$package"
     done
 
