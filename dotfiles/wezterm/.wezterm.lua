@@ -2,7 +2,11 @@ local wezterm = require("wezterm")
 
 local config = wezterm.config_builder()
 
-config.default_prog = { "pwsh.exe" }
+local is_windows = wezterm.target_triple:find("windows") ~= nil
+
+if is_windows then
+	config.default_prog = { "pwsh.exe" }
+end
 
 config.initial_cols = 160
 config.initial_rows = 40
@@ -11,7 +15,10 @@ config.window_decorations = "RESIZE"
 config.window_close_confirmation = "NeverPrompt"
 config.adjust_window_size_when_changing_font_size = false
 
-config.font = wezterm.font("Iosevka NFM")
+config.font = wezterm.font_with_fallback({
+	"Iosevka Nerd Font Mono",
+	"Iosevka NFM",
+})
 config.font_size = 16.0
 
 config.color_scheme = "BlackPink"

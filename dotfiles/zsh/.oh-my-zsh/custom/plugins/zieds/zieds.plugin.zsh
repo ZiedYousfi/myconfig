@@ -17,6 +17,10 @@ case "$(uname -s)" in
         ;;
 esac
 
+has() {
+    command -v "$1" >/dev/null 2>&1
+}
+
 # ============================================================================
 # Environment Variables (Cross-platform)
 # ============================================================================
@@ -52,8 +56,11 @@ elif $IS_LINUX; then
         export JAVA_HOME="$HOMEBREW_PREFIX/opt/openjdk@21"
     else
         # Fallback to system Java if Homebrew not installed
-        export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
-        [ -d "$JAVA_HOME" ] || export JAVA_HOME="/usr/lib/jvm/default-java"
+        if command -v javac >/dev/null 2>&1; then
+            export JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v javac)")")")"
+        else
+            export JAVA_HOME="/usr/lib/jvm/default-java"
+        fi
     fi
     export GOPATH="$HOME/go"
     export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$GOPATH/bin:$JAVA_HOME/bin:$PATH"
@@ -74,26 +81,47 @@ alias v='nvim'
 alias ll='ls -la'
 alias gcb='git fetch --prune && git branch -vv | grep ": gone]" | awk "{print \$1}" | xargs -n 1 git branch -d'
 
-alias pip='uv pip'
-alias pip3='uv pip3'
-
-alias npm='bun'
-alias npx='bunx'
-
 alias please='sudo'
 
 unalias gd 2>/dev/null || true
 
 # Tool aliases
-alias ls='eza --icons --group-directories-first --git --color=always'
-alias find='fd'
-alias grep='rg'
-alias rg='rg --color=always --smart-case --hidden --glob "!.git/*" --glob "!.svn/*" --glob "!.hg/*" --glob "!node_modules/*"'
-alias lg='lazygit'
-alias ff='fastfetch'
-alias oc='opencode'
-alias zeze='zoxide edit'
-alias tmux='tmux -f $XDG_CONFIG_HOME/tmux/tmux.conf'
+if has eza; then
+    alias ls='eza --icons --group-directories-first --git --color=always'
+fi
+
+if has fd; then
+    alias find='fd'
+fi
+
+if has rg; then
+    alias grep='rg'
+    alias rg='rg --color=always --smart-case --hidden --glob "!.git/*" --glob "!.svn/*" --glob "!.hg/*" --glob "!node_modules/*"'
+fi
+
+if has lazygit; then
+    alias lg='lazygit'
+fi
+
+if has fastfetch; then
+    alias ff='fastfetch'
+fi
+
+if has opencode; then
+    alias oc='opencode'
+fi
+
+if has codex; then
+    alias cx='codex'
+fi
+
+if has zoxide; then
+    alias zeze='zoxide edit'
+fi
+
+if has tmux; then
+    alias tmux='tmux -f $XDG_CONFIG_HOME/tmux/tmux.conf'
+fi
 
 # ============================================================================
 # Functions (Cross-platform)
@@ -112,13 +140,13 @@ stowgo() {
     local pkg="${1:-$(basename "$PWD")}"
     local target="${2:-$HOME}"
 
-    # Ensure we are inside the ~/.dotfiles hierarchy
-    if [[ "$PWD" != "$HOME/.dotfiles"* ]]; then
+    # Ensure we are inside the ~/dotfiles hierarchy
+    if [[ "$PWD" != "$HOME/dotfiles"* ]]; then
         echo "stowgo: please run this command from inside a package directory under $HOME/.dotfiles"
         return 1
     fi
 
-    local pkg_dir="$HOME/.dotfiles/$pkg"
+    local pkg_dir="$HOME/dotfiles/$pkg"
     if [[ -d "$pkg_dir" && "$PWD" != "$pkg_dir" ]]; then
         echo "stowgo: package '$pkg' already exists at $pkg_dir"
         return 1
@@ -137,7 +165,7 @@ stowgo() {
     fi
 
     # Run stow to link the package
-    stow --dir="$HOME/.dotfiles" --target="$target" --restow --no-folding "$pkg"
+    stow --dir="$HOME/dotfiles" --target="$target" --restow --no-folding "$pkg"
 }
 
 # Fuzzy file picker - opens selection in neovim
@@ -178,47 +206,143 @@ elif $IS_LINUX; then
     # Linux: use-tmux with system tmux
     use-tmux() { /bin/bash --noprofile --norc -c "tmux has-session 2>/dev/null && tmux attach-session -d || tmux new-session"; }
 
-    # Linux: Update both system (apt) and Homebrew packages
+    # Linux: Update system packages using the available package manager, plus Homebrew if present
     update() {
-        echo "🔄 Updating system and packages..."
+        echo "Updating system and packages..."
         echo ""
 
-        # Update system packages via apt
-        echo "📦 Updating system packages (apt)..."
-        sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y && sudo apt autoclean
-        echo "✅ System packages updated."
-        echo ""
+        if command -v dnf &>/dev/null; then
+            echo "Updating system packages (dnf)..."
+            sudo dnf upgrade -y && sudo dnf autoremove -y
+            echo "System packages updated."
+            echo ""
+        elif command -v apt &>/dev/null; then
+            echo "Updating system packages (apt)..."
+            sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y && sudo apt autoclean
+            echo "System packages updated."
+            echo ""
+        else
+            echo "No supported system package manager found."
+            echo ""
+        fi
 
         # Update Homebrew packages if installed
         if command -v brew &>/dev/null; then
-            echo "🍺 Updating Homebrew packages..."
+            echo "Updating Homebrew packages..."
             brew update && brew upgrade && brew cleanup
-            echo "✅ Homebrew packages updated."
+            echo "Homebrew packages updated."
         else
-            echo "ℹ️  Homebrew not found, skipping Homebrew updates."
+            echo "Homebrew not found, skipping Homebrew updates."
         fi
 
         echo ""
-        echo "✨ All updates completed successfully!"
+        echo "All updates completed successfully."
     }
 fi
 
-function aic() {
-    opencode run -m github-copilot/gpt-4.1 << 'EOF'
-Follow these steps precisely:
+# =========================
+# AI Commit (Codex clean - ZSH)
+# =========================
 
-1. Run 'git log --oneline -10' to analyze the style and conventions of previous commit messages.
-2. Run 'git diff --cached --stat' to check if there are any staged changes.
-3. Based on the result:
-   - If there ARE staged changes: commit ONLY the staged changes using 'git commit -m "<message>"'.
-   - If there are NO staged changes: stage everything with 'git add -A', then commit using 'git commit -m "<message>"'.
-4. The commit message must:
-   - Be comprehensive and descriptive of the actual changes being committed.
-   - Follow the style and conventions observed in the previous commits from step 1.
-   - Use 'git diff --cached' (after staging if applicable) to understand what is being committed.
-5. Do NOT push to remote under any circumstances.
+aic() {
+  local MODEL="${1:-gpt-5.4-mini}"
+
+  local branch gitLog diffStat diff message rawMessage choice
+
+  branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+  gitLog="$(git log -10 --pretty=format:"<commit>%n%h%n%B%n</commit>" 2>/dev/null)"
+  diffStat="$(git diff --cached --stat 2>/dev/null)"
+  diff="$(git diff --cached 2>/dev/null)"
+
+  # Normalize newlines
+  branch="$(printf "%s" "$branch" | tr -d '\r')"
+  gitLog="$(printf "%s" "$gitLog" | tr -d '\r')"
+  diffStat="$(printf "%s" "$diffStat" | tr -d '\r')"
+  diff="$(printf "%s" "$diff" | tr -d '\r')"
+
+  if [[ -z "$diffStat" ]]; then
+    echo "❌ No staged changes. Run git add first." >&2
+    return 1
+  fi
+
+  while true; do
+    prompt=$(cat <<EOF
+You are writing a git commit message.
+
+IMPORTANT:
+- ALWAYS use real newlines when you want a multiline commit message
+- DO NOT surround the answer with quotes
+- Return ONLY the commit message text, nothing else
+
+Branch:
+$branch
+
+Recent commits (subject + body raw):
+$gitLog
+
+Diff stat:
+$diffStat
+
+Full staged diff:
+$diff
+
+Rules:
+- concise but descriptive
+- infer the commit style from the recent commits
+- if recent commits include a body, include a body if useful
+- preserve the repository's usual formatting conventions
+- include branch name when relevant for ticket/reference context
+- no emojis
+- no fluff
 EOF
+)
+
+    rawMessage="$(printf "%s" "$prompt" | codex exec \
+      -m "$MODEL" \
+      -c model_reasoning_effort=low \
+      -c temperature=0.2)"
+
+    if [[ -z "$rawMessage" ]]; then
+      echo "❌ Failed to generate commit message." >&2
+      return 1
+    fi
+
+    message="$(printf "%s" "$rawMessage" | tr -d '\r' | sed '/^[[:space:]]*$/d')"
+
+    if [[ -z "$message" ]]; then
+      echo "❌ Codex returned an empty commit message." >&2
+      return 1
+    fi
+
+    echo ""
+    echo "──────────────── commit preview ────────────────"
+    printf "%s\n" "$message"
+    echo "───────────────────────────────────────────────"
+    echo ""
+
+    echo -n "[Y] yes  |  [R] retry  |  [C] cancel: "
+    read choice
+
+    case "${choice:l}" in
+      y)
+        printf "%s\n" "$message" | git commit -F -
+        echo "✨ Commit created. Tiny machine goblin satisfied."
+        return 0
+        ;;
+      r)
+        echo "🔁 Retrying... maybe the robot was feeling silly."
+        ;;
+      c)
+        echo "🚫 Commit cancelled. Nothing was committed."
+        return 0
+        ;;
+      *)
+        echo "🤨 Expected Y, R, or C. Let's try again."
+        ;;
+    esac
+  done
 }
+
 # ============================================================================
 # Zoxide initialization
 # ============================================================================
