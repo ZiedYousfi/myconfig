@@ -27,12 +27,14 @@ SHARED_DOTFILE_PACKAGES=(
     zsh
 )
 
-STOW_PACKAGES=(
-    lazygit
+CORE_STOW_PACKAGES=(
     niri
-    nvim
-    tmux
     waybar
+)
+
+OPTIONAL_STOW_PACKAGES=(
+    lazygit
+    nvim
     wezterm
     zed
 )
@@ -166,9 +168,15 @@ run_as_user() {
 
 enable_third_party_repos() {
     log_info "Enabling third-party repositories for Yazi and WezTerm"
-    dnf -y copr enable lihaohong/yazi
-    dnf -y copr enable wezfurlong/wezterm-nightly
-    log_success "Third-party repositories enabled"
+    if ! dnf -y copr enable lihaohong/yazi; then
+        log_warning "Could not enable the Yazi COPR; continuing without it"
+    fi
+
+    if ! dnf -y copr enable wezfurlong/wezterm-nightly; then
+        log_warning "Could not enable the WezTerm COPR; continuing without it"
+    fi
+
+    log_success "Third-party repository setup finished"
 }
 
 configure_1password_repo() {
@@ -186,11 +194,11 @@ EOF
     log_success "1Password repository configured"
 }
 
-install_packages() {
+install_core_packages() {
     log_info "Refreshing DNF metadata"
     dnf makecache -y
 
-    log_info "Installing required Fedora packages"
+    log_info "Installing core Fedora packages required for boot and the Niri session"
     dnf install -y --skip-unavailable \
         dnf-plugins-core \
         grub2-efi-x64 \
@@ -203,8 +211,6 @@ install_packages() {
         rsync \
         stow \
         zsh \
-        neovim \
-        tmux \
         tar \
         xz \
         fontconfig \
@@ -238,7 +244,18 @@ install_packages() {
         fzf \
         zoxide \
         jq \
-        file \
+        file
+
+    log_success "Core packages installed"
+}
+
+install_optional_user_tools() {
+    log_info "Installing optional user tools"
+    enable_third_party_repos
+
+    dnf install -y --skip-unavailable \
+        neovim \
+        tmux \
         lazygit \
         eza \
         bat \
@@ -246,7 +263,7 @@ install_packages() {
         yazi \
         wezterm
 
-    log_success "Packages installed"
+    log_success "Optional user tools installed"
 }
 
 install_desktop_apps() {
@@ -577,12 +594,31 @@ configure_yazi() {
     log_success "Yazi configured"
 }
 
-configure_shared_apps() {
-    for package in niri nvim waybar wezterm lazygit zed; do
+configure_core_shared_apps() {
+    for package in "${CORE_STOW_PACKAGES[@]}"; do
+        stow_package "$package"
+    done
+}
+
+configure_optional_user_apps() {
+    for package in "${OPTIONAL_STOW_PACKAGES[@]}"; do
         stow_package "$package"
     done
 
+    configure_tmux
     configure_yazi
+}
+
+run_optional_task() {
+    local description="$1"
+    shift
+
+    if "$@"; then
+        return 0
+    fi
+
+    log_warning "$description failed; continuing because it is optional"
+    return 0
 }
 
 write_boot_order_guard() {
@@ -820,9 +856,10 @@ main() {
     detect_target_user
     decide_niri_dotfiles_management
     confirm_continue
-    install_packages
+    install_core_packages
+    run_optional_task "Optional user tool installation" install_optional_user_tools
     install_desktop_apps
-    install_terminal_font
+    run_optional_task "Terminal font installation" install_terminal_font
     install_refind
     detect_greeter_user
     install_wvkbd
@@ -832,8 +869,8 @@ main() {
     configure_greetd
     write_boot_order_guard
     configure_shell_profile
-    configure_tmux
-    configure_shared_apps
+    configure_core_shared_apps
+    run_optional_task "Optional user tool configuration" configure_optional_user_apps
     enable_services
     ensure_user_owns_home_tree
 

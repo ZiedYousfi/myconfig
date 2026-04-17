@@ -24,11 +24,11 @@ curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.
 
 - Installs `grub2-efi-x64`, `shim-x64`, `efibootmgr`, and `rEFInd`
 - Installs the base Wayland stack for `niri`, `waybar`, `greetd`, `gtkgreet`, `foot`, `fuzzel`, `mako`, screenshots, audio, portals, and the build dependencies needed for `wvkbd` when Fedora does not package it
-- Installs the shared CLI base used by the repo profile such as `stow`, `zsh`, `neovim`, `tmux`, `fd-find`, `ripgrep`, `fzf`, `zoxide`, and `jq`
-- Tries to install extra shared CLI tools such as `lazygit`, `eza`, `bat`, and `fastfetch` when they are available for the current Fedora release
+- Installs the shared CLI base used by the repo profile such as `stow`, `zsh`, `fd-find`, `ripgrep`, `fzf`, `zoxide`, and `jq`
+- Installs optional user tools like `neovim`, `tmux`, `lazygit`, `eza`, `bat`, `fastfetch`, `yazi`, and `wezterm` in a separate non-critical step
 - Installs `Iosevka Nerd Font` for the shared WezTerm profile and Yazi icons
-- Enables the `lihaohong/yazi` COPR and installs `yazi`
-- Enables the official `wezfurlong/wezterm-nightly` COPR recommended by the WezTerm docs and installs `wezterm`
+- Enables the `lihaohong/yazi` COPR before the optional `yazi` install
+- Enables the official `wezfurlong/wezterm-nightly` COPR recommended by the WezTerm docs before the optional `wezterm` install
 - Configures the official 1Password yum repository and installs `1password`
 - Installs `google-chrome-stable` from Google's official 64-bit RPM package on `x86_64`
 - Copies the shared repo packages into `~/dotfiles`
@@ -103,5 +103,6 @@ The Fedora `niri` config follows the Windows `komorebi` + AHK workflow in this r
 - `google-chrome-stable` is installed from Google's official 64-bit Fedora/openSUSE RPM package, which also configures Chrome updates.
 - Google Chrome is skipped automatically on non-`x86_64` Fedora installs.
 - Existing files for stowed packages may still be adopted into `~/dotfiles` during `stow` if they already exist under `$HOME`, except the installer now skips the shared `niri` package when `~/.config/niri/config.kdl` already exists.
+- Optional tool installation and configuration are allowed to fail without aborting the boot-critical Fedora setup path.
 - After the script finishes, reboot and log in through `gtkgreet`.
 - For dual-boot systems with Windows, [grub-protector.ps1](grub-protector.ps1) can be run as Administrator in Windows to make Windows Boot Manager chainload Fedora's `shimx64.efi`.
