@@ -52,7 +52,7 @@
 					"PackageIdentifier" : "Rustlang.Rustup"
 				},
 				{
-					"PackageIdentifier" : "SST.opencode"
+					"PackageIdentifier" : "SST.OpenCodeDesktop"
 				},
 				{
 					"PackageIdentifier" : "ajeetdsouza.zoxide"
