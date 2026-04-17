@@ -191,7 +191,7 @@ install_packages() {
     dnf makecache -y
 
     log_info "Installing required Fedora packages"
-    dnf install -y \
+    dnf install -y --skip-unavailable \
         dnf-plugins-core \
         grub2-efi-x64 \
         grub2-common \
@@ -840,7 +840,7 @@ main() {
     echo ""
     log_success "Setup complete"
     echo "Dotfiles are stored in $USER_DOTFILES_DIR and linked with GNU Stow."
-    echo "Reboot and log in through gtkgreet."
+    echo "Reboot and enjoy your new Niri desktop environment! If you want to customize further, add files to the appropriate package directories in $USER_DOTFILES_DIR and run stow again."
     echo ""
 }
 
