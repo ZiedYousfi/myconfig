@@ -285,7 +285,7 @@ pwsh(cmd) {
 !m:: pwsh("komorebic minimize")
 
 ; --- Open terminal ---
-!+t:: Run 'pwsh.exe -NoProfile -Command "Start-Process wezterm -WindowStyle Hidden"', , "Hide"
+!t:: Run 'pwsh.exe -NoProfile -Command "Start-Process wezterm -WindowStyle Hidden"', , "Hide"
 
 ; --- Restart Komorebi ---
 !+r:: pwsh("komorebic stop; komorebic start --clean-state")
