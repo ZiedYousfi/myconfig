@@ -238,19 +238,13 @@ install_packages() {
         fzf \
         zoxide \
         jq \
-        file
-
-    log_info "Installing optional shared CLI tools"
-    dnf install -y --skip-unavailable \
+        file \
         lazygit \
         eza \
         bat \
-        fastfetch || log_warning "Some optional CLI tools were unavailable and were skipped"
-
-    enable_third_party_repos
-
-    log_info "Installing Yazi and WezTerm"
-    dnf install -y yazi wezterm
+        fastfetch \
+        yazi \
+        wezterm
 
     log_success "Packages installed"
 }
