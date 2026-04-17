@@ -15,7 +15,7 @@ window#waybar {
 
 tooltip {
   background: #0a0a0a;
-  border: 1px solid #ff4ead33;
+  border: 1px solid rgba(255, 78, 173, 0.2);
   border-radius: 4px;
   color: #a0aabe;
   padding: 6px 12px;
@@ -59,7 +59,7 @@ tooltip {
 #custom-overview:hover,
 #custom-workspace-prev:hover,
 #custom-workspace-next:hover {
-  background: #ff4ead1a;
+  background: rgba(255, 78, 173, 0.1);
   color: #ff4ead;
 }
 
@@ -113,6 +113,6 @@ window#waybar.empty #window {
 #tray > .passive:hover,
 #tray > .active:hover,
 #tray > .needs-attention:hover {
-  background: #ff4ead1a;
-  border-color: #ff4ead33;
+  background: rgba(255, 78, 173, 0.1);
+  border-color: rgba(255, 78, 173, 0.2);
 }
