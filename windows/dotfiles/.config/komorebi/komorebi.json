@@ -71,6 +71,6 @@
   "floating_applications": [
     { "kind": "Title", "id": "Picture-in-Picture", "matching_strategy": "Regex" },
     { "kind": "Title", "id": "Helper", "matching_strategy": "Contains" },
-    { "kind": "Executable", "id": "trackmania.exe", "matching_strategy": "Exact" }
+    { "kind": "Title", "id": "trackmania.exe", "matching_strategy": "Equals" }
   ]
 }
