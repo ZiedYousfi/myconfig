@@ -18,7 +18,7 @@ input {
 prefer-no-csd
 
 layout {
-    gaps 4
+    gaps 8
     center-focused-column "always"
     always-center-single-column
 
@@ -41,12 +41,12 @@ layout {
         width 4
         active-color "#ff4ead"
         inactive-color "#1a1a1a"
-        urgent-color "#fd971f"
+        urgent-color "#f87171"
     }
 }
 
 window-rule {
-    geometry-corner-radius 12
+    geometry-corner-radius 8
     clip-to-geometry true
 }
 
@@ -58,6 +58,7 @@ screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
 spawn-at-startup "mako"
 spawn-at-startup "waybar"
+spawn-at-startup "/usr/local/bin/axidev-osk"
 
 animations {
     off
@@ -65,7 +66,8 @@ animations {
 
 binds {
     Mod+F hotkey-overlay-title="Maximize column" { maximize-column; }
-    Mod+T hotkey-overlay-title="Open terminal" { spawn "wezterm"; }
+    Mod+T hotkey-overlay-title="Open terminal" { spawn "foot"; }
+    Mod+Shift+T hotkey-overlay-title="Open WezTerm" { spawn "wezterm"; }
     Mod+Q hotkey-overlay-title=null { close-window; }
     Mod+Escape allow-inhibiting=false hotkey-overlay-title="Toggle shortcut inhibition" { toggle-keyboard-shortcuts-inhibit; }
 

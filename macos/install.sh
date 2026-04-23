@@ -191,7 +191,6 @@ install_nerd_font_symbols() { install_brew_package "font-symbols-only-nerd-font"
 
 # Cask applications
 install_wezterm() { install_brew_package "wezterm" "true"; }
-install_zed() { install_brew_package "zed" "true"; }
 install_vscode() { install_brew_package "visual-studio-code" "true"; }
 
 # Window management (macOS)
@@ -313,7 +312,6 @@ install_packages() {
 
     # Cask applications
     install_wezterm
-    install_zed
     install_vscode
 
     # Window management (macOS)
@@ -339,7 +337,7 @@ setup_user_dotfiles() {
     mkdir -p "$USER_DOTFILES_DIR"
 
     # Copy shared dotfiles (platform-independent) from repo root
-    for package in lazygit nvim tmux wezterm yazi zed zsh; do
+    for package in lazygit nvim tmux wezterm yazi zsh; do
         if [ -d "$SHARED_DOTFILES_DIR/$package" ]; then
             log_info "Copying $package (shared) to $USER_DOTFILES_DIR..."
             rsync -a --update "$SHARED_DOTFILES_DIR/$package/" "$USER_DOTFILES_DIR/$package/"
@@ -509,8 +507,12 @@ install_zsh_plugins() {
         log_success "zsh-syntax-highlighting installed"
     fi
 
-    # Stow custom zieds plugin
+    # Stow custom inaya plugin
     stow_package "zsh"
+    if [ -L "$HOME/.oh-my-zsh/custom/plugins/zieds/zieds.plugin.zsh" ]; then
+        rm -f "$HOME/.oh-my-zsh/custom/plugins/zieds/zieds.plugin.zsh"
+        rmdir "$HOME/.oh-my-zsh/custom/plugins/zieds" 2>/dev/null || true
+    fi
 }
 
 configure_zshrc() {
@@ -530,13 +532,13 @@ configure_zshrc() {
 export ZSH="$HOME/.oh-my-zsh"
 
 # Theme
-ZSH_THEME="refined"
+ZSH_THEME="blacknpink"
 
 # Enable command auto-correction
 ENABLE_CORRECTION="true"
 
 # Plugins
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting vi-mode zieds)
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting vi-mode inaya)
 
 source $ZSH/oh-my-zsh.sh
 EOF
@@ -658,17 +660,6 @@ configure_wezterm() {
     log_success "WezTerm configured"
 }
 
-# ============================================================================
-# Zed Configuration
-# ============================================================================
-
-configure_zed() {
-    log_info "Configuring Zed via stow..."
-    stow_package "zed"
-    log_success "Zed configured"
-}
-
-# ============================================================================
 # VS Code Configuration
 # ============================================================================
 
@@ -909,9 +900,6 @@ main() {
 
     # Configure WezTerm (uses stow)
     configure_wezterm
-
-    # Configure Zed editor (uses stow)
-    configure_zed
 
     # Configure VS Code
     configure_vscode

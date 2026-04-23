@@ -16,6 +16,7 @@ Platform-specific implementations are documented in their respective sections.
 - [Editors](#editors)
 - [Desktop Environment](#desktop-environment)
 - [Development Languages & Runtimes](#development-languages--runtimes)
+- [Shared Non-Windows Package Baseline](#shared-non-windows-package-baseline)
 - [Platform-Specific: macOS](#platform-specific-macos)
 - [Platform-Specific: Ubuntu Server](#platform-specific-ubuntu-server)
 - [Platform-Specific: Windows](#platform-specific-windows)
@@ -32,7 +33,7 @@ The primary shell is **Zsh** with **Oh My Zsh** framework.
 |-----------|-------|
 | Shell | `zsh` |
 | Framework | Oh My Zsh |
-| Theme | `refined` |
+| Theme | `blacknpink` |
 | Config location | `~/.zshrc` |
 
 #### Plugins
@@ -43,11 +44,17 @@ The primary shell is **Zsh** with **Oh My Zsh** framework.
 | `vi-mode` | Built-in | Vi keybindings in shell |
 | `zsh-autosuggestions` | [zsh-users/zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions) | Fish-like autosuggestions |
 | `zsh-syntax-highlighting` | [zsh-users/zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting) | Syntax highlighting |
-| `zieds` | Custom (stowed) | Personal aliases, functions, and environment |
+| `inaya` | Custom (stowed) | Personal aliases, functions, and environment |
 
-#### Custom Plugin: `zieds`
+#### Custom Theme: `blacknpink`
 
-Location: `~/.oh-my-zsh/custom/plugins/zieds/zieds.plugin.zsh`
+Location: `~/.oh-my-zsh/custom/themes/blacknpink.zsh-theme`
+
+The theme is based on Oh My Zsh's bundled `refined` prompt and maps prompt colors to the shared Black & Pink terminal palette.
+
+#### Custom Plugin: `inaya`
+
+Location: `~/.oh-my-zsh/custom/plugins/inaya/inaya.plugin.zsh`
 
 **Environment Variables:**
 
@@ -72,9 +79,6 @@ LC_ALL="en_US.UTF-8"
 | `grep` | `rg` | Ripgrep with smart defaults |
 | `lg` | `lazygit` | Terminal UI for git |
 | `ff` | `fastfetch` | System info display |
-| `pip`, `pip3` | `uv pip` | Use uv for Python packages |
-| `npm` | `bun` | Use Bun for npm |
-| `npx` | `bunx` | Use Bun for npx |
 
 **Key Functions:**
 
@@ -95,9 +99,11 @@ LC_ALL="en_US.UTF-8"
 zsh/
 └── .oh-my-zsh/
     └── custom/
+        ├── themes/
+        │   └── blacknpink.zsh-theme
         └── plugins/
-            └── zieds/
-                └── zieds.plugin.zsh
+            └── inaya/
+                └── inaya.plugin.zsh
 ```
 
 ---
@@ -264,57 +270,6 @@ nvim/
                 └── colorscheme.lua
 ```
 
-### Zed
-
-Modern GUI editor with AI integration.
-
-| Setting | Value |
-|---------|-------|
-| Theme (dark) | Zedokai Darker Classic |
-| Theme (light) | One Light |
-| UI Font Size | 18 |
-| Buffer Font Size | 16 |
-| Autosave | 2000ms delay |
-| Format on save | Enabled |
-| Icon theme | Catppuccin Latte |
-
-**AI Configuration:**
-
-| Feature | Provider | Model |
-|---------|----------|-------|
-| Default model | Copilot Chat | `claude-opus-4.5` |
-| Inline assistant | OpenRouter | `openai/gpt-oss-120b` |
-| Commit messages | OpenRouter | `openai/gpt-oss-120b` |
-| Edit predictions | Zed | Built-in |
-
-#### Dotfiles Structure
-
-```
-zed/
-└── .config/
-    └── zed/
-        ├── settings.json
-        └── themes/
-```
-
-### Visual Studio Code
-
-GUI editor with extensive extension ecosystem. Visual Studio Code is used **natively** on Windows.
-
-**Key Extensions:**
-
-| Category | Extensions |
-|----------|------------|
-| AI | `github.copilot`, `github.copilot-chat` |
-| Git | `github.vscode-pull-request-github`, `donjayamanne.githistory` |
-| Languages | `golang.go`, `ms-python.python`, `llvm-vs-code-extensions.vscode-clangd` |
-| Containers | `ms-azuretools.vscode-docker`, `ms-azuretools.vscode-containers` |
-| .NET | `ms-dotnettools.csdevkit`, `ms-dotnettools.csharp` |
-| Formatting | `esbenp.prettier-vscode`, `cheshirekow.cmake-format` |
-| Linting | `dbaeumer.vscode-eslint`, `davidanson.vscode-markdownlint` |
-
----
-
 ## Desktop Environment
 
 Components that form the visual desktop experience.
@@ -359,13 +314,128 @@ System status bar displaying:
 
 | Language/Runtime | Tool | Purpose |
 |------------------|------|---------|
-| Python | `python`, `uv` | Python development, package management |
+| Python | `python` | Python development |
 | Go | `go` | Go development |
 | Rust | `rustup-init` | Rust toolchain |
-| JavaScript/TypeScript | `bun` | Fast JS runtime & package manager |
+| JavaScript/TypeScript | `nvm`, `node` | Node.js runtime management |
 | Java | `openjdk`, `maven` | Java development |
-| C/C++ | `llvm` | Compiler toolchain |
-| Build tools | `meson`, `conan` | C/C++ build systems |
+| C/C++ | `gcc`, `llvm`, `cmake`, `make` | Compiler and build toolchain |
+| Build tools | `meson`, `conan`, `zig` | Build systems and toolchain helpers |
+
+---
+
+## Shared Non-Windows Package Baseline
+
+These are the packages and tools intended for every Unix-like platform in this
+repo: Fedora, Ubuntu, and macOS. Windows keeps its own native package list.
+
+### System And Desktop
+
+- DNF/Homebrew package manager support where applicable
+- GRUB EFI tools
+- Shim
+- EFI boot manager
+- rEFInd
+- NetworkManager
+- greetd
+- gtkgreet
+- Niri
+- Waybar
+- Foot
+- Fuzzel
+- Mako
+- Layer Shell Qt
+- PipeWire
+- WirePlumber
+- desktop portals
+- brightness control
+- media player controls
+- screenshot tools
+- Wayland clipboard tools
+- Axidev OSK
+
+### Shell And Dotfiles
+
+- Git
+- curl
+- wget
+- rsync
+- GNU Stow
+- Zsh
+- Oh My Zsh
+- zsh autosuggestions
+- zsh syntax highlighting
+- custom zsh plugin
+- tmux
+- Oh My Tmux
+- tar
+- unzip
+- xz
+- file
+- fontconfig
+- Iosevka Nerd Font
+
+### Terminal And Editors
+
+- Neovim
+- WezTerm
+
+### CLI Tools
+
+- ripgrep
+- fd
+- fzf
+- zoxide
+- eza
+- bat
+- jq
+- less
+- lazygit
+- yazi
+- fastfetch
+- btop
+- tokei
+- tree-sitter CLI
+
+### Programming Languages And Build Tools
+
+- Python
+- Go
+- Rustup
+- NVM
+- OpenJDK
+- Maven
+- GCC
+- LLVM
+- CMake
+- Make
+- Meson
+- Conan
+- Zig
+
+### Media And File Tooling
+
+- FFmpeg
+- 7-Zip
+- Poppler
+- resvg
+- ImageMagick
+
+### Developer Apps And Services
+
+- 1Password
+- 1Password CLI
+- Google Chrome
+- Docker
+- Ollama
+- OpenAI Codex
+- T3 Code
+
+### Creative Apps
+
+- Blender
+- Krita
+- Kdenlive
 
 ---
 
@@ -471,7 +541,7 @@ sketchybar/
 
 ### macOS-Specific Shell Functions
 
-Located in `zieds.plugin.zsh`:
+Located in `inaya.plugin.zsh`:
 
 | Function | Description |
 |----------|-------------|
@@ -512,7 +582,7 @@ See [ubuntu-server/install.sh](ubuntu-server/install.sh) for the complete instal
 
 ### Ubuntu-Specific Shell Functions
 
-Located in `zieds.plugin.zsh` (platform detection is automatic):
+Located in `inaya.plugin.zsh` (platform detection is automatic):
 
 | Function | Description |
 |----------|-------------|
@@ -525,8 +595,7 @@ Located in `zieds.plugin.zsh` (platform detection is automatic):
 HOMEBREW_PREFIX="/home/linuxbrew/.linuxbrew"
 JAVA_HOME="$HOMEBREW_PREFIX/opt/openjdk@21"
 GOPATH="$HOME/go"
-BUN_INSTALL="$HOME/.bun"
-PATH="$HOME/.local/bin:$HOME/.cargo/bin:$GOPATH/bin:$JAVA_HOME/bin:$BUN_INSTALL/bin:$HOMEBREW_PREFIX/bin:$PATH"
+PATH="$HOME/.local/bin:$HOME/.cargo/bin:$GOPATH/bin:$JAVA_HOME/bin:$HOMEBREW_PREFIX/bin:$PATH"
 VCPKG_ROOT="$HOME/vcpkg"
 ```
 
@@ -536,11 +605,12 @@ All packages are installed via Homebrew:
 
 | Category | Packages |
 |----------|----------|
-| Core | `git`, `stow`, `zsh`, `tmux`, `curl`, `wget`, `gcc`, `unzip` |
-| Languages | `python@3.12`, `go`, `rustup` (via curl), `bun` (via curl), `openjdk@21`, `llvm` |
-| Build Tools | `maven`, `meson` (via uv), `conan` (via uv) |
-| CLI Tools | `eza`, `fd`, `fzf`, `ripgrep`, `bat`, `zoxide`, `lazygit`, `btop`, `fastfetch`, `uv` (via curl) |
-| File Manager | `yazi`, `ffmpeg`, `p7zip`, `jq`, `poppler`, `imagemagick` |
+| Core | `git`, `stow`, `zsh`, `tmux`, `curl`, `wget`, `gcc`, `unzip`, `tar`, `xz`, `file`, `fontconfig` |
+| Languages | `python`, `go`, `rustup`, `nvm`, `openjdk`, `llvm`, `zig` |
+| Build Tools | `maven`, `cmake`, `make`, `meson`, `conan` |
+| CLI Tools | `eza`, `fd`, `fzf`, `ripgrep`, `bat`, `zoxide`, `lazygit`, `btop`, `fastfetch`, `jq`, `less`, `tokei`, `tree-sitter` |
+| File Manager | `yazi`, `ffmpeg`, `p7zip`, `poppler`, `resvg`, `imagemagick` |
+| Apps and Services | `1password`, `1password-cli`, `google-chrome`, `docker`, `ollama`, `codex`, `t3-code`, `blender`, `krita`, `kdenlive` |
 
 ### What's NOT Included (Server Edition)
 
@@ -651,7 +721,6 @@ setup-config/
 │   ├── nvim/
 │   ├── tmux/
 │   ├── yazi/
-│   ├── zed/
 │   └── zsh/
 ├── macos/                      # macOS-specific
 │   ├── install.sh
@@ -681,8 +750,7 @@ These dotfiles are located in `/dotfiles/` at the project root and can be used a
 | `nvim` | Neovim/LazyVim plugins | `~/.config/nvim/` |
 | `tmux` | Tmux customization | `~/.config/tmux/` |
 | `yazi` | File manager theme | `~/.config/yazi/` |
-| `zed` | Zed editor settings | `~/.config/zed/` |
-| `zsh` | Custom Oh My Zsh plugin | `~/.oh-my-zsh/custom/` |
+| `zsh` | Custom Oh My Zsh theme and plugin | `~/.oh-my-zsh/custom/` |
 
 ### macOS-Specific
 
@@ -724,6 +792,5 @@ A consistent Monokai theme is applied across all components:
 - Tmux (status bar)
 - Sketchybar (UI elements)
 - Yazi (file manager flavor)
-- Zed (Zedokai Darker Classic variant)
 - Zebar (status bar)
 - Glaze WM

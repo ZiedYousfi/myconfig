@@ -1,4 +1,4 @@
-# Zied's Oh My Zsh plugin
+# Inaya's Oh My Zsh plugin
 # Cross-platform compatible (macOS and Linux)
 
 # Detect the operating system
@@ -28,8 +28,8 @@ has() {
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_CACHE_HOME="$HOME/.cache"
 
-export LANG="en_US.UTF-8"
-export LC_ALL="en_US.UTF-8"
+export LANG="C.UTF-8"
+export LC_ALL="C.UTF-8"
 
 export VI_MODE_SET_CURSOR=true
 
@@ -65,9 +65,8 @@ elif $IS_LINUX; then
     export GOPATH="$HOME/go"
     export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$GOPATH/bin:$JAVA_HOME/bin:$PATH"
     export VCPKG_ROOT="$HOME/vcpkg"
-    # Bun path for Linux
-    export BUN_INSTALL="$HOME/.bun"
-    [ -d "$BUN_INSTALL" ] && export PATH="$BUN_INSTALL/bin:$PATH"
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
 fi
 
 # ============================================================================
@@ -130,6 +129,16 @@ fi
 mkd() { mkdir -p -- "$1" && cd -P -- "$1"; }
 
 reload-zsh() { source "$HOME/.zshrc" && echo "zsh reloaded"; }
+
+update_npm_globals() {
+    if has npm; then
+        echo "Updating global npm packages..."
+        npm update -g
+        echo "Global npm packages updated."
+    else
+        echo "npm not found, skipping global npm updates."
+    fi
+}
 
 # Quickly create a new stow package directory inside ~/.dotfiles and stow it.
 # Usage: stowgo <package-name> [target]
@@ -196,6 +205,8 @@ if $IS_MACOS; then
     update() {
         echo "Updating packages via Homebrew..."
         brew update && brew upgrade && brew cleanup
+        echo ""
+        update_npm_globals
         echo "Packages updated successfully."
     }
 
@@ -236,18 +247,21 @@ elif $IS_LINUX; then
         fi
 
         echo ""
+        update_npm_globals
+
+        echo ""
         echo "All updates completed successfully."
     }
 fi
 
 # =========================
-# AI Commit (Codex clean - ZSH)
+# AI Commit (Codex clean)
 # =========================
 
 aic() {
   local MODEL="${1:-gpt-5.4-mini}"
 
-  local branch gitLog diffStat diff message rawMessage choice
+  local branch gitLog diffStat diff prompt message rawMessage choice
 
   branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
   gitLog="$(git log -10 --pretty=format:"<commit>%n%h%n%B%n</commit>" 2>/dev/null)"
@@ -307,9 +321,9 @@ EOF
       return 1
     fi
 
-    message="$(printf "%s" "$rawMessage" | tr -d '\r' | sed '/^[[:space:]]*$/d')"
+    message="$(printf "%s" "$rawMessage" | tr -d '\r')"
 
-    if [[ -z "$message" ]]; then
+    if [[ -z "$(printf "%s" "$message" | tr -d '[:space:]')" ]]; then
       echo "❌ Codex returned an empty commit message." >&2
       return 1
     fi
@@ -331,6 +345,7 @@ EOF
         ;;
       r)
         echo "🔁 Retrying... maybe the robot was feeling silly."
+        continue
         ;;
       c)
         echo "🚫 Commit cancelled. Nothing was committed."
@@ -338,6 +353,7 @@ EOF
         ;;
       *)
         echo "🤨 Expected Y, R, or C. Let's try again."
+        continue
         ;;
     esac
   done
@@ -357,12 +373,12 @@ fi
 
 cleanup() {
   if [[ -z "$PS1" ]]; then
-    echo "cleanup: Cette commande est prévue pour un usage interactif."
+    echo "cleanup: this command is intended for interactive use."
     return 1
   fi
 
-  echo "Bienvenue dans le rituel de nettoyage d'Ahri... 💫"
-  echo "Nous allons parcourir ce chemin, élément par élément, et noter tes souhaits."
+  echo "Welcome to Ahri's cleanup ritual... 💫"
+  echo "We'll walk through this path item by item and record your choices."
   echo ""
 
   typeset -A deletions_to_perform
@@ -377,41 +393,41 @@ cleanup() {
     fi
 
     echo "------------------------------------------------------"
-    echo "Voulez-vous supprimer '$item' ? (y/n/q pour quitter)"
-    read -q "choice?Votre choix, étoile filante : "
+    echo "Do you want to delete '$item'? (y/n/q to quit)"
+    read -q "choice?Your choice, shooting star: "
     echo ""
 
     case "$choice" in
       y|Y)
         if [[ -d "$item" && ! -L "$item" ]]; then
-          echo "Note: '$item' (dossier) est marqué pour suppression récursive. 🌬️"
+          echo "Note: '$item' (directory) is marked for recursive deletion. 🌬️"
           deletions_to_perform["$item"]="directory"
         else
-          echo "Note: '$item' (fichier) est marqué pour suppression. 🍂"
+          echo "Note: '$item' (file) is marked for deletion. 🍂"
           deletions_to_perform["$item"]="file"
         fi
         ;;
       n|N)
-        echo "'$item' restera pour l'instant. 💖"
+        echo "'$item' will stay for now. 💖"
         ;;
       q|Q)
-        echo "Le rituel est en pause. Exécution annulée pour aujourd'hui. Que la sérénité t'accompagne, Zied. 🌟"
+        echo "The ritual is paused. Nothing will be deleted today. May serenity stay with you, Inaya. 🌟"
         return 0
         ;;
       *)
-        echo "Choix inconnu. '$item' restera. 🤫"
+        echo "Unknown choice. '$item' will stay. 🤫"
         ;;
     esac
     echo ""
   done
 
   echo "------------------------------------------------------"
-  echo "🌟 Récapitulatif de tes décisions, Zied 🌟"
-  echo "Voici les éléments que tu as choisis de libérer :"
+  echo "🌟 Summary of your choices, Inaya 🌟"
+  echo "These are the items you chose to release:"
 
   if (( ${#deletions_to_perform[@]} == 0 )); then
-    echo "Aucun élément n'a été marqué pour suppression. Le chemin est clair. ✨"
-    echo "Fin du processus. Que la lumière guide tes pas. 🌟"
+    echo "No items were marked for deletion. The path is clear. ✨"
+    echo "Process complete. May the light guide your steps. 🌟"
     return 0
   fi
 
@@ -422,37 +438,37 @@ cleanup() {
   done
 
   echo ""
-  read -q "final_choice?Es-tu certain de vouloir procéder à ces suppressions ? (y/n) : "
+  read -q "final_choice?Are you sure you want to proceed with these deletions? (y/n): "
   echo ""
 
   if [[ "$final_choice" == "y" || "$final_choice" == "Y" ]]; then
     echo ""
-    echo "Le rituel de suppression commence... Irréversible une fois lancé. 🌌"
+    echo "The deletion ritual begins... irreversible once started. 🌌"
     for item in ${(k)deletions_to_perform}; do
       local type="${deletions_to_perform[$item]}"
       if [[ "$type" == "directory" ]]; then
-        echo "Libérant le dossier '$item' et son contenu... 🌬️"
+        echo "Releasing directory '$item' and its contents... 🌬️"
         rm -rf -- "$item"
         if [ $? -eq 0 ]; then
-          echo "'$item' a rejoint le vent. ✨"
+          echo "'$item' has joined the wind. ✨"
         else
-          echo "Une force invisible a bloqué la libération de '$item'. 💔"
+          echo "An invisible force blocked the release of '$item'. 💔"
         fi
       else
-        echo "Libérant le fichier '$item'... 🍂"
+        echo "Releasing file '$item'... 🍂"
         rm -- "$item"
         if [ $? -eq 0 ]; then
-          echo "'$item' s'est fondu dans l'éther. 🍃"
+          echo "'$item' has dissolved into the ether. 🍃"
         else
-          echo "Une force invisible a bloqué la libération de '$item'. 💔"
+          echo "An invisible force blocked the release of '$item'. 💔"
         fi
       fi
     done
     echo ""
-    echo "Toutes les âmes de ce chemin ont été traitées selon tes souhaits. Le rituel est accompli. Que la paix règne. 💖"
+    echo "Every item in this path has been handled according to your wishes. The ritual is complete. May peace reign. 💖"
   else
-    echo "Le rituel de suppression a été annulé. Les éléments marqués restent en place. La flexibilité est une force, Zied. 💫"
+    echo "The deletion ritual was cancelled. Marked items remain in place. Flexibility is strength, Inaya. 💫"
   fi
 
-  echo "Fin du processus. Que la lumière guide tes pas. 🌟"
+  echo "Process complete. May the light guide your steps. 🌟"
 }

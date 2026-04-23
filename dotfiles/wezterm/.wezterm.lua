@@ -30,8 +30,10 @@ config.color_schemes = {
 		cursor_bg = "#ff4ead",
 		cursor_border = "#ff4ead",
 		cursor_fg = "#000000",
-		selection_bg = "#2a0016",
-		selection_fg = "#d0d6e0",
+		selection_bg = "#331728",
+		selection_fg = "#f0f2f7",
+		scrollbar_thumb = "#1a1a1a",
+		split = "#1a1a1a",
 
 		ansi = {
 			"#000000",
@@ -54,6 +56,30 @@ config.color_schemes = {
 			"#67e8f9",
 			"#f0f2f7",
 		},
+
+		tab_bar = {
+			background = "#000000",
+			active_tab = {
+				bg_color = "#0a0a0a",
+				fg_color = "#f0f2f7",
+			},
+			inactive_tab = {
+				bg_color = "#000000",
+				fg_color = "#a0aabe",
+			},
+			inactive_tab_hover = {
+				bg_color = "#111111",
+				fg_color = "#d0d6e0",
+			},
+			new_tab = {
+				bg_color = "#000000",
+				fg_color = "#4a4f5e",
+			},
+			new_tab_hover = {
+				bg_color = "#111111",
+				fg_color = "#ff4ead",
+			},
+		},
 	},
 }
 
@@ -64,6 +90,12 @@ config.show_new_tab_button_in_tab_bar = false
 config.tab_max_width = 32
 
 config.window_background_opacity = 1.0
+config.window_padding = {
+	left = 16,
+	right = 16,
+	top = 12,
+	bottom = 12,
+}
 
 config.keys = {
 	{

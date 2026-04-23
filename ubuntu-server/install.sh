@@ -458,8 +458,12 @@ install_zsh_plugins() {
         log_success "zsh-syntax-highlighting installed"
     fi
 
-    # Stow custom zieds plugin
+    # Stow custom inaya plugin
     stow_package "zsh"
+    if [ -L "$HOME/.oh-my-zsh/custom/plugins/zieds/zieds.plugin.zsh" ]; then
+        rm -f "$HOME/.oh-my-zsh/custom/plugins/zieds/zieds.plugin.zsh"
+        rmdir "$HOME/.oh-my-zsh/custom/plugins/zieds" 2>/dev/null || true
+    fi
 }
 
 configure_zshrc() {
@@ -479,13 +483,13 @@ configure_zshrc() {
 export ZSH="$HOME/.oh-my-zsh"
 
 # Theme
-ZSH_THEME="refined"
+ZSH_THEME="blacknpink"
 
 # Enable command auto-correction
 ENABLE_CORRECTION="true"
 
 # Plugins
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting vi-mode zieds)
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting vi-mode inaya)
 
 source $ZSH/oh-my-zsh.sh
 EOF

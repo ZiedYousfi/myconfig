@@ -23,34 +23,42 @@ curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.
 ## What It Configures
 
 - Installs `grub2-efi-x64`, `shim-x64`, `efibootmgr`, and `rEFInd`
-- Installs the base Wayland stack for `niri`, `waybar`, `greetd`, `gtkgreet`, `foot`, `fuzzel`, `mako`, screenshots, audio, portals, and the build dependencies needed for `wvkbd` when Fedora does not package it
+- Installs the base Wayland stack for `niri`, `waybar`, `greetd`, `gtkgreet`, `foot`, `fuzzel`, `mako`, screenshots, audio, portals, `layer-shell-qt`, and the tools needed to unpack standalone app bundles
 - Installs the shared CLI base used by the repo profile such as `stow`, `zsh`, `fd-find`, `ripgrep`, `fzf`, `zoxide`, and `jq`
-- Installs optional user tools like `neovim`, `tmux`, `lazygit`, `eza`, `bat`, `fastfetch`, `yazi`, and `wezterm` in a separate non-critical step
+- Installs optional user tools like `neovim`, `tmux`, `lazygit`, `eza`, `bat`, `fastfetch`, `btop`, `tokei`, `tree-sitter-cli`, `yazi`, and `wezterm` in a separate non-critical step
+- Installs development tools and runtimes from Fedora packages where available, including Python, Go, Rustup, OpenJDK, Maven, GCC, LLVM, CMake, Make, Meson, Conan, and Zig
+- Installs media, file, and creative tools such as FFmpeg, 7-Zip, Poppler, resvg, ImageMagick, Blender, Krita, and Kdenlive
 - Installs `Iosevka Nerd Font` for the shared WezTerm profile and Yazi icons
 - Enables the `lihaohong/yazi` COPR before the optional `yazi` install
 - Enables the official `wezfurlong/wezterm-nightly` COPR recommended by the WezTerm docs before the optional `wezterm` install
 - Configures the official 1Password yum repository and installs `1password`
 - Installs `google-chrome-stable` from Google's official 64-bit RPM package on `x86_64`
+- Installs Docker from Docker's official Fedora repository and adds the normal user to the `docker` group
+- Installs Ollama from the official Linux installer
+- Installs NVM, Node.js LTS, OpenAI Codex, and T3 Code
 - Copies the shared repo packages into `~/dotfiles`
 - Stows the shared repo packages for:
+  - `foot`
+  - `fuzzel`
   - `niri`
   - `nvim`
   - `tmux`
   - `waybar`
   - `wezterm`
+  - `mako`
   - `lazygit`
-  - `zed`
-- Installs the repo `~/.zshrc` and syncs the shared `zieds` Oh My Zsh plugin into `~/.oh-my-zsh/custom/plugins/zieds`
+- Installs the repo `~/.zshrc`, syncs the shared `blacknpink` Oh My Zsh theme into `~/.oh-my-zsh/custom/themes`, and syncs the shared `inaya` plugin into `~/.oh-my-zsh/custom/plugins/inaya`
 - Installs the repo Yazi config into `~/.config/yazi`, including `yazi.toml` with `nvim` as the editor
 - Installs Oh My Zsh plus `zsh-autosuggestions` and `zsh-syntax-highlighting`
 - Installs Oh My Tmux
 - Installs `rEFInd`, runs `refind-install`, and enables mouse input in `refind.conf`
 - Installs `gtkgreet`
-- Installs `wvkbd` from Fedora packages when available, otherwise builds `wvkbd-mobintl` from upstream into `/usr/local/bin/wvkbd-mobintl`
+- Downloads the latest `axidev-osk` Linux x64 release from GitHub, verifies the published SHA-256 digest when present, installs it into `/opt/axidev-osk`, and links `/usr/local/bin/axidev-osk`
+- Configures `/dev/uinput` access for the normal user and the greetd user during installation so group membership is active after the first reboot
 - Creates `/usr/local/bin/niri-session`
 - Creates `/usr/local/bin/gtkgreet-session` for the dedicated greeter compositor
 - Registers a `niri.desktop` wayland session
-- Configures `greetd` to launch `gtkgreet` and `wvkbd` inside a dedicated `niri` greeter session
+- Configures `greetd` to launch `gtkgreet` and `axidev-osk` inside a dedicated `niri` greeter session
 - Forces the greeter itself to use the dark `Adwaita` GTK theme without changing the user session theme
 - Installs an `efi-boot-order-guard.service` that keeps the `rEFInd` EFI entry first, with Fedora shim as fallback
 - Sets the default boot target to `graphical.target`
@@ -63,11 +71,12 @@ Fedora does not install repo files directly into place anymore.
 - Shared packages are copied to `~/dotfiles`
 - GNU Stow links them into `$HOME`
 - Repo-managed files such as `~/.wezterm.lua` and `~/.config/nvim` come from the stowed packages
-- `~/.zshrc` is installed directly from the repo and the shared `zieds` plugin is synced into `~/.oh-my-zsh/custom/plugins/zieds`
+- Fedora desktop files such as `~/.config/foot`, `~/.config/fuzzel`, `~/.config/mako`, `~/.config/niri`, and `~/.config/waybar` also come from the shared stowed packages
+- `~/.zshrc` is installed directly from the repo, the shared `blacknpink` theme is synced into `~/.oh-my-zsh/custom/themes`, and the shared `inaya` plugin is synced into `~/.oh-my-zsh/custom/plugins/inaya`
 - `~/.config/yazi` is installed directly from the repo because Yazi expects its config files at the top level of that directory on Linux
 - `~/.config/niri` is also stowed unless `~/.config/niri/config.kdl` already exists as a regular file, in which case the installer leaves the existing session config untouched
 - `~/.config/waybar` is stowed from the shared repo package and the shared `niri` config starts `waybar` at session startup
-- The shared `niri` config also starts `wvkbd-mobintl` at session startup so the on-screen keyboard is already open after login
+- The shared `niri` config also starts `axidev-osk` at session startup so the on-screen keyboard is already open after login
 
 The only non-stowed pieces are third-party upstream checkouts:
 
@@ -96,9 +105,12 @@ The Fedora `niri` config follows the Windows `komorebi` + AHK workflow in this r
 - The installer enables `rEFInd` mouse input by ensuring `enable_mouse true` is present in `/boot/efi/EFI/refind/refind.conf`.
 - When Secure Boot is enabled, the installer tries to reuse Fedora's shim for the `rEFInd` install.
 - `gtkgreet` is installed from Fedora packages.
-- The installer tries to install `wvkbd` from Fedora packages first, and falls back to building `wvkbd-mobintl` from the upstream Git repository when it is unavailable.
+- `axidev-osk` does not have a Fedora package yet, so the installer manually downloads the latest Linux x64 standalone release from GitHub and installs it under `/opt/axidev-osk`.
+- Linux keyboard injection uses `/dev/uinput`; the installer writes `/etc/udev/rules.d/70-axidev-io-uinput.rules`, loads `uinput`, persists it in `/etc/modules-load.d/uinput.conf`, and adds both the normal user and greetd user to the `input` group before reboot.
 - `yazi` is installed from the `lihaohong/yazi` COPR, per the Yazi installation docs for Fedora.
 - `wezterm` is installed from the `wezfurlong/wezterm-nightly` COPR, which the WezTerm Linux docs recommend for staying current on Fedora and other rpm-based systems.
+- `codex` is installed from the `sureclaw/codex` COPR.
+- `t3code` is installed from the `burningpho3nix/T3-Code` COPR.
 - `1password` is installed from 1Password's official yum repository, which also enables automatic updates.
 - `google-chrome-stable` is installed from Google's official 64-bit Fedora/openSUSE RPM package, which also configures Chrome updates.
 - Google Chrome is skipped automatically on non-`x86_64` Fedora installs.

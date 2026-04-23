@@ -7,7 +7,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 SHARED_DOTFILES_DIR="$REPO_ROOT/dotfiles"
-WVKBD_REPO_URL="https://github.com/jjsullivan5196/wvkbd.git"
+AXIDEV_OSK_RELEASE_API="https://api.github.com/repos/axide-dev/axidev-osk/releases/latest"
+AXIDEV_OSK_INSTALL_DIR="/opt/axidev-osk"
+AXIDEV_OSK_BIN="/usr/local/bin/axidev-osk"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -16,18 +18,23 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 SHARED_DOTFILE_PACKAGES=(
+    foot
+    fuzzel
     lazygit
+    mako
     niri
     nvim
     tmux
     waybar
     wezterm
     yazi
-    zed
     zsh
 )
 
 CORE_STOW_PACKAGES=(
+    foot
+    fuzzel
+    mako
     niri
     waybar
 )
@@ -36,7 +43,6 @@ OPTIONAL_STOW_PACKAGES=(
     lazygit
     nvim
     wezterm
-    zed
 )
 
 MANAGE_NIRI_DOTFILES=1
@@ -167,13 +173,21 @@ run_as_user() {
 }
 
 enable_third_party_repos() {
-    log_info "Enabling third-party repositories for Yazi and WezTerm"
+    log_info "Enabling third-party repositories for Yazi, WezTerm, Codex, and T3 Code"
     if ! dnf -y copr enable lihaohong/yazi; then
         log_warning "Could not enable the Yazi COPR; continuing without it"
     fi
 
     if ! dnf -y copr enable wezfurlong/wezterm-nightly; then
         log_warning "Could not enable the WezTerm COPR; continuing without it"
+    fi
+
+    if ! dnf -y copr enable sureclaw/codex; then
+        log_warning "Could not enable the Codex COPR; continuing without it"
+    fi
+
+    if ! dnf -y copr enable burningpho3nix/T3-Code; then
+        log_warning "Could not enable the T3 Code COPR; continuing without it"
     fi
 
     log_success "Third-party repository setup finished"
@@ -208,24 +222,20 @@ install_core_packages() {
         rEFInd \
         git \
         curl \
+        wget \
         rsync \
         stow \
         zsh \
         tar \
+        unzip \
         xz \
         fontconfig \
-        gcc \
-        make \
-        cairo-devel \
-        pango-devel \
-        wayland-devel \
-        libxkbcommon-devel \
-        scdoc \
-        pkgconf-pkg-config \
+        kmod \
         NetworkManager \
         greetd \
         gtkgreet \
         niri \
+        layer-shell-qt \
         waybar \
         foot \
         fuzzel \
@@ -244,6 +254,7 @@ install_core_packages() {
         fzf \
         zoxide \
         jq \
+        less \
         file
 
     log_success "Core packages installed"
@@ -261,9 +272,111 @@ install_optional_user_tools() {
         bat \
         fastfetch \
         yazi \
-        wezterm
+        wezterm \
+        btop \
+        tokei \
+        tree-sitter-cli \
+        python3 \
+        golang \
+        rustup \
+        nvm \
+        java-latest-openjdk-devel \
+        maven \
+        gcc \
+        llvm \
+        cmake \
+        make \
+        meson \
+        conan \
+        zig \
+        ffmpeg \
+        p7zip \
+        p7zip-plugins \
+        7zip \
+        7zip-plugins \
+        poppler-utils \
+        resvg \
+        ImageMagick \
+        blender \
+        krita \
+        kdenlive \
+        codex \
+        t3code
 
     log_success "Optional user tools installed"
+}
+
+install_nvm_and_node() {
+    local nvm_dir="$USER_HOME/.nvm"
+    local latest_tag
+
+    if [[ -d "$nvm_dir/.git" ]]; then
+        log_info "Updating NVM"
+        run_as_user git -C "$nvm_dir" fetch --tags --prune
+    else
+        log_info "Installing NVM"
+        run_as_user git clone https://github.com/nvm-sh/nvm.git "$nvm_dir"
+    fi
+
+    latest_tag="$(git -C "$nvm_dir" tag -l 'v*' | sort -V | tail -n1)"
+    if [[ -z "$latest_tag" ]]; then
+        log_warning "Could not resolve an NVM release tag"
+        return 1
+    fi
+
+    run_as_user git -C "$nvm_dir" checkout -q "$latest_tag"
+    run_as_user bash -lc "export NVM_DIR='$nvm_dir'; . '$nvm_dir/nvm.sh'; nvm install --lts; nvm alias default 'lts/*'"
+    log_success "NVM and Node.js LTS installed"
+}
+
+configure_docker_repo() {
+    if [[ -f /etc/yum.repos.d/docker-ce.repo ]]; then
+        log_success "Docker repository is already configured"
+        return 0
+    fi
+
+    log_info "Configuring Docker repository"
+    if dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo; then
+        log_success "Docker repository configured"
+        return 0
+    fi
+
+    if dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo; then
+        log_success "Docker repository configured"
+        return 0
+    fi
+
+    log_warning "Could not configure Docker repository"
+    return 1
+}
+
+install_docker() {
+    configure_docker_repo || return 1
+
+    log_info "Installing Docker"
+    dnf install -y --skip-unavailable \
+        docker-ce \
+        docker-ce-cli \
+        containerd.io \
+        docker-buildx-plugin \
+        docker-compose-plugin
+
+    groupadd -f docker
+    usermod -aG docker "$USERNAME"
+    systemctl enable --now docker || log_warning "Docker was installed, but the service could not be enabled"
+    log_success "Docker installed"
+}
+
+install_ollama() {
+    if command -v ollama >/dev/null 2>&1; then
+        log_success "Ollama is already installed"
+        return 0
+    fi
+
+    log_info "Installing Ollama"
+    curl -fsSL https://ollama.com/install.sh | sh
+    systemctl enable --now ollama || log_warning "Ollama was installed, but the service could not be enabled"
+    log_success "Ollama installed"
 }
 
 install_desktop_apps() {
@@ -273,7 +386,7 @@ install_desktop_apps() {
     configure_1password_repo
 
     log_info "Installing 1Password"
-    dnf install -y 1password
+    dnf install -y --skip-unavailable 1password 1password-cli
     log_success "1Password installed"
 
     if [[ "$arch" == "x86_64" ]]; then
@@ -358,35 +471,103 @@ install_refind() {
     log_success "rEFInd installed"
 }
 
-install_wvkbd() {
-    local build_dir
+install_axidev_osk() {
+    local arch release_json version download_url expected_digest expected_sha actual_sha
+    local tmp_dir archive_path extracted_dir
 
-    if command -v wvkbd-mobintl >/dev/null 2>&1; then
-        log_success "wvkbd is already installed"
+    arch="$(uname -m)"
+    if [[ "$arch" != "x86_64" ]]; then
+        log_error "Axidev OSK only publishes a linux-x64 bundle right now; detected architecture: $arch"
+    fi
+
+    log_info "Resolving latest Axidev OSK Linux release"
+    release_json="$(curl -fsSL "$AXIDEV_OSK_RELEASE_API")"
+    version="$(jq -r '.tag_name // empty' <<< "$release_json")"
+    download_url="$(jq -r '.assets[] | select(.name | test("linux-x64\\.zip$")) | .browser_download_url' <<< "$release_json" | head -n1)"
+    expected_digest="$(jq -r '.assets[] | select(.name | test("linux-x64\\.zip$")) | .digest // empty' <<< "$release_json" | head -n1)"
+
+    if [[ -z "$version" || -z "$download_url" ]]; then
+        log_error "Could not find a Linux x64 Axidev OSK release asset."
+    fi
+
+    if [[ -x "$AXIDEV_OSK_INSTALL_DIR/axidev-osk" && -f "$AXIDEV_OSK_INSTALL_DIR/.version" ]] &&
+        [[ "$(cat "$AXIDEV_OSK_INSTALL_DIR/.version")" == "$version" ]]; then
+        ln -sfn "$AXIDEV_OSK_INSTALL_DIR/axidev-osk" "$AXIDEV_OSK_BIN"
+        log_success "Axidev OSK $version is already installed"
         return
     fi
 
-    if dnf install -y wvkbd >/dev/null 2>&1; then
-        require_command wvkbd-mobintl
-        log_success "wvkbd installed from Fedora packages"
-        return
+    log_info "Downloading Axidev OSK $version"
+    tmp_dir="$(mktemp -d)"
+    archive_path="$tmp_dir/axidev-osk-linux-x64.zip"
+    extracted_dir="$tmp_dir/extracted"
+
+    curl -fL "$download_url" -o "$archive_path"
+
+    if [[ "$expected_digest" == sha256:* ]]; then
+        expected_sha="${expected_digest#sha256:}"
+        actual_sha="$(sha256sum "$archive_path" | awk '{print $1}')"
+        if [[ "$actual_sha" != "$expected_sha" ]]; then
+            rm -rf "$tmp_dir"
+            log_error "Axidev OSK archive checksum mismatch."
+        fi
+    else
+        log_warning "No SHA-256 digest was published for this Axidev OSK asset; skipping checksum verification."
     fi
 
-    log_info "Building wvkbd from upstream"
-    build_dir="$(mktemp -d)"
+    install -d "$extracted_dir"
+    unzip -q "$archive_path" -d "$extracted_dir"
 
-    git clone --depth 1 "$WVKBD_REPO_URL" "$build_dir"
-    pushd "$build_dir" >/dev/null
-    make
-    install -Dm755 wvkbd-mobintl /usr/local/bin/wvkbd-mobintl
-    popd >/dev/null
-    rm -rf "$build_dir"
+    if [[ ! -x "$extracted_dir/axidev-osk/axidev-osk" ]]; then
+        rm -rf "$tmp_dir"
+        log_error "Downloaded Axidev OSK archive did not contain the expected executable."
+    fi
+
+    if [[ "$AXIDEV_OSK_INSTALL_DIR" != "/opt/axidev-osk" ]]; then
+        rm -rf "$tmp_dir"
+        log_error "Refusing to replace unexpected Axidev OSK install directory: $AXIDEV_OSK_INSTALL_DIR"
+    fi
+
+    rm -rf -- "$AXIDEV_OSK_INSTALL_DIR"
+    install -d "$(dirname "$AXIDEV_OSK_INSTALL_DIR")"
+    mv "$extracted_dir/axidev-osk" "$AXIDEV_OSK_INSTALL_DIR"
+    printf '%s\n' "$version" > "$AXIDEV_OSK_INSTALL_DIR/.version"
+    chown -R root:root "$AXIDEV_OSK_INSTALL_DIR"
+    chmod +x "$AXIDEV_OSK_INSTALL_DIR/axidev-osk" "$AXIDEV_OSK_INSTALL_DIR/setup_uinput_permissions.sh"
+    ln -sfn "$AXIDEV_OSK_INSTALL_DIR/axidev-osk" "$AXIDEV_OSK_BIN"
+    rm -rf "$tmp_dir"
 
     if command -v restorecon >/dev/null 2>&1; then
-        restorecon -Fv /usr/local/bin/wvkbd-mobintl >/dev/null 2>&1 || true
+        restorecon -RFv "$AXIDEV_OSK_INSTALL_DIR" "$AXIDEV_OSK_BIN" >/dev/null 2>&1 || true
     fi
 
-    log_success "wvkbd installed"
+    log_success "Axidev OSK $version installed"
+}
+
+setup_axidev_osk_permissions() {
+    local rule_path="/etc/udev/rules.d/70-axidev-io-uinput.rules"
+    local -a osk_users=("$USERNAME")
+    local user
+
+    if [[ -n "$GREETER_USER" && "$GREETER_USER" != "$USERNAME" ]]; then
+        osk_users+=("$GREETER_USER")
+    fi
+
+    log_info "Configuring Axidev OSK uinput permissions"
+    modprobe uinput
+    groupadd -f input
+
+    for user in "${osk_users[@]}"; do
+        usermod -aG input "$user"
+    done
+
+    install -d /etc/udev/rules.d /etc/modules-load.d
+    printf '%s\n' 'KERNEL=="uinput", MODE="0660", GROUP="input", OPTIONS+="static_node=uinput"' > "$rule_path"
+    printf '%s\n' 'uinput' > /etc/modules-load.d/uinput.conf
+    udevadm control --reload-rules
+    udevadm trigger /dev/uinput >/dev/null 2>&1 || true
+
+    log_success "Axidev OSK uinput permissions configured for: ${osk_users[*]}"
 }
 
 setup_user_dotfiles() {
@@ -531,8 +712,9 @@ install_repo_zsh_profile() {
 }
 
 install_repo_zsh_custom_plugin() {
-    local source_plugin_dir="$USER_DOTFILES_DIR/zsh/.oh-my-zsh/custom/plugins/zieds"
-    local target_plugin_dir="$USER_HOME/.oh-my-zsh/custom/plugins/zieds"
+    local source_plugin_dir="$USER_DOTFILES_DIR/zsh/.oh-my-zsh/custom/plugins/inaya"
+    local target_plugin_dir="$USER_HOME/.oh-my-zsh/custom/plugins/inaya"
+    local old_plugin_dir="$USER_HOME/.oh-my-zsh/custom/plugins/zieds"
 
     if [[ ! -d "$source_plugin_dir" ]]; then
         log_warning "Repo zsh plugin not found at $source_plugin_dir"
@@ -540,10 +722,28 @@ install_repo_zsh_custom_plugin() {
     fi
 
     ensure_user_owned_dir "$USER_HOME/.oh-my-zsh/custom/plugins"
+    if [[ -f "$old_plugin_dir/zieds.plugin.zsh" ]] && grep -q "Zied's Oh My Zsh plugin" "$old_plugin_dir/zieds.plugin.zsh"; then
+        rm -rf "$old_plugin_dir"
+    fi
     install -d -o "$USERNAME" -g "$USERNAME" "$target_plugin_dir"
     rsync -a --delete "$source_plugin_dir/" "$target_plugin_dir/"
     chown -R "$USERNAME:$USERNAME" "$target_plugin_dir"
     log_success "Custom zsh plugin installed"
+}
+
+install_repo_zsh_custom_theme() {
+    local source_theme_dir="$USER_DOTFILES_DIR/zsh/.oh-my-zsh/custom/themes"
+    local target_theme_dir="$USER_HOME/.oh-my-zsh/custom/themes"
+
+    if [[ ! -d "$source_theme_dir" ]]; then
+        log_warning "Repo zsh themes not found at $source_theme_dir"
+        return
+    fi
+
+    ensure_user_owned_dir "$target_theme_dir"
+    rsync -a --delete "$source_theme_dir/" "$target_theme_dir/"
+    chown -R "$USERNAME:$USERNAME" "$target_theme_dir"
+    log_success "Custom zsh themes installed"
 }
 
 configure_shell_profile() {
@@ -551,6 +751,7 @@ configure_shell_profile() {
     install_zsh_plugins
     install_repo_zsh_profile
     install_repo_zsh_custom_plugin
+    install_repo_zsh_custom_theme
     set_default_shell
 }
 
@@ -790,7 +991,7 @@ cleanup() {
 
 trap cleanup EXIT INT TERM
 
-/usr/local/bin/wvkbd-mobintl >/dev/null 2>&1 &
+QT_QPA_PLATFORM=wayland /usr/local/bin/axidev-osk >/dev/null 2>&1 &
 keyboard_pid="$!"
 
 env GTK_THEME=Adwaita:dark gtkgreet --layer-shell --command /usr/local/bin/niri-session
@@ -859,10 +1060,14 @@ main() {
     install_core_packages
     run_optional_task "Optional user tool installation" install_optional_user_tools
     install_desktop_apps
+    run_optional_task "Docker installation" install_docker
+    run_optional_task "Ollama installation" install_ollama
+    run_optional_task "NVM and Node.js installation" install_nvm_and_node
     run_optional_task "Terminal font installation" install_terminal_font
     install_refind
     detect_greeter_user
-    install_wvkbd
+    install_axidev_osk
+    setup_axidev_osk_permissions
     setup_user_dotfiles
     write_session
     write_greeter_session
