@@ -151,7 +151,7 @@ decide_niri_dotfiles_management() {
     MANAGE_NIRI_DOTFILES=1
 }
 
-confirm_continue() {
+log_install_context() {
     echo ""
     echo "User: $USERNAME"
     echo "Home: $USER_HOME"
@@ -160,9 +160,6 @@ confirm_continue() {
         echo "Niri session config: keep existing ~/.config/niri/config.kdl"
     fi
     echo ""
-
-    read -rp "Continue? (y/N): " confirm
-    [[ "$confirm" == "y" || "$confirm" == "Y" ]] || exit 0
 }
 
 ensure_user_owned_dir() {
@@ -1536,7 +1533,7 @@ main() {
     install_bootstrap_dependencies
     detect_target_user
     decide_niri_dotfiles_management
-    confirm_continue
+    log_install_context
     configure_third_party_repos
     install_all_packages
     configure_system_locale
