@@ -234,6 +234,8 @@ run_installation() {
     log_info "Starting ${platform} installation..."
     echo "" >&2
 
+    local install_status=0
+
     case $platform in
         macos)
             if [ ! -f "$INSTALL_DIR/macos/install.sh" ]; then
@@ -241,7 +243,7 @@ run_installation() {
                 exit 1
             fi
             cd "$INSTALL_DIR/macos"
-            ./install.sh
+            ./install.sh || install_status=$?
             ;;
         ubuntu)
             if [ ! -f "$INSTALL_DIR/ubuntu-server/install.sh" ]; then
@@ -249,15 +251,22 @@ run_installation() {
                 exit 1
             fi
             cd "$INSTALL_DIR/ubuntu-server"
-            ./install.sh
+            ./install.sh || install_status=$?
             ;;
         fedora)
-            if [ ! -f sudo "$INSTALL_DIR/fedora-everything/install.sh" ]; then
+            if [ ! -f "$INSTALL_DIR/fedora-everything/install.sh" ]; then
                 log_error "Fedora install script not found at $INSTALL_DIR/fedora-everything/install.sh"
                 exit 1
             fi
             cd "$INSTALL_DIR/fedora-everything"
-            ./install.sh
+            if [ "${EUID:-$(id -u)}" -eq 0 ]; then
+                ./install.sh || install_status=$?
+            elif command -v sudo >/dev/null 2>&1; then
+                sudo ./install.sh || install_status=$?
+            else
+                log_error "Fedora installation requires root. Re-run with sudo or install sudo first."
+                exit 1
+            fi
             ;;
         windows)
             if [ ! -f "$INSTALL_DIR/windows/install.ps1" ]; then
@@ -265,13 +274,18 @@ run_installation() {
                 exit 1
             fi
             cd "$INSTALL_DIR/windows"
-            powershell.exe -ExecutionPolicy Bypass -File install.ps1
+            powershell.exe -ExecutionPolicy Bypass -File install.ps1 || install_status=$?
             ;;
         *)
             log_error "Unsupported platform: $platform"
             exit 1
             ;;
     esac
+
+    if [ "$install_status" -ne 0 ]; then
+        log_error "${platform} installation failed with exit code $install_status"
+        exit "$install_status"
+    fi
 }
 
 cleanup() {
