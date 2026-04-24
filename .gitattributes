@@ -7,6 +7,8 @@
 # Shell scripts should always use LF line endings
 *.sh text eol=lf
 *.zsh text eol=lf
+dotfiles/kanata/.config/kanata/kanata-tray text eol=lf
+*.kbd text eol=lf
 .zshrc text eol=lf
 .zshenv text eol=lf
 .zprofile text eol=lf

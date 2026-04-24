@@ -58,7 +58,10 @@ screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
 spawn-at-startup "mako"
 spawn-at-startup "waybar"
-spawn-at-startup "/usr/local/bin/axidev-osk"
+spawn-at-startup "swww-daemon"
+spawn-at-startup "sh" "-lc" "sleep 1; swww img ~/wallpapers/fond.jpg --transition-type fade --transition-duration 1"
+spawn-at-startup "axidev-osk"
+spawn-at-startup "sh" "-lc" "~/.config/kanata/kanata-tray"
 
 animations {
     off
@@ -66,13 +69,12 @@ animations {
 
 binds {
     Mod+F hotkey-overlay-title="Maximize column" { maximize-column; }
-    Mod+T hotkey-overlay-title="Open terminal" { spawn "foot"; }
-    Mod+Shift+T hotkey-overlay-title="Open WezTerm" { spawn "wezterm"; }
+    Mod+T hotkey-overlay-title="Open WezTerm" { spawn "wezterm"; }
     Mod+Q hotkey-overlay-title=null { close-window; }
     Mod+Escape allow-inhibiting=false hotkey-overlay-title="Toggle shortcut inhibition" { toggle-keyboard-shortcuts-inhibit; }
 
     Mod+I hotkey-overlay-title="Show hotkeys" { show-hotkey-overlay; }
-    Mod+Space hotkey-overlay-title="Search apps, commands, and files" { spawn-sh "{ fd . /usr/share/applications ~/.local/share/applications -e desktop -x basename {} .desktop 2>/dev/null; printf '%s\\n' \"$PATH\" | tr ':' '\\n' | while read -r dir; do [ -d \"$dir\" ] && fd . \"$dir\" --max-depth 1 --type x -x basename {} 2>/dev/null; done; fd . \"$HOME\" -a --type f --exclude .git --exclude node_Modules --exclude .cache --exclude .local/share/Trash 2>/dev/null; } | sort -u | fuzzel --dmenu | while read -r sel; do case \"$sel\" in *.desktop) gtk-launch \"${sel%.desktop}\" ;; /*|~/*) printf '%s\\n' \"$sel\" | wl-copy ;; *) if command -v \"$sel\" >/dev/null 2>&1; then \"$sel\" & fi ;; esac; done"; }
+    Mod+Space hotkey-overlay-title="Search apps, commands, and files" { spawn "fuzzel"; }
 
     Mod+H { focus-column-left; }
     Mod+Left { focus-column-left; }
@@ -92,7 +94,7 @@ binds {
     Mod+Shift+J { move-window-down; }
     Mod+Shift+Down { move-window-down; }
 
-    Mod+O { toggle-overview; }
+    Mod+Tab { toggle-overview; }
     Mod+U { focus-workspace-up; }
     Mod+D { focus-workspace-down; }
 

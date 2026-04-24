@@ -2,14 +2,19 @@
 set -euo pipefail
 
 # Fedora Everything Niri Setup Script
-# Installs a minimal Wayland desktop based on Niri, greetd, gtkgreet, and shared repo dotfiles.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 SHARED_DOTFILES_DIR="$REPO_ROOT/dotfiles"
 AXIDEV_OSK_RELEASE_API="https://api.github.com/repos/axide-dev/axidev-osk/releases/latest"
+AXIDEV_OSK_SOURCE_ZIP_URL="https://github.com/axide-dev/axidev-osk/releases/latest/download/axidev-osk-source.zip"
 AXIDEV_OSK_INSTALL_DIR="/opt/axidev-osk"
+AXIDEV_OSK_VENV_DIR="$AXIDEV_OSK_INSTALL_DIR/.venv"
 AXIDEV_OSK_BIN="/usr/local/bin/axidev-osk"
+KANATA_RELEASE_API="https://api.github.com/repos/jtroo/kanata/releases/latest"
+KANATA_BIN="/usr/local/bin/kanata"
+SYSTEM_LOCALE="en_US.UTF-8"
+SYSTEM_XKB_LAYOUT="us"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -18,11 +23,11 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 SHARED_DOTFILE_PACKAGES=(
-    foot
     fuzzel
     lazygit
     mako
     niri
+    kanata
     nvim
     tmux
     waybar
@@ -32,10 +37,10 @@ SHARED_DOTFILE_PACKAGES=(
 )
 
 CORE_STOW_PACKAGES=(
-    foot
     fuzzel
     mako
     niri
+    kanata
     waybar
 )
 
@@ -76,7 +81,7 @@ require_command() {
 check_requirements() {
     require_root
 
-    for cmd in dnf systemctl systemd-tmpfiles install getent id cut efibootmgr findmnt lsblk mktemp; do
+    for cmd in dnf systemctl systemd-tmpfiles install getent id cut efibootmgr findmnt lsblk mktemp localectl localedef; do
         require_command "$cmd"
     done
 }
@@ -98,6 +103,13 @@ install_bootstrap_dependencies() {
     log_info "Installing bootstrap dependencies used by the installer"
     ensure_bootstrap_command rsync rsync
     ensure_bootstrap_command runuser util-linux
+    # dnf-plugins-core is required for `dnf copr` and `dnf config-manager`
+    # which we use to front-load all third-party repos before the main
+    # install transaction.
+    if ! rpm -q dnf-plugins-core >/dev/null 2>&1; then
+        log_info "Installing dnf-plugins-core for repo management"
+        dnf install -y dnf-plugins-core
+    fi
     log_success "Bootstrap dependencies installed"
 }
 
@@ -168,14 +180,31 @@ ensure_user_owns_home_tree() {
     fi
 }
 
+ensure_user_controls_dotfiles_tree() {
+    if [[ ! -d "$USER_DOTFILES_DIR" ]]; then
+        return 0
+    fi
+
+    log_info "Ensuring $USERNAME can edit all managed dotfiles"
+    chown -R "$USERNAME:$USERNAME" "$USER_DOTFILES_DIR"
+    chmod -R u+rwX "$USER_DOTFILES_DIR"
+    log_success "Managed dotfiles are user-writable"
+}
+
 run_as_user() {
     runuser -u "$USERNAME" -- "$@"
 }
 
-enable_third_party_repos() {
-    log_info "Enabling third-party repositories for Yazi, WezTerm, Codex, and T3 Code"
+configure_third_party_repos() {
+    log_info "Configuring third-party repositories (COPRs, 1Password, Docker)"
+
+    # COPRs — keep optional so a broken COPR doesn't abort the installer.
     if ! dnf -y copr enable lihaohong/yazi; then
         log_warning "Could not enable the Yazi COPR; continuing without it"
+    fi
+
+    if ! dnf -y copr enable dejan/lazygit; then
+        log_warning "Could not enable the Lazygit COPR; continuing without it"
     fi
 
     if ! dnf -y copr enable wezfurlong/wezterm-nightly; then
@@ -190,7 +219,10 @@ enable_third_party_repos() {
         log_warning "Could not enable the T3 Code COPR; continuing without it"
     fi
 
-    log_success "Third-party repository setup finished"
+    configure_1password_repo
+    configure_docker_repo || log_warning "Docker repository setup failed; docker-ce packages will be skipped"
+
+    log_success "Third-party repositories configured"
 }
 
 configure_1password_repo() {
@@ -208,102 +240,212 @@ EOF
     log_success "1Password repository configured"
 }
 
-install_core_packages() {
+configure_docker_repo() {
+    if [[ -f /etc/yum.repos.d/docker-ce.repo ]]; then
+        log_success "Docker repository is already configured"
+        return 0
+    fi
+
+    log_info "Configuring Docker repository"
+    if dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo 2>/dev/null; then
+        log_success "Docker repository configured"
+        return 0
+    fi
+
+    if dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo; then
+        log_success "Docker repository configured"
+        return 0
+    fi
+
+    log_warning "Could not configure Docker repository"
+    return 1
+}
+
+install_all_packages() {
+    local arch
+    arch="$(uname -m)"
+
     log_info "Refreshing DNF metadata"
     dnf makecache -y
 
-    log_info "Installing core Fedora packages required for boot and the Niri session"
-    dnf install -y --skip-unavailable \
-        dnf-plugins-core \
-        grub2-efi-x64 \
-        grub2-common \
-        shim-x64 \
-        efibootmgr \
-        rEFInd \
-        git \
-        curl \
-        wget \
-        rsync \
-        stow \
-        zsh \
-        tar \
-        unzip \
-        xz \
-        fontconfig \
-        kmod \
-        NetworkManager \
-        greetd \
-        gtkgreet \
-        niri \
-        layer-shell-qt \
-        waybar \
-        foot \
-        fuzzel \
-        mako \
-        grim \
-        slurp \
-        wl-clipboard \
-        pipewire \
-        wireplumber \
-        xdg-desktop-portal \
-        xdg-desktop-portal-gtk \
-        brightnessctl \
-        playerctl \
-        fd-find \
-        ripgrep \
-        fzf \
-        zoxide \
-        jq \
-        less \
+    # One big transaction. --skip-unavailable means a missing COPR package
+    # (or a failed Docker repo) won't abort the whole installer; the rest
+    # still lands. The dependency solver also does a much better job when
+    # it can see every package at once.
+    local -a packages=(
+        # Core system / boot
+        grub2-efi-x64
+        grub2-common
+        shim-x64
+        efibootmgr
+        rEFInd
+        git
+        curl
+        wget
+        rsync
+        stow
+        zsh
+        tar
+        unzip
+        xz
+        fontconfig
+        glibc-langpack-en
+        glibc-locale-source
+        kmod
+        NetworkManager
+
+        # Niri session + greeter
+        greetd
+        gtkgreet
+        niri
+        python3
+        python3-pip
+        python3-setuptools
+        python3-wheel
+        python3-pyside6
+        qt6-qtwayland
+        layer-shell-qt
+        libinput-devel
+        systemd-devel
+        systemd-libs
+        libxkbcommon-devel
+        python3-devel
+        waybar
+        yad
+        fuzzel
+        mako
+        swww
+        grim
+        slurp
+        wl-clipboard
+
+        # Audio stack
+        pipewire
+        pipewire-pulseaudio
+        pipewire-alsa
+        pipewire-jack-audio-connection-kit
+        pipewire-utils
+        wireplumber
+        alsa-utils
+        alsa-firmware
+        sof-firmware
+        pamixer
+        # Flatpak runtime so we can install pwvucontrol from Flathub
+        # (pwvucontrol is not in Fedora's main repos and upstream only
+        # officially supports Flatpak).
+        flatpak
+
+        # Desktop integration
+        xdg-desktop-portal
+        xdg-desktop-portal-gtk
+        adwaita-qt5
+        adwaita-qt6
+        qt5ct
+        qt6ct
+        brightnessctl
+
+        # CLI tooling
+        fd-find
+        ripgrep
+        fzf
+        zoxide
+        jq
+        less
         file
 
-    log_success "Core packages installed"
-}
-
-install_optional_user_tools() {
-    log_info "Installing optional user tools"
-    enable_third_party_repos
-
-    dnf install -y --skip-unavailable \
-        neovim \
-        tmux \
-        lazygit \
-        eza \
-        bat \
-        fastfetch \
-        yazi \
-        wezterm \
-        btop \
-        tokei \
-        tree-sitter-cli \
-        python3 \
-        golang \
-        rustup \
-        nvm \
-        java-latest-openjdk-devel \
-        maven \
-        gcc \
-        llvm \
-        cmake \
-        make \
-        meson \
-        conan \
-        zig \
-        ffmpeg \
-        p7zip \
-        p7zip-plugins \
-        7zip \
-        7zip-plugins \
-        poppler-utils \
-        resvg \
-        ImageMagick \
-        blender \
-        krita \
-        kdenlive \
-        codex \
+        # Optional user tools (from COPRs and Fedora main)
+        neovim
+        tmux
+        lazygit
+        eza
+        bat
+        fastfetch
+        yazi
+        wezterm
+        btop
+        tokei
+        tree-sitter-cli
+        golang
+        rustup
+        java-latest-openjdk-devel
+        # Note: NVM intentionally not installed via dnf — install_nvm_and_node()
+        # clones the upstream repo into ~/.nvm per NVM's official install method.
+        maven
+        gcc
+        llvm
+        cmake
+        make
+        meson
+        conan
+        zig
+        ffmpeg
+        p7zip
+        p7zip-plugins
+        7zip
+        7zip-plugins
+        poppler-utils
+        resvg
+        ImageMagick
+        blender
+        krita
+        kdenlive
+        codex
         t3code
 
-    log_success "Optional user tools installed"
+        # Desktop apps
+        1password
+        1password-cli
+
+        # Docker
+        docker-ce
+        docker-ce-cli
+        containerd.io
+        docker-buildx-plugin
+        docker-compose-plugin
+    )
+
+    # Google Chrome ships only for x86_64 as a direct RPM URL; dnf accepts
+    # URLs in the install list so it joins the same transaction.
+    if [[ "$arch" == "x86_64" ]]; then
+        packages+=(https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm)
+    else
+        log_warning "Google Chrome is only configured for x86_64 in this installer; detected architecture: $arch"
+    fi
+
+    log_info "Installing all Fedora packages in a single transaction (this is the slow part)"
+    dnf install -y --skip-unavailable "${packages[@]}"
+    log_success "Packages installed"
+}
+
+post_install_docker() {
+    if ! command -v docker >/dev/null 2>&1; then
+        log_warning "Docker CLI not found after install; skipping docker service setup"
+        return 1
+    fi
+
+    groupadd -f docker
+    usermod -aG docker "$USERNAME"
+    systemctl enable --now docker || log_warning "Docker was installed, but the service could not be enabled"
+    log_success "Docker service enabled"
+}
+
+configure_system_locale() {
+    log_info "Configuring system locale to $SYSTEM_LOCALE"
+
+    if ! locale -a 2>/dev/null | grep -Eqi '^en_US\.(utf8|utf-8)$'; then
+        log_info "Generating missing locale $SYSTEM_LOCALE"
+        localedef -i en_US -f UTF-8 "$SYSTEM_LOCALE"
+    fi
+
+    localectl set-locale "LANG=$SYSTEM_LOCALE"
+    log_success "System locale configured"
+}
+
+configure_system_keyboard() {
+    log_info "Configuring system keyboard layout to $SYSTEM_XKB_LAYOUT"
+    localectl set-keymap "$SYSTEM_XKB_LAYOUT"
+    localectl set-x11-keymap "$SYSTEM_XKB_LAYOUT"
+    log_success "System keyboard layout configured"
 }
 
 install_nvm_and_node() {
@@ -329,44 +471,6 @@ install_nvm_and_node() {
     log_success "NVM and Node.js LTS installed"
 }
 
-configure_docker_repo() {
-    if [[ -f /etc/yum.repos.d/docker-ce.repo ]]; then
-        log_success "Docker repository is already configured"
-        return 0
-    fi
-
-    log_info "Configuring Docker repository"
-    if dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo; then
-        log_success "Docker repository configured"
-        return 0
-    fi
-
-    if dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo; then
-        log_success "Docker repository configured"
-        return 0
-    fi
-
-    log_warning "Could not configure Docker repository"
-    return 1
-}
-
-install_docker() {
-    configure_docker_repo || return 1
-
-    log_info "Installing Docker"
-    dnf install -y --skip-unavailable \
-        docker-ce \
-        docker-ce-cli \
-        containerd.io \
-        docker-buildx-plugin \
-        docker-compose-plugin
-
-    groupadd -f docker
-    usermod -aG docker "$USERNAME"
-    systemctl enable --now docker || log_warning "Docker was installed, but the service could not be enabled"
-    log_success "Docker installed"
-}
-
 install_ollama() {
     if command -v ollama >/dev/null 2>&1; then
         log_success "Ollama is already installed"
@@ -377,25 +481,6 @@ install_ollama() {
     curl -fsSL https://ollama.com/install.sh | sh
     systemctl enable --now ollama || log_warning "Ollama was installed, but the service could not be enabled"
     log_success "Ollama installed"
-}
-
-install_desktop_apps() {
-    local arch
-    arch="$(uname -m)"
-
-    configure_1password_repo
-
-    log_info "Installing 1Password"
-    dnf install -y --skip-unavailable 1password 1password-cli
-    log_success "1Password installed"
-
-    if [[ "$arch" == "x86_64" ]]; then
-        log_info "Installing Google Chrome"
-        dnf install -y https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
-        log_success "Google Chrome installed"
-    else
-        log_warning "Google Chrome is only configured for x86_64 in this installer; detected architecture: $arch"
-    fi
 }
 
 secure_boot_enabled() {
@@ -440,6 +525,63 @@ enable_refind_mouse() {
     log_success "rEFInd mouse support enabled"
 }
 
+configure_refind_theme() {
+    local refind_dir="/boot/efi/EFI/refind"
+    local refind_conf="$refind_dir/refind.conf"
+    local theme_dir="$refind_dir/themes/black-pink"
+    local theme_conf="$theme_dir/theme.conf"
+    local managed_comment="# Managed by setup-config: black-pink minimal theme"
+    local image_tool=""
+
+    if [[ ! -d "$refind_dir" || ! -f "$refind_conf" ]]; then
+        log_warning "rEFInd config was not found; skipping rEFInd theme setup."
+        return
+    fi
+
+    if command -v magick >/dev/null 2>&1; then
+        image_tool="magick"
+    elif command -v convert >/dev/null 2>&1; then
+        image_tool="convert"
+    else
+        log_warning "ImageMagick was not found; skipping rEFInd theme asset generation."
+        return
+    fi
+
+    log_info "Installing black-pink rEFInd theme"
+
+    install -d "$theme_dir"
+
+    "$image_tool" -size 1920x1080 xc:'#000000' \
+        -fill '#ff4ead' -draw 'rectangle 0,1076 1920,1080' \
+        "$theme_dir/banner.png"
+    "$image_tool" -size 144x144 xc:none \
+        -fill 'rgba(255,78,173,0.16)' -draw 'roundrectangle 2,2 142,142 12,12' \
+        -stroke '#ff4ead' -strokewidth 3 -fill none -draw 'roundrectangle 2,2 142,142 12,12' \
+        "$theme_dir/selection_big.png"
+    "$image_tool" -size 64x64 xc:none \
+        -fill 'rgba(255,78,173,0.16)' -draw 'roundrectangle 1,1 63,63 6,6' \
+        -stroke '#ff4ead' -strokewidth 2 -fill none -draw 'roundrectangle 1,1 63,63 6,6' \
+        "$theme_dir/selection_small.png"
+
+    cat > "$theme_conf" <<'EOF'
+# Managed by setup-config.
+banner themes/black-pink/banner.png
+banner_scale fillscreen
+selection_big themes/black-pink/selection_big.png
+selection_small themes/black-pink/selection_small.png
+hideui hints,label,singleuser,arrows,badges
+showtools reboot,shutdown,firmware
+use_graphics_for linux,windows
+EOF
+
+    if grep -Fq "$managed_comment" "$refind_conf"; then
+        sed -i "\|$managed_comment|,+1d" "$refind_conf"
+    fi
+
+    printf '\n%s\ninclude themes/black-pink/theme.conf\n' "$managed_comment" >> "$refind_conf"
+    log_success "rEFInd black-pink theme installed"
+}
+
 install_refind() {
     local shim_path=""
     local -a cmd=(refind-install --yes)
@@ -468,80 +610,170 @@ install_refind() {
     log_info "Installing rEFInd into the EFI System Partition"
     "${cmd[@]}"
     enable_refind_mouse
+    configure_refind_theme
     log_success "rEFInd installed"
 }
 
+write_axidev_osk_wrapper() {
+    local osk_entrypoint="$AXIDEV_OSK_VENV_DIR/bin/axidev-osk"
+
+    cat > "$AXIDEV_OSK_BIN" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+
+for plugin_root in /usr/lib64/qt6/plugins /usr/lib/qt6/plugins /usr/local/lib64/qt6/plugins /usr/local/lib/qt6/plugins
+do
+    if [[ -f "\$plugin_root/wayland-shell-integration/liblayer-shell.so" ]]; then
+        if [[ -n "\${QT_PLUGIN_PATH:-}" ]]; then
+            export QT_PLUGIN_PATH="\$plugin_root:\$QT_PLUGIN_PATH"
+        else
+            export QT_PLUGIN_PATH="\$plugin_root"
+        fi
+        break
+    fi
+done
+
+export QT_QPA_PLATFORM=wayland
+export QT_QPA_PLATFORMTHEME=qt6ct
+export QT_QUICK_CONTROLS_STYLE=Fusion
+export QT_WAYLAND_SHELL_INTEGRATION=layer-shell
+export AXIDEV_OSK_OVERLAY_BACKEND=wayland-layer-shell
+
+exec "$osk_entrypoint" "\$@"
+EOF
+
+    chmod 0755 "$AXIDEV_OSK_BIN"
+
+    if command -v restorecon >/dev/null 2>&1; then
+        restorecon -Fv "$AXIDEV_OSK_BIN" >/dev/null 2>&1 || true
+    fi
+}
+
 install_axidev_osk() {
-    local arch release_json version download_url expected_digest expected_sha actual_sha
-    local tmp_dir archive_path extracted_dir
+    local arch release_json version tmp_dir archive_path extracted_dir source_dir
+    local osk_entrypoint="$AXIDEV_OSK_VENV_DIR/bin/axidev-osk"
 
     arch="$(uname -m)"
     if [[ "$arch" != "x86_64" ]]; then
-        log_error "Axidev OSK only publishes a linux-x64 bundle right now; detected architecture: $arch"
+        log_error "Axidev OSK source install is currently supported only on x86_64 by this installer; detected architecture: $arch"
     fi
 
-    log_info "Resolving latest Axidev OSK Linux release"
+    log_info "Resolving latest Axidev OSK release"
     release_json="$(curl -fsSL "$AXIDEV_OSK_RELEASE_API")"
     version="$(jq -r '.tag_name // empty' <<< "$release_json")"
-    download_url="$(jq -r '.assets[] | select(.name | test("linux-x64\\.zip$")) | .browser_download_url' <<< "$release_json" | head -n1)"
-    expected_digest="$(jq -r '.assets[] | select(.name | test("linux-x64\\.zip$")) | .digest // empty' <<< "$release_json" | head -n1)"
 
-    if [[ -z "$version" || -z "$download_url" ]]; then
-        log_error "Could not find a Linux x64 Axidev OSK release asset."
+    if [[ -z "$version" ]]; then
+        log_error "Could not determine the latest Axidev OSK release tag."
     fi
 
-    if [[ -x "$AXIDEV_OSK_INSTALL_DIR/axidev-osk" && -f "$AXIDEV_OSK_INSTALL_DIR/.version" ]] &&
+    if [[ -x "$osk_entrypoint" && -f "$AXIDEV_OSK_INSTALL_DIR/.version" ]] &&
         [[ "$(cat "$AXIDEV_OSK_INSTALL_DIR/.version")" == "$version" ]]; then
-        ln -sfn "$AXIDEV_OSK_INSTALL_DIR/axidev-osk" "$AXIDEV_OSK_BIN"
+        write_axidev_osk_wrapper
         log_success "Axidev OSK $version is already installed"
         return
     fi
 
-    log_info "Downloading Axidev OSK $version"
+    log_info "Installing Axidev OSK $version from source"
     tmp_dir="$(mktemp -d)"
-    archive_path="$tmp_dir/axidev-osk-linux-x64.zip"
+    archive_path="$tmp_dir/axidev-osk-source.zip"
     extracted_dir="$tmp_dir/extracted"
-
-    curl -fL "$download_url" -o "$archive_path"
-
-    if [[ "$expected_digest" == sha256:* ]]; then
-        expected_sha="${expected_digest#sha256:}"
-        actual_sha="$(sha256sum "$archive_path" | awk '{print $1}')"
-        if [[ "$actual_sha" != "$expected_sha" ]]; then
-            rm -rf "$tmp_dir"
-            log_error "Axidev OSK archive checksum mismatch."
-        fi
-    else
-        log_warning "No SHA-256 digest was published for this Axidev OSK asset; skipping checksum verification."
-    fi
-
-    install -d "$extracted_dir"
-    unzip -q "$archive_path" -d "$extracted_dir"
-
-    if [[ ! -x "$extracted_dir/axidev-osk/axidev-osk" ]]; then
-        rm -rf "$tmp_dir"
-        log_error "Downloaded Axidev OSK archive did not contain the expected executable."
-    fi
 
     if [[ "$AXIDEV_OSK_INSTALL_DIR" != "/opt/axidev-osk" ]]; then
         rm -rf "$tmp_dir"
         log_error "Refusing to replace unexpected Axidev OSK install directory: $AXIDEV_OSK_INSTALL_DIR"
     fi
 
+    if ! curl -fL "$AXIDEV_OSK_SOURCE_ZIP_URL" -o "$archive_path"; then
+        rm -rf "$tmp_dir"
+        log_error "Could not download Axidev OSK source archive from $AXIDEV_OSK_SOURCE_ZIP_URL"
+    fi
+
+    install -d "$extracted_dir"
+    unzip -q "$archive_path" -d "$extracted_dir"
+    source_dir="$extracted_dir/axidev-osk"
+
+    if [[ ! -f "$source_dir/pyproject.toml" || ! -d "$source_dir/vendor/axidev-io-python" ]]; then
+        rm -rf "$tmp_dir"
+        log_error "Axidev OSK source archive is missing expected project files or vendored sources."
+    fi
+
     rm -rf -- "$AXIDEV_OSK_INSTALL_DIR"
     install -d "$(dirname "$AXIDEV_OSK_INSTALL_DIR")"
-    mv "$extracted_dir/axidev-osk" "$AXIDEV_OSK_INSTALL_DIR"
+    mv "$source_dir" "$AXIDEV_OSK_INSTALL_DIR"
+    python3 -m venv --system-site-packages "$AXIDEV_OSK_VENV_DIR"
+    "$AXIDEV_OSK_VENV_DIR/bin/python" -m ensurepip --upgrade >/dev/null 2>&1 || true
+    "$AXIDEV_OSK_VENV_DIR/bin/python" -m pip install --upgrade pip setuptools wheel
+    "$AXIDEV_OSK_VENV_DIR/bin/python" -m pip install -e "$AXIDEV_OSK_INSTALL_DIR/vendor/axidev-io-python" --no-deps
+    "$AXIDEV_OSK_VENV_DIR/bin/python" -m pip install -e "$AXIDEV_OSK_INSTALL_DIR" --no-deps
     printf '%s\n' "$version" > "$AXIDEV_OSK_INSTALL_DIR/.version"
     chown -R root:root "$AXIDEV_OSK_INSTALL_DIR"
-    chmod +x "$AXIDEV_OSK_INSTALL_DIR/axidev-osk" "$AXIDEV_OSK_INSTALL_DIR/setup_uinput_permissions.sh"
-    ln -sfn "$AXIDEV_OSK_INSTALL_DIR/axidev-osk" "$AXIDEV_OSK_BIN"
+    write_axidev_osk_wrapper
     rm -rf "$tmp_dir"
 
     if command -v restorecon >/dev/null 2>&1; then
-        restorecon -RFv "$AXIDEV_OSK_INSTALL_DIR" "$AXIDEV_OSK_BIN" >/dev/null 2>&1 || true
+        restorecon -RFv "$AXIDEV_OSK_INSTALL_DIR" >/dev/null 2>&1 || true
     fi
 
     log_success "Axidev OSK $version installed"
+}
+
+install_kanata() {
+    local arch release_json version download_url tmp_dir archive_path extracted_dir candidate
+
+    arch="$(uname -m)"
+    if [[ "$arch" != "x86_64" ]]; then
+        log_error "Kanata upstream Linux binaries are only published for x86_64; detected architecture: $arch"
+    fi
+
+    log_info "Resolving latest Kanata release"
+    release_json="$(curl -fsSL "$KANATA_RELEASE_API")"
+    version="$(jq -r '.tag_name // empty' <<< "$release_json")"
+    download_url="$(
+        jq -r '
+            .assets[].browser_download_url
+            | select(test("kanata-linux.*x64.*\\.zip$") or test("linux-binaries.*x64.*\\.zip$"))
+        ' <<< "$release_json" | head -n1
+    )"
+
+    if [[ -z "$version" || -z "$download_url" ]]; then
+        log_error "Could not determine the latest Kanata Linux release asset."
+    fi
+
+    if [[ -x "$KANATA_BIN" && -f /usr/local/share/kanata.version ]] &&
+        [[ "$(cat /usr/local/share/kanata.version)" == "$version" ]]; then
+        log_success "Kanata $version is already installed"
+        return
+    fi
+
+    log_info "Installing Kanata $version"
+    tmp_dir="$(mktemp -d)"
+    archive_path="$tmp_dir/kanata-linux-x64.zip"
+    extracted_dir="$tmp_dir/extracted"
+
+    if ! curl -fL "$download_url" -o "$archive_path"; then
+        rm -rf "$tmp_dir"
+        log_error "Could not download Kanata from $download_url"
+    fi
+
+    install -d "$extracted_dir"
+    unzip -q "$archive_path" -d "$extracted_dir"
+
+    candidate="$(find "$extracted_dir" -type f \( -name kanata -o -name 'kanata_linux_x64*' -o -name 'kanata*linux*x64*' \) |
+        grep -Ev 'cmd_allowed|legacy|\.exe$|\.kbd$' |
+        sort |
+        head -n1 || true)"
+
+    if [[ -z "$candidate" ]]; then
+        rm -rf "$tmp_dir"
+        log_error "Kanata archive did not contain an expected Linux binary."
+    fi
+
+    install -m 0755 "$candidate" "$KANATA_BIN"
+    install -d /usr/local/share
+    printf '%s\n' "$version" > /usr/local/share/kanata.version
+    rm -rf "$tmp_dir"
+
+    log_success "Kanata $version installed"
 }
 
 setup_axidev_osk_permissions() {
@@ -570,6 +802,162 @@ setup_axidev_osk_permissions() {
     log_success "Axidev OSK uinput permissions configured for: ${osk_users[*]}"
 }
 
+setup_kanata_permissions() {
+    local rule_path="/etc/udev/rules.d/71-kanata-input.rules"
+
+    log_info "Configuring Kanata input and uinput permissions"
+    modprobe uinput
+    groupadd -f input
+    usermod -aG input "$USERNAME"
+
+    install -d /etc/udev/rules.d /etc/modules-load.d
+    cat > "$rule_path" <<'EOF'
+KERNEL=="uinput", MODE="0660", GROUP="input", OPTIONS+="static_node=uinput"
+SUBSYSTEM=="input", KERNEL=="event*", MODE="0660", GROUP="input"
+EOF
+    printf '%s\n' 'uinput' > /etc/modules-load.d/uinput.conf
+    udevadm control --reload-rules
+    udevadm trigger /dev/uinput >/dev/null 2>&1 || true
+    udevadm trigger --subsystem-match=input >/dev/null 2>&1 || true
+
+    log_success "Kanata permissions configured for user: $USERNAME"
+}
+
+configure_audio_stack() {
+    log_info "Configuring PipeWire audio stack for $USERNAME"
+
+    # Ensure the user can access audio devices directly (ALSA fallback paths,
+    # Bluetooth audio helpers, and some pro-audio tools still check group audio).
+    groupadd -f audio
+    usermod -aG audio "$USERNAME"
+
+    # Make sure the PulseAudio-compat service from the PulseAudio package is
+    # not running in parallel with pipewire-pulse. Fedora ships PipeWire as
+    # default, but a stray pulseaudio.socket from an upgrade path will cause
+    # glitches like silent outputs and "dummy output" devices.
+    if run_as_user systemctl --user list-unit-files pulseaudio.socket >/dev/null 2>&1; then
+        run_as_user systemctl --user mask --now pulseaudio.service pulseaudio.socket >/dev/null 2>&1 || true
+    fi
+
+    # Enable and start the PipeWire user services so audio works immediately
+    # after the first login (also re-enabled every boot via systemd --user).
+    local unit
+    for unit in pipewire.socket pipewire.service pipewire-pulse.socket pipewire-pulse.service wireplumber.service; do
+        run_as_user systemctl --user enable "$unit" >/dev/null 2>&1 || true
+    done
+
+    # Allow systemd --user services to keep running when $USERNAME is not
+    # logged in graphically yet (helps greetd handoff and Bluetooth audio).
+    loginctl enable-linger "$USERNAME" >/dev/null 2>&1 || true
+
+    log_success "PipeWire audio stack configured"
+}
+
+configure_flatpak_apps() {
+    if ! command -v flatpak >/dev/null 2>&1; then
+        log_warning "flatpak command not found; skipping Flatpak app setup"
+        return 0
+    fi
+
+    log_info "Configuring Flathub remote and installing Flatpak apps"
+
+    # Add Flathub at the system level so every user (including greetd)
+    # sees the same remotes. --if-not-exists keeps re-runs idempotent.
+    if ! flatpak remote-add --if-not-exists --system flathub \
+            https://flathub.org/repo/flathub.flatpakrepo; then
+        log_warning "Could not add the Flathub remote; skipping Flatpak app install"
+        return 0
+    fi
+
+    # pwvucontrol — PipeWire volume control. Upstream only officially
+    # supports Flatpak, which is why this is not installed via dnf.
+    # -y assumes yes, --noninteractive avoids the "1. platform 2. app" prompt.
+    if ! flatpak install --system --noninteractive -y flathub com.saivert.pwvucontrol; then
+        log_warning "Could not install pwvucontrol from Flathub"
+    else
+        log_success "pwvucontrol installed from Flathub"
+    fi
+}
+
+write_dark_mode_preferences() {
+    local env_dir="$USER_HOME/.config/environment.d"
+    local gtk3_dir="$USER_HOME/.config/gtk-3.0"
+    local gtk4_dir="$USER_HOME/.config/gtk-4.0"
+    local qt5ct_dir="$USER_HOME/.config/qt5ct"
+    local qt6ct_dir="$USER_HOME/.config/qt6ct"
+
+    log_info "Writing dark-mode preferences for GTK, libadwaita, Qt, and Wayland apps"
+
+    ensure_user_owned_dir "$env_dir"
+    cat > "$env_dir/90-dark-mode.conf" <<'EOF'
+# Managed by setup-config: prefer dark UI across Wayland toolkits.
+GTK_THEME=Adwaita:dark
+GTK_APPLICATION_PREFER_DARK_THEME=1
+ADW_DISABLE_PORTAL=1
+QT_QPA_PLATFORM=wayland;xcb
+QT_QPA_PLATFORMTHEME=qt6ct
+QT_QUICK_CONTROLS_STYLE=Fusion
+ELECTRON_OZONE_PLATFORM_HINT=wayland
+MOZ_ENABLE_WAYLAND=1
+SDL_VIDEODRIVER=wayland
+CLUTTER_BACKEND=wayland
+EOF
+
+    ensure_user_owned_dir "$gtk3_dir"
+    cat > "$gtk3_dir/settings.ini" <<'EOF'
+[Settings]
+gtk-theme-name=Adwaita
+gtk-application-prefer-dark-theme=1
+gtk-icon-theme-name=Adwaita
+gtk-font-name=Iosevka 11
+EOF
+
+    ensure_user_owned_dir "$gtk4_dir"
+    cat > "$gtk4_dir/settings.ini" <<'EOF'
+[Settings]
+gtk-theme-name=Adwaita
+gtk-application-prefer-dark-theme=1
+gtk-icon-theme-name=Adwaita
+gtk-font-name=Iosevka 11
+EOF
+
+    ensure_user_owned_dir "$qt5ct_dir"
+    cat > "$qt5ct_dir/qt5ct.conf" <<'EOF'
+[Appearance]
+color_scheme_path=/usr/share/qt5ct/colors/darker.conf
+custom_palette=false
+icon_theme=Adwaita
+standard_dialogs=default
+style=Fusion
+
+[Fonts]
+fixed="Iosevka Nerd Font Mono,11,-1,5,50,0,0,0,0,0"
+general="Iosevka,11,-1,5,50,0,0,0,0,0"
+EOF
+
+    ensure_user_owned_dir "$qt6ct_dir"
+    cat > "$qt6ct_dir/qt6ct.conf" <<'EOF'
+[Appearance]
+color_scheme_path=/usr/share/qt6ct/colors/darker.conf
+custom_palette=false
+icon_theme=Adwaita
+standard_dialogs=default
+style=Fusion
+
+[Fonts]
+fixed="Iosevka Nerd Font Mono,11,-1,5,50,0,0,0,0,0"
+general="Iosevka,11,-1,5,50,0,0,0,0,0"
+EOF
+
+    chown -R "$USERNAME:$USERNAME" "$env_dir" "$gtk3_dir" "$gtk4_dir" "$qt5ct_dir" "$qt6ct_dir"
+
+    run_as_user dbus-run-session gsettings set org.gnome.desktop.interface color-scheme prefer-dark >/dev/null 2>&1 || true
+    run_as_user dbus-run-session gsettings set org.gnome.desktop.interface gtk-theme Adwaita-dark >/dev/null 2>&1 || true
+    run_as_user dbus-run-session gsettings set org.gnome.desktop.interface icon-theme Adwaita >/dev/null 2>&1 || true
+
+    log_success "Dark-mode preferences written"
+}
+
 setup_user_dotfiles() {
     log_info "Copying shared dotfiles to $USER_DOTFILES_DIR"
     ensure_user_owned_dir "$USER_DOTFILES_DIR"
@@ -587,6 +975,7 @@ setup_user_dotfiles() {
         fi
     done
 
+    ensure_user_controls_dotfiles_tree
     log_success "Shared dotfiles copied"
 }
 
@@ -604,6 +993,7 @@ stow_package() {
         return 0
     fi
 
+    ensure_user_controls_dotfiles_tree
     ensure_user_owned_dir "$target"
 
     log_info "Stowing $package into $target"
@@ -799,6 +1189,10 @@ configure_core_shared_apps() {
     for package in "${CORE_STOW_PACKAGES[@]}"; do
         stow_package "$package"
     done
+
+    if [[ -f "$USER_DOTFILES_DIR/kanata/.config/kanata/kanata-tray" ]]; then
+        chmod 755 "$USER_DOTFILES_DIR/kanata/.config/kanata/kanata-tray"
+    fi
 }
 
 configure_optional_user_apps() {
@@ -820,6 +1214,27 @@ run_optional_task() {
 
     log_warning "$description failed; continuing because it is optional"
     return 0
+}
+
+remove_duplicate_terminals() {
+    local -a duplicate_terminals=(foot alacritty alacrity)
+    local -a installed=()
+    local package
+
+    for package in "${duplicate_terminals[@]}"; do
+        if rpm -q "$package" >/dev/null 2>&1; then
+            installed+=("$package")
+        fi
+    done
+
+    if [[ "${#installed[@]}" -eq 0 ]]; then
+        log_success "No duplicate terminal packages found"
+        return 0
+    fi
+
+    log_info "Removing duplicate terminal packages: ${installed[*]}"
+    dnf remove -y "${installed[@]}"
+    log_success "Duplicate terminal packages removed; WezTerm remains the configured terminal"
 }
 
 write_boot_order_guard() {
@@ -947,20 +1362,29 @@ export XDG_CURRENT_DESKTOP=niri
 export XDG_SESSION_TYPE=wayland
 export XDG_SESSION_DESKTOP=niri
 
+export GTK_THEME=Adwaita:dark
+export GTK_APPLICATION_PREFER_DARK_THEME=1
+export ADW_DISABLE_PORTAL=1
 export MOZ_ENABLE_WAYLAND=1
-export QT_QPA_PLATFORM=wayland
+export ELECTRON_OZONE_PLATFORM_HINT=wayland
+export QT_QPA_PLATFORM='wayland;xcb'
+export QT_QPA_PLATFORMTHEME=qt6ct
+export QT_QUICK_CONTROLS_STYLE=Fusion
 export SDL_VIDEODRIVER=wayland
+export CLUTTER_BACKEND=wayland
 
 exec niri
 EOF
 
     chmod +x /usr/local/bin/niri-session
+    ln -sfn /usr/local/bin/niri-session /usr/local/bin/Niri
 
     install -d /usr/share/wayland-sessions
 
     cat > /usr/share/wayland-sessions/niri.desktop <<'EOF'
 [Desktop Entry]
 Name=Niri
+Comment=Launch Niri
 Exec=/usr/local/bin/niri-session
 Type=Application
 DesktopNames=niri
@@ -978,29 +1402,84 @@ write_greeter_session() {
 #!/usr/bin/env bash
 set -euo pipefail
 
-keyboard_pid=""
-
 cleanup() {
-    if [[ -n "$keyboard_pid" ]]; then
-        kill "$keyboard_pid" >/dev/null 2>&1 || true
-        wait "$keyboard_pid" 2>/dev/null || true
-    fi
-
     niri msg action quit --skip-confirmation >/dev/null 2>&1 || true
 }
 
 trap cleanup EXIT INT TERM
 
-QT_QPA_PLATFORM=wayland /usr/local/bin/axidev-osk >/dev/null 2>&1 &
-keyboard_pid="$!"
+env GTK_THEME=Adwaita:dark GTK_APPLICATION_PREFER_DARK_THEME=1 ADW_DISABLE_PORTAL=1 gtkgreet --layer-shell --command /usr/local/bin/niri-session
+EOF
 
-env GTK_THEME=Adwaita:dark gtkgreet --layer-shell --command /usr/local/bin/niri-session
+    cat > /usr/local/bin/greetd-axidev-osk <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+exec >>/tmp/greetd-axidev-osk.log 2>&1
+echo "=== $(date -Is) greetd-axidev-osk starting ==="
+
+for plugin_root in \
+    /usr/lib64/qt6/plugins \
+    /usr/lib/qt6/plugins \
+    /usr/local/lib64/qt6/plugins \
+    /usr/local/lib/qt6/plugins
+do
+    if [[ -f "$plugin_root/wayland-shell-integration/liblayer-shell.so" ]]; then
+        if [[ -n "${QT_PLUGIN_PATH:-}" ]]; then
+            export QT_PLUGIN_PATH="$plugin_root:$QT_PLUGIN_PATH"
+        else
+            export QT_PLUGIN_PATH="$plugin_root"
+        fi
+        break
+    fi
+done
+
+export QT_QPA_PLATFORM=wayland
+export QT_QPA_PLATFORMTHEME=qt6ct
+export QT_QUICK_CONTROLS_STYLE=Fusion
+export QT_WAYLAND_SHELL_INTEGRATION=layer-shell
+export GTK_THEME=Adwaita:dark
+export GTK_APPLICATION_PREFER_DARK_THEME=1
+export ADW_DISABLE_PORTAL=1
+export AXIDEV_OSK_OVERLAY_BACKEND=wayland-layer-shell
+
+echo "QT_PLUGIN_PATH=${QT_PLUGIN_PATH:-}"
+echo "WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-}"
+echo "XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-}"
+echo "XDG_SESSION_TYPE=${XDG_SESSION_TYPE:-}"
+
+if [[ -n "${XDG_RUNTIME_DIR:-}" && -n "${WAYLAND_DISPLAY:-}" ]]; then
+    for _ in $(seq 1 100); do
+        if [[ -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]]; then
+            break
+        fi
+        sleep 0.1
+    done
+fi
+
+if [[ -n "${XDG_RUNTIME_DIR:-}" && -n "${WAYLAND_DISPLAY:-}" && ! -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]]; then
+    echo "Wayland socket did not appear at $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY"
+fi
+
+for attempt in 1 2 3 4 5; do
+    echo "Launching axidev-osk (attempt $attempt)"
+    if /usr/local/bin/axidev-osk; then
+        exit 0
+    fi
+    status=$?
+    echo "axidev-osk exited with status $status"
+    sleep 1
+done
+
+exit "$status"
 EOF
 
     chmod +x /usr/local/bin/gtkgreet-session
+    chmod +x /usr/local/bin/greetd-axidev-osk
 
     if command -v restorecon >/dev/null 2>&1; then
         restorecon -Fv /usr/local/bin/gtkgreet-session >/dev/null 2>&1 || true
+        restorecon -Fv /usr/local/bin/greetd-axidev-osk >/dev/null 2>&1 || true
     fi
 
     log_success "gtkgreet session wrapper written"
@@ -1022,6 +1501,7 @@ EOF
 
     cat > /etc/greetd/niri-config.kdl <<'EOF'
 spawn-sh-at-startup "/usr/local/bin/gtkgreet-session"
+spawn-sh-at-startup "/usr/local/bin/greetd-axidev-osk"
 
 hotkey-overlay {
     skip-at-startup
@@ -1029,7 +1509,7 @@ hotkey-overlay {
 EOF
 
     cat > /etc/greetd/environments <<'EOF'
-/usr/local/bin/niri-session
+Niri
 EOF
 
     log_success "greetd configured"
@@ -1057,17 +1537,24 @@ main() {
     detect_target_user
     decide_niri_dotfiles_management
     confirm_continue
-    install_core_packages
-    run_optional_task "Optional user tool installation" install_optional_user_tools
-    install_desktop_apps
-    run_optional_task "Docker installation" install_docker
+    configure_third_party_repos
+    install_all_packages
+    configure_system_locale
+    configure_system_keyboard
+    run_optional_task "Docker service setup" post_install_docker
     run_optional_task "Ollama installation" install_ollama
     run_optional_task "NVM and Node.js installation" install_nvm_and_node
     run_optional_task "Terminal font installation" install_terminal_font
     install_refind
     detect_greeter_user
     install_axidev_osk
+    install_kanata
     setup_axidev_osk_permissions
+    setup_kanata_permissions
+    configure_audio_stack
+    configure_flatpak_apps
+    write_dark_mode_preferences
+    ensure_user_owns_home_tree
     setup_user_dotfiles
     write_session
     write_greeter_session
@@ -1078,6 +1565,7 @@ main() {
     run_optional_task "Optional user tool configuration" configure_optional_user_apps
     enable_services
     ensure_user_owns_home_tree
+    run_optional_task "Duplicate terminal cleanup" remove_duplicate_terminals
 
     echo ""
     log_success "Setup complete"

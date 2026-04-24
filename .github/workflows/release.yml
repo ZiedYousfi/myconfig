@@ -34,6 +34,7 @@ jobs:
 
       - name: Create archive
         run: |
+          find . -type f -name "*.sh" -exec chmod +x {} +
           zip -r setup-config.zip . \
             -x "*.git*" \
             -x "*.DS_Store" \

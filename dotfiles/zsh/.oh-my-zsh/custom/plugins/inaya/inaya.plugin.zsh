@@ -28,8 +28,8 @@ has() {
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_CACHE_HOME="$HOME/.cache"
 
-export LANG="C.UTF-8"
-export LC_ALL="C.UTF-8"
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
 
 export VI_MODE_SET_CURSOR=true
 
@@ -151,7 +151,7 @@ stowgo() {
 
     # Ensure we are inside the ~/dotfiles hierarchy
     if [[ "$PWD" != "$HOME/dotfiles"* ]]; then
-        echo "stowgo: please run this command from inside a package directory under $HOME/.dotfiles"
+        echo "stowgo: please run this command from inside a package directory under $HOME/dotfiles"
         return 1
     fi
 
@@ -224,7 +224,7 @@ elif $IS_LINUX; then
 
         if command -v dnf &>/dev/null; then
             echo "Updating system packages (dnf)..."
-            sudo dnf upgrade -y && sudo dnf autoremove -y
+            sudo dnf upgrade --refresh -y && sudo dnf autoremove -y
             echo "System packages updated."
             echo ""
         elif command -v apt &>/dev/null; then
@@ -244,6 +244,19 @@ elif $IS_LINUX; then
             echo "Homebrew packages updated."
         else
             echo "Homebrew not found, skipping Homebrew updates."
+        fi
+
+        echo ""
+
+        # Update Flatpak apps if flatpak is installed
+        if command -v flatpak &>/dev/null; then
+            echo "Updating Flatpak apps..."
+            flatpak update -y
+            # Remove unused runtimes to reclaim disk space.
+            flatpak uninstall --unused -y || true
+            echo "Flatpak apps updated."
+        else
+            echo "Flatpak not found, skipping Flatpak updates."
         fi
 
         echo ""
@@ -394,7 +407,7 @@ cleanup() {
 
     echo "------------------------------------------------------"
     echo "Do you want to delete '$item'? (y/n/q to quit)"
-    read -q "choice?Your choice, shooting star: "
+    read -q "choice? Your choice, shooting star: "
     echo ""
 
     case "$choice" in
@@ -411,7 +424,7 @@ cleanup() {
         echo "'$item' will stay for now. 💖"
         ;;
       q|Q)
-        echo "The ritual is paused. Nothing will be deleted today. May serenity stay with you, Inaya. 🌟"
+        echo "The ritual is paused. Nothing will be deleted today. May serenity stay with you. 🌟"
         return 0
         ;;
       *)
@@ -422,7 +435,7 @@ cleanup() {
   done
 
   echo "------------------------------------------------------"
-  echo "🌟 Summary of your choices, Inaya 🌟"
+  echo "🌟 Summary of your choices 🌟"
   echo "These are the items you chose to release:"
 
   if (( ${#deletions_to_perform[@]} == 0 )); then

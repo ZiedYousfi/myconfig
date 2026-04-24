@@ -108,7 +108,7 @@ if ($UseInteractiveProfile)
 
 Set-Alias lg lazygit
 Set-Alias oc opencode
-Set-Alias co codex
+Set-Alias cx codex
 Set-Alias vim nvim
 Set-Alias vi nvim
 Set-Alias v nvim

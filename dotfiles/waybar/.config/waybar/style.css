@@ -41,6 +41,7 @@ tooltip {
 }
 
 #custom-osk,
+#custom-kanata,
 #custom-overview,
 #custom-workspace-prev,
 #custom-workspace-next,
@@ -50,30 +51,13 @@ tooltip {
 #memory,
 #battery,
 #wireplumber,
+#wireplumber.mic,
 #tray {
   min-height: 32px;
 }
 
 #custom-osk,
-#window,
-#clock,
-#cpu,
-#memory,
-#battery,
-#wireplumber,
-#tray {
-  background: @black-surface;
-  border: 1px solid @black-border;
-  border-radius: 8px;
-  margin: 4px 0;
-}
-
-#custom-osk {
-  color: @text-heading;
-  margin-left: 8px;
-  padding: 0 12px;
-}
-
+#custom-kanata,
 #custom-overview,
 #custom-workspace-prev,
 #custom-workspace-next {
@@ -81,11 +65,24 @@ tooltip {
   border: 1px solid transparent;
   border-radius: 8px;
   color: @text-disabled;
-  margin: 4px 0 4px 4px;
+  margin: 4px 0 4px 2px;
   min-width: 36px;
   padding: 0 12px;
 }
 
+#custom-osk {
+  border-radius: 0 8px 0 0;
+  margin: 0 0 0 0;
+  min-width: 44px;
+}
+
+#custom-kanata {
+  min-width: 36px;
+  padding: 0 10px;
+}
+
+#custom-kanata:hover,
+#custom-osk:hover,
 #custom-overview:hover,
 #custom-workspace-prev:hover,
 #custom-workspace-next:hover {
@@ -94,9 +91,23 @@ tooltip {
   color: @accent;
 }
 
+#window,
+#clock,
+#cpu,
+#memory,
+#battery,
+#wireplumber,
+#wireplumber.mic,
+#tray {
+  background: @black-surface;
+  border: 1px solid @black-border;
+  border-radius: 8px;
+  margin: 4px 0;
+}
+
 #window {
   color: @text-body;
-  margin-left: 8px;
+  margin-left: 4px;
   padding: 0 14px;
 }
 
@@ -115,14 +126,15 @@ window#waybar.empty #window {
 #cpu,
 #memory,
 #battery,
-#wireplumber {
+#wireplumber,
+#wireplumber.mic {
   color: @text-muted;
-  margin-right: 8px;
+  margin-right: 4px;
   padding: 0 12px;
 }
 
 #tray {
-  margin-right: 8px;
+  margin-right: 4px;
   padding: 0 8px;
 }
 
@@ -134,7 +146,8 @@ window#waybar.empty #window {
   color: @error;
 }
 
-#wireplumber.muted {
+#wireplumber.muted,
+#wireplumber.mic.muted {
   color: @text-disabled;
 }
 
