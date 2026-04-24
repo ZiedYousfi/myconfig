@@ -252,7 +252,7 @@ run_installation() {
             ./install.sh
             ;;
         fedora)
-            if [ ! -f "$INSTALL_DIR/fedora-everything/install.sh" ]; then
+            if [ ! -f sudo "$INSTALL_DIR/fedora-everything/install.sh" ]; then
                 log_error "Fedora install script not found at $INSTALL_DIR/fedora-everything/install.sh"
                 exit 1
             fi
