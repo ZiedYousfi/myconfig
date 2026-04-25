@@ -219,6 +219,17 @@ configure_third_party_repos() {
     configure_1password_repo
     configure_docker_repo || log_warning "Docker repository setup failed; docker-ce packages will be skipped"
 
+    # RPM Fusion 
+    log_info "Configuring RPM Fusion repositories (free and nonfree)"
+
+    if ! dnf -y install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm; then
+        log_warning "Could not configure RPM Fusion Free repository; multimedia packages may be unavailable"
+    fi
+
+    if ! dnf -y install https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm; then
+        log_warning "Could not configure RPM Fusion Nonfree repository; some gaming packages may be unavailable"
+    fi
+
     log_success "Third-party repositories configured"
 }
 
@@ -399,6 +410,10 @@ install_all_packages() {
         containerd.io
         docker-buildx-plugin
         docker-compose-plugin
+
+        # G@MING 
+        lutris 
+        steam
     )
 
     # Google Chrome ships only for x86_64 as a direct RPM URL; dnf accepts
