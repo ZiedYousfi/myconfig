@@ -26,8 +26,11 @@ SHARED_DOTFILE_PACKAGES=(
     fuzzel
     lazygit
     mako
+    autostart
+    display
     niri
     kanata
+    local
     nvim
     tmux
     waybar
@@ -39,8 +42,11 @@ SHARED_DOTFILE_PACKAGES=(
 CORE_STOW_PACKAGES=(
     fuzzel
     mako
+    autostart
+    display
     niri
     kanata
+    local
     waybar
 )
 
@@ -301,6 +307,12 @@ install_all_packages() {
         glibc-locale-source
         kmod
         NetworkManager
+        NetworkManager-wifi
+        wpa_supplicant
+        iwlwifi-mvm-firmware
+        iwlwifi-mld-firmware
+        network-manager-applet
+        nm-connection-editor
 
         # Niri session + greeter
         greetd
@@ -346,11 +358,30 @@ install_all_packages() {
         # Desktop integration
         xdg-desktop-portal
         xdg-desktop-portal-gtk
+        xdg-desktop-portal-wlr
         adwaita-qt5
         adwaita-qt6
         qt5ct
         qt6ct
         brightnessctl
+        thunar
+        thunar-volman
+        thunar-archive-plugin
+        file-roller
+        gvfs
+        gvfs-mtp
+        gvfs-gphoto2
+        gvfs-smb
+        gvfs-afc
+        udisks2
+        udiskie
+        ffmpegthumbnailer
+        tumbler
+        lxappearance
+        exo
+        xfconf
+        kde-connect
+        firewalld
 
         # CLI tooling
         fd-find
@@ -360,6 +391,16 @@ install_all_packages() {
         jq
         less
         file
+        inxi
+        wdisplays
+        audacity
+        alsa-sof-firmware
+        alsa-ucm
+        google-noto-sans-cjk-ttc-fonts
+        google-noto-color-emoji-fonts
+        google-noto-fonts-all
+        langpacks-en
+        langpacks-ko
 
         # Optional user tools (from COPRs and Fedora main)
         neovim
@@ -399,6 +440,14 @@ install_all_packages() {
         kdenlive
         codex
         t3code
+        akmods
+        mokutil
+        openssl
+        sbsigntools
+        akmod-nvidia
+        xorg-x11-drv-nvidia-cuda
+        switcheroo-control
+        nvidia-settings
 
         # Desktop apps
         1password
@@ -838,6 +887,8 @@ EOF
 configure_audio_stack() {
     log_info "Configuring PipeWire audio stack for $USERNAME"
 
+    local pipewire_conf_dir="$USER_HOME/.config/pipewire/pipewire.conf.d"
+
     # Ensure the user can access audio devices directly (ALSA fallback paths,
     # Bluetooth audio helpers, and some pro-audio tools still check group audio).
     groupadd -f audio
@@ -858,11 +909,139 @@ configure_audio_stack() {
         run_as_user systemctl --user enable "$unit" >/dev/null 2>&1 || true
     done
 
+    ensure_user_owned_dir "$pipewire_conf_dir"
+    cat > "$pipewire_conf_dir/rate.conf" <<'EOF'
+context.properties = {
+    default.clock.rate = 48000
+}
+EOF
+    cat > "$pipewire_conf_dir/latency.conf" <<'EOF'
+context.properties = {
+    default.clock.quantum = 128
+    default.clock.min-quantum = 64
+    default.clock.max-quantum = 256
+}
+EOF
+    cat > "$pipewire_conf_dir/disable-suspend.conf" <<'EOF'
+context.properties = {
+    session.suspend-timeout-seconds = 0
+}
+EOF
+    chown -R "$USERNAME:$USERNAME" "$USER_HOME/.config/pipewire"
+    run_as_user systemctl --user restart pipewire pipewire-pulse >/dev/null 2>&1 || true
+
     # Allow systemd --user services to keep running when $USERNAME is not
     # logged in graphically yet (helps greetd handoff and Bluetooth audio).
     loginctl enable-linger "$USERNAME" >/dev/null 2>&1 || true
 
     log_success "PipeWire audio stack configured"
+}
+
+configure_networking() {
+    log_info "Configuring NetworkManager and Wi-Fi"
+
+    systemctl enable --now NetworkManager
+    nmcli radio wifi on || true
+
+    log_success "NetworkManager configured"
+}
+
+configure_file_management() {
+    log_info "Configuring file-management integration"
+
+    run_as_user xfconf-query -c xfce4-session -p /general/TerminalEmulator -s wezterm --create -t string || true
+
+    log_success "File-management integration configured"
+}
+
+configure_kde_connect() {
+    log_info "Configuring KDE Connect"
+
+    systemctl enable --now firewalld
+    firewall-cmd --permanent --add-service=kdeconnect || log_warning "Could not add KDE Connect firewall service"
+    firewall-cmd --reload || log_warning "Could not reload firewalld"
+
+    log_success "KDE Connect configured"
+}
+
+configure_nvidia_stack() {
+    local helper_script="$USER_HOME/enroll-secure-boot-nvidia.sh"
+
+    log_info "Configuring NVIDIA Optimus support and shared rEFInd/NVIDIA MOK signing"
+
+    systemctl enable --now switcheroo-control || log_warning "Could not enable switcheroo-control"
+
+    cat > "$helper_script" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+warn() { printf '[WARNING] %s\n' "$*" >&2; }
+info() { printf '[INFO] %s\n' "$*"; }
+
+require_command() {
+    command -v "$1" >/dev/null 2>&1 || {
+        warn "Missing required command: $1"
+        exit 1
+    }
+}
+
+require_command sudo
+require_command openssl
+require_command mokutil
+require_command sbsign
+
+info "Generating the single shared akmods MOK key if it does not already exist"
+info "This same MOK key is used for NVIDIA kernel modules and for signing rEFInd."
+info "Run this even on AMD-only systems when Secure Boot should trust the signed rEFInd binary."
+sudo kmodgenca
+
+der_cert="/etc/pki/akmods/certs/public_key.der"
+pem_cert="/etc/pki/akmods/certs/public_key.pem"
+private_key="/etc/pki/akmods/private/private_key.priv"
+refind_grub="/boot/efi/EFI/refind/grubx64.efi"
+
+if [[ ! -f "$der_cert" || ! -f "$private_key" ]]; then
+    warn "akmods key material was not found under /etc/pki/akmods after kmodgenca."
+    exit 1
+fi
+
+info "Converting the akmods public key to PEM for sbsign"
+sudo openssl x509 -in "$der_cert" -inform DER -out "$pem_cert" -outform PEM
+
+if [[ -f "$refind_grub" ]]; then
+    signed_refind="$(mktemp)"
+    info "Signing $refind_grub with the same akmods MOK key used for NVIDIA modules"
+    sudo sbsign --key "$private_key" --cert "$pem_cert" --output "$signed_refind" "$refind_grub"
+    sudo install -m 0644 "$signed_refind" "$refind_grub"
+    rm -f "$signed_refind"
+else
+    warn "$refind_grub was not found; skipping rEFInd GRUB driver signing."
+fi
+
+info "Building NVIDIA kernel modules for the running kernel; these modules use the same MOK key"
+sudo akmods --force --kernels "$(uname -r)"
+
+info "Regenerating initramfs"
+sudo dracut --force
+
+cat <<'MESSAGE'
+
+Next, import the shared NVIDIA/rEFInd key into MOK. mokutil will ask you to create a one-time password.
+Use something very easy to remember and type on the blue MOK screen, for example a single letter.
+You only need it once during the next reboot, but you must remember exactly what you entered.
+
+After reboot, the blue MOK Manager screen should appear. Choose:
+
+Enroll MOK -> Continue -> Yes -> enter the one-time password -> Reboot
+
+MESSAGE
+
+sudo mokutil --import "$der_cert"
+EOF
+    chmod 755 "$helper_script"
+    chown "$USERNAME:$USERNAME" "$helper_script"
+
+    log_success "Shared NVIDIA/rEFInd MOK signing helper written to $helper_script"
 }
 
 configure_flatpak_apps() {
@@ -913,6 +1092,8 @@ ELECTRON_OZONE_PLATFORM_HINT=wayland
 MOZ_ENABLE_WAYLAND=1
 SDL_VIDEODRIVER=wayland
 CLUTTER_BACKEND=wayland
+GTK_USE_PORTAL=1
+TERMINAL=wezterm
 EOF
 
     ensure_user_owned_dir "$gtk3_dir"
@@ -1370,9 +1551,10 @@ write_session() {
 #!/usr/bin/env bash
 set -euo pipefail
 
-export XDG_CURRENT_DESKTOP=niri
+export XDG_CURRENT_DESKTOP=sway
 export XDG_SESSION_TYPE=wayland
 export XDG_SESSION_DESKTOP=niri
+export GTK_USE_PORTAL=1
 
 export GTK_THEME=Adwaita:dark
 export GTK_APPLICATION_PREFER_DARK_THEME=1
@@ -1384,6 +1566,10 @@ export QT_QPA_PLATFORMTHEME=qt6ct
 export QT_QUICK_CONTROLS_STYLE=Fusion
 export SDL_VIDEODRIVER=wayland
 export CLUTTER_BACKEND=wayland
+export TERMINAL=wezterm
+
+systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP DBUS_SESSION_BUS_ADDRESS || true
+dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP DBUS_SESSION_BUS_ADDRESS || true
 
 exec niri
 EOF
@@ -1399,7 +1585,7 @@ Name=Niri
 Comment=Launch Niri
 Exec=/usr/local/bin/niri-session
 Type=Application
-DesktopNames=niri
+DesktopNames=sway
 EOF
 
     log_success "Session files written"
@@ -1564,6 +1750,10 @@ main() {
     setup_axidev_osk_permissions
     setup_kanata_permissions
     configure_audio_stack
+    configure_networking
+    configure_file_management
+    configure_kde_connect
+    configure_nvidia_stack
     configure_flatpak_apps
     write_dark_mode_preferences
     ensure_user_owns_home_tree
@@ -1582,6 +1772,8 @@ main() {
     echo ""
     log_success "Setup complete"
     echo "Dotfiles are stored in $USER_DOTFILES_DIR and linked with GNU Stow."
+    echo "IMPORTANT: Before rebooting with Secure Boot, run: $USER_HOME/enroll-secure-boot-nvidia.sh"
+    echo "IMPORTANT: That script uses one shared MOK key for NVIDIA modules and rEFInd; run it even on AMD-only systems if Secure Boot should trust rEFInd."
     echo "Reboot and enjoy your new Niri desktop environment! If you want to customize further, add files to the appropriate package directories in $USER_DOTFILES_DIR and run stow again."
     echo ""
 }

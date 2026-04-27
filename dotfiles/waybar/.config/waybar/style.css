@@ -19,8 +19,8 @@
   border-radius: 0;
   box-shadow: none;
   font-family: "Iosevka Nerd Font", "Iosevka NF", "JetBrainsMono Nerd Font", "JetBrainsMono NF", monospace;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 900;
   min-height: 0;
   transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
 }
@@ -41,7 +41,6 @@ tooltip {
 }
 
 #custom-osk,
-#custom-kanata,
 #custom-overview,
 #custom-workspace-prev,
 #custom-workspace-next,
@@ -50,14 +49,13 @@ tooltip {
 #cpu,
 #memory,
 #battery,
+#custom-screen,
 #wireplumber,
-#wireplumber.mic,
 #tray {
   min-height: 32px;
 }
 
 #custom-osk,
-#custom-kanata,
 #custom-overview,
 #custom-workspace-prev,
 #custom-workspace-next {
@@ -65,23 +63,17 @@ tooltip {
   border: 1px solid transparent;
   border-radius: 8px;
   color: @text-disabled;
-  margin: 4px 0 4px 2px;
-  min-width: 36px;
-  padding: 0 12px;
+  margin: 4px 0;
+  min-width: 24px;
+  padding: 0 6px;
 }
 
 #custom-osk {
   border-radius: 0 8px 0 0;
   margin: 0 0 0 0;
-  min-width: 44px;
+  min-width: 30px;
 }
 
-#custom-kanata {
-  min-width: 36px;
-  padding: 0 10px;
-}
-
-#custom-kanata:hover,
 #custom-osk:hover,
 #custom-overview:hover,
 #custom-workspace-prev:hover,
@@ -96,8 +88,8 @@ tooltip {
 #cpu,
 #memory,
 #battery,
+#custom-screen,
 #wireplumber,
-#wireplumber.mic,
 #tray {
   background: @black-surface;
   border: 1px solid @black-border;
@@ -107,7 +99,7 @@ tooltip {
 
 #window {
   color: @text-body;
-  margin-left: 4px;
+  margin-left: 1px;
   padding: 0 14px;
 }
 
@@ -126,15 +118,15 @@ window#waybar.empty #window {
 #cpu,
 #memory,
 #battery,
-#wireplumber,
-#wireplumber.mic {
+#custom-screen,
+#wireplumber {
   color: @text-muted;
-  margin-right: 4px;
+  margin-right: 1px;
   padding: 0 12px;
 }
 
 #tray {
-  margin-right: 4px;
+  margin-right: 1px;
   padding: 0 8px;
 }
 
@@ -146,8 +138,7 @@ window#waybar.empty #window {
   color: @error;
 }
 
-#wireplumber.muted,
-#wireplumber.mic.muted {
+#wireplumber.muted {
   color: @text-disabled;
 }
 

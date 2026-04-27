@@ -43,6 +43,10 @@ start_profile() {
 }
 
 turn_off() {
+    start_profile off "Off"
+}
+
+quit_kanata() {
     install -d "$STATE_DIR"
     kill_kanata
     echo "off" > "$ACTIVE_FILE"
@@ -77,6 +81,59 @@ open_menu() {
 
 run_tray() {
     install -d "$STATE_DIR"
+    turn_off
+
+    if python3 - <<'PY' >/dev/null 2>&1
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("AppIndicator3", "0.1")
+from gi.repository import AppIndicator3, Gtk
+PY
+    then
+        exec python3 - "$0" <<'PY'
+import subprocess
+import sys
+
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("AppIndicator3", "0.1")
+from gi.repository import AppIndicator3, Gtk
+
+script = sys.argv[1]
+
+indicator = AppIndicator3.Indicator.new(
+    "kanata-profiles",
+    "input-keyboard",
+    AppIndicator3.IndicatorCategory.APPLICATION_STATUS,
+)
+indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
+indicator.set_title("Kanata profiles")
+
+menu = Gtk.Menu()
+
+def add_item(label, *args, quit_after=False):
+    item = Gtk.MenuItem(label=label)
+
+    def activate(_item):
+        subprocess.Popen([script, *args])
+        if quit_after:
+            Gtk.main_quit()
+
+    item.connect("activate", activate)
+    menu.append(item)
+
+add_item("Home Row", "profile", "homerow", "Home Row")
+add_item("Disabled", "profile", "disabled", "Disabled")
+add_item("Valo", "profile", "valo", "Valo")
+menu.append(Gtk.SeparatorMenuItem())
+add_item("Off", "off")
+add_item("Quit", "quit", quit_after=True)
+
+menu.show_all()
+indicator.set_menu(menu)
+Gtk.main()
+PY
+    fi
 
     exec yad --notification \
         --image="input-keyboard" \
@@ -91,7 +148,7 @@ case "${1:-tray}" in
     profile) start_profile "${2:?profile missing}" "${3:-$2}" ;;
     off) turn_off ;;
     quit)
-        turn_off
+        quit_kanata
         pkill -u "$USER" -f "yad --notification.*Kanata profiles" >/dev/null 2>&1 || true
         ;;
     *)

@@ -1,19 +1,15 @@
 local wezterm = require("wezterm")
-
 local config = wezterm.config_builder()
-
 local is_windows = wezterm.target_triple:find("windows") ~= nil
 
 if is_windows then
 	config.default_prog = { "pwsh.exe" }
 end
 
-config.initial_cols = 160
-config.initial_rows = 40
-
 config.window_decorations = "RESIZE"
 config.window_close_confirmation = "NeverPrompt"
-config.adjust_window_size_when_changing_font_size = false
+config.enable_wayland = false
+config.use_resize_increments = false
 
 config.font = wezterm.font_with_fallback({
 	"Iosevka Nerd Font Mono",
@@ -89,19 +85,20 @@ config.use_fancy_tab_bar = false
 config.show_new_tab_button_in_tab_bar = false
 config.tab_max_width = 32
 
-config.window_background_opacity = 1.0
+config.window_background_opacity = 0.9
+config.line_height = 1
 config.window_padding = {
-	left = 16,
-	right = 16,
-	top = 12,
-	bottom = 12,
+	left = 0,
+	right = 0,
+	top = 0,
+	bottom = 0,
 }
 
 config.keys = {
 	{
 		key = "x",
 		mods = "CTRL|SHIFT",
-		action = wezterm.action.CloseCurrentPane({ confirm = true }),
+		action = wezterm.action.CloseCurrentPane({ confirm = false }),
 	},
 	{
 		key = "h",

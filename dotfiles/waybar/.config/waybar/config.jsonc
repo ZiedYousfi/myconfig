@@ -6,7 +6,6 @@
   "gtk-layer-shell": true,
   "modules-left": [
     "custom/osk",
-    "custom/kanata",
     "custom/overview",
     "custom/workspace-prev",
     "custom/workspace-next",
@@ -20,19 +19,13 @@
     "cpu",
     "memory",
     "battery",
-    "wireplumber#mic",
+    "custom/screen",
     "wireplumber"
   ],
   "custom/osk": {
     "format": "",
     "tooltip": false,
     "on-click": "sh -c 'pkill -x axidev-osk 2>/dev/null; axidev-osk >/dev/null 2>&1 &'"
-  },
-  "custom/kanata": {
-    "format": "󰌌",
-    "tooltip-format": "Kanata profiles",
-    "on-click": "sh -c '~/.config/kanata/kanata-tray menu >/dev/null 2>&1 &'",
-    "on-click-right": "sh -c '~/.config/kanata/kanata-tray off >/dev/null 2>&1 &'"
   },
   "custom/overview": {
     "format": "",
@@ -102,6 +95,13 @@
       ""
     ]
   },
+  "custom/screen": {
+    "format": "<span color='#ff4ead'>󰍹</span>",
+    "tooltip-format": "Left click: brightness\nMiddle click: wdisplays\nRight click: display profiles",
+    "on-click": "sh -c '/home/iy/.local/bin/brightness-popup >/dev/null 2>&1 &'",
+    "on-click-middle": "sh -c 'wdisplays >/dev/null 2>&1 &'",
+    "on-click-right": "sh -c '${XDG_CONFIG_HOME:-$HOME/.config}/display/display-tray menu >/dev/null 2>&1 &'"
+  },
   "tray": {
     "icon-size": 16,
     "spacing": 4,
@@ -119,14 +119,5 @@
     "on-click": "flatpak run com.saivert.pwvucontrol",
     "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
     "tooltip-format": "{node_name} — {volume}%"
-  },
-  "wireplumber#mic": {
-    "node-type": "Audio/Source",
-    "format": "<span color='#ff4ead'>󰍬</span>   {volume}%",
-    "format-muted": "<span color='#4a4f5e'>󰍭</span>   muted",
-    "scroll-step": 2,
-    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
-    "on-click-right": "flatpak run com.saivert.pwvucontrol",
-    "tooltip-format": "Microphone: {node_name} — {volume}%"
   }
 }

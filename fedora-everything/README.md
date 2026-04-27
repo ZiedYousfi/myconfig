@@ -23,12 +23,15 @@ curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.
 ## What It Configures
 
 - Installs `grub2-efi-x64`, `shim-x64`, `efibootmgr`, and `rEFInd`
-- Installs the base Wayland stack for `niri`, `waybar`, `greetd`, `gtkgreet`, `fuzzel`, `mako`, `swww`, `yad`, screenshots, audio, portals, and the Fedora packages Axidev OSK now needs when installed from source (`python3-pip`, `python3-setuptools`, `python3-wheel`, `python3-pyside6`, `qt6-qtwayland`, `layer-shell-qt`, `libinput-devel`, `systemd-devel`, `systemd-libs`, `libxkbcommon-devel`, `python3-devel`)
+- Installs the base Wayland stack for `niri`, `waybar`, `greetd`, `gtkgreet`, `fuzzel`, `mako`, `swww`, `yad`, screenshots, audio, portals including `xdg-desktop-portal-wlr`, and the Fedora packages Axidev OSK now needs when installed from source (`python3-pip`, `python3-setuptools`, `python3-wheel`, `python3-pyside6`, `qt6-qtwayland`, `layer-shell-qt`, `libinput-devel`, `systemd-devel`, `systemd-libs`, `libxkbcommon-devel`, `python3-devel`)
 - Installs `glibc-langpack-en` and `glibc-locale-source`, generates `en_US.UTF-8` when needed, persists `LANG=en_US.UTF-8` with `localectl`, and sets the system keymap/XKB layout to `us`
 - Installs the shared CLI base used by the repo profile such as `stow`, `zsh`, `fd-find`, `ripgrep`, `fzf`, `zoxide`, and `jq`
 - Installs optional user tools like `neovim`, `tmux`, `lazygit`, `eza`, `bat`, `fastfetch`, `btop`, `tokei`, `tree-sitter-cli`, `yazi`, and `wezterm` in a separate non-critical step
 - Installs development tools and runtimes from Fedora packages where available, including Python, Go, Rustup, OpenJDK, Maven, GCC, LLVM, CMake, Make, Meson, Conan, and Zig
-- Installs media, file, and creative tools such as FFmpeg, 7-Zip, Poppler, resvg, ImageMagick, Blender, Krita, and Kdenlive
+- Installs media, file, and creative tools such as FFmpeg, 7-Zip, Poppler, resvg, ImageMagick, Thunar, Blender, Krita, Kdenlive, and Audacity
+- Installs Wi-Fi support packages for NetworkManager, Intel Wi-Fi firmware splits, `nm-applet`, and NetworkManager connection editing tools
+- Installs KDE Connect, enables `firewalld`, and opens the KDE Connect firewall service
+- Installs RPM Fusion NVIDIA/Optimus packages and writes `~/enroll-secure-boot-nvidia.sh` so one shared MOK key signs both NVIDIA kernel modules and rEFInd
 - Installs `Iosevka Nerd Font` for the shared WezTerm profile and Yazi icons
 - Enables the `lihaohong/yazi` COPR before the optional `yazi` install
 - Enables the `dejan/lazygit` COPR before the optional `lazygit` install
@@ -64,11 +67,12 @@ curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.
 - Creates `/usr/local/bin/gtkgreet-session` for the dedicated greeter compositor
 - Registers a `niri.desktop` wayland session and a `Niri` greetd command alias so `gtkgreet` shows `Niri` instead of the wrapper path
 - Configures `greetd` to launch `gtkgreet` and `axidev-osk` inside a dedicated `niri` greeter session
-- Writes dark-mode preferences for the user session (`environment.d`, GTK 3/4 settings, Qt 5/6 ct configs, and GNOME/libadwaita color-scheme hints)
+- Writes dark-mode preferences for the user session (`environment.d`, GTK 3/4 settings, Qt 5/6 ct configs, portal/terminal variables, and GNOME/libadwaita color-scheme hints)
+- Writes user PipeWire tuning files for 48 kHz audio, lower latency quantum, and disabled session suspend
 - Forces the greeter and OSK wrappers to use dark `Adwaita`/Qt styling too
 - Installs an `efi-boot-order-guard.service` that keeps the `rEFInd` EFI entry first, with Fedora shim as fallback
 - Sets the default boot target to `graphical.target`
-- Enables `NetworkManager` and `greetd`
+- Enables `NetworkManager`, turns Wi-Fi radio on when available, and enables `greetd`
 - Removes duplicate terminal packages (`foot`, `alacritty`, and the common `alacrity` typo if present) at the end of installation so WezTerm is the only configured terminal
 
 ## Dotfiles Model

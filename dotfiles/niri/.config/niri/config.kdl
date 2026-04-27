@@ -4,18 +4,30 @@ input {
     keyboard {
         xkb {
             layout "us"
+            options "compose:ralt"
         }
 
         numlock
-    }
-
-    touchpad {
-        tap
-        natural-scroll
-    }
+     }
+     
+     mouse {
+         accel-speed 1.0
+         accel-profile "flat"
+     }
+ 
+     touchpad {
+         tap
+         natural-scroll
+     }
 }
 
 prefer-no-csd
+
+gestures {
+    hot-corners {
+        off
+    }
+}
 
 layout {
     gaps 8
@@ -62,9 +74,30 @@ spawn-at-startup "swww-daemon"
 spawn-at-startup "sh" "-lc" "sleep 1; swww img ~/wallpapers/fond.jpg --transition-type fade --transition-duration 1"
 spawn-at-startup "axidev-osk"
 spawn-at-startup "sh" "-lc" "~/.config/kanata/kanata-tray"
+spawn-at-startup "sh" "-lc" "~/dotfiles/niri/.config/niri/autostart-desktop"
+spawn-at-startup "sh" "-lc" "nm-applet --indicator"
+spawn-at-startup "sh" "-lc" "/usr/libexec/xdg-desktop-portal-wlr"
+spawn-at-startup "sh" "-lc" "/usr/libexec/xdg-desktop-portal-gtk"
 
 animations {
     off
+}
+window-rule {
+    match title=r#"(?i)(picture.in.picture|picture-in-picture|pip|image.dans.l.image)"#
+    open-floating true
+    open-focused true
+}
+
+window-rule {
+    match app-id=r#"(?i)pwvucontrol|org\.pulseaudio\.pwvucontrol"#
+    open-floating true
+    open-focused true
+}
+
+window-rule {
+    match title="Brightness"
+    open-floating true
+    open-focused true
 }
 
 binds {
@@ -75,6 +108,7 @@ binds {
 
     Mod+I hotkey-overlay-title="Show hotkeys" { show-hotkey-overlay; }
     Mod+Space hotkey-overlay-title="Search apps, commands, and files" { spawn "fuzzel"; }
+    Mod+X { spawn-sh "kill -USR2 $(pgrep -x handy)"; }
 
     Mod+H { focus-column-left; }
     Mod+Left { focus-column-left; }

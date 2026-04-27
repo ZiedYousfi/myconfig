@@ -1,0 +1,222 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_NAME="Optimus Manager"
+NVIDIA_ENV=(
+    "__NV_PRIME_RENDER_OFFLOAD=1"
+    "__GLX_VENDOR_LIBRARY_NAME=nvidia"
+    "__VK_LAYER_NV_optimus=NVIDIA_only"
+)
+TERMINAL="${TERMINAL:-wezterm}"
+
+notify() {
+    notify-send "$APP_NAME" "$1" >/dev/null 2>&1 || true
+}
+
+nvidia_driver() {
+    lspci -nnk | awk '
+        /NVIDIA/ { seen=1 }
+        seen && /Kernel driver in use:/ {
+            sub(/.*Kernel driver in use: /, "")
+            print
+            exit
+        }
+    '
+}
+
+status_text() {
+    local driver switcheroo nvidia_version mode
+    driver="$(nvidia_driver)"
+    driver="${driver:-not bound}"
+    switcheroo="$(systemctl is-active switcheroo-control 2>/dev/null || true)"
+    nvidia_version="$(modinfo -F version nvidia 2>/dev/null || true)"
+    nvidia_version="${nvidia_version:-not installed}"
+    mode="$(query_mode)"
+
+    printf 'GPU: Intel + NVIDIA hybrid\n'
+    printf 'Requested mode: %s\n' "$mode"
+    printf 'NVIDIA driver bound now: %s\n' "$driver"
+    printf 'NVIDIA kernel module: %s\n' "$nvidia_version"
+    printf 'switcheroo-control: %s\n' "${switcheroo:-unknown}"
+    printf 'Mode switcher: %s\n' "$(command -v envycontrol || printf 'not installed')"
+
+    if [[ "$driver" == "nouveau" ]]; then
+        printf '\nNVIDIA RPM Fusion driver is installed, but nouveau owns the GPU in this boot. Reboot to let the NVIDIA driver bind.\n'
+    fi
+}
+
+query_mode() {
+    if command -v envycontrol >/dev/null 2>&1; then
+        envycontrol --query 2>/dev/null || printf 'unknown'
+        return
+    fi
+
+    if [[ "$(nvidia_driver)" == "nouveau" ]]; then
+        printf 'hybrid/current boot using nouveau'
+    else
+        printf 'unknown (install EnvyControl for explicit integrated/hybrid/nvidia modes)'
+    fi
+}
+
+run_in_terminal() {
+    local title="$1"
+    local command="$2"
+
+    if command -v "$TERMINAL" >/dev/null 2>&1; then
+        "$TERMINAL" start --title "$title" -- sh -lc "$command" >/dev/null 2>&1 &
+    elif command -v xterm >/dev/null 2>&1; then
+        xterm -T "$title" -e sh -lc "$command" >/dev/null 2>&1 &
+    else
+        notify "No terminal found for: $command"
+        return 1
+    fi
+}
+
+install_envycontrol() {
+    run_in_terminal "Install EnvyControl" \
+        "sudo dnf copr enable sunwire/envycontrol && sudo dnf install -y python3-envycontrol; printf '\nDone. Press Enter to close.'; read _"
+}
+
+set_mode() {
+    local mode="$1"
+    local extra="${2:-}"
+
+    if ! command -v envycontrol >/dev/null 2>&1; then
+        notify "Install EnvyControl first from the tray menu."
+        install_envycontrol
+        return
+    fi
+
+    run_in_terminal "Set GPU mode: $mode" \
+        "sudo envycontrol -s $mode $extra; printf '\nReboot required for GPU mode changes. Press Enter to close.'; read _"
+}
+
+show_status() {
+    local text
+    text="$(status_text)"
+    if command -v yad >/dev/null 2>&1; then
+        yad --title="$APP_NAME" --width=440 --height=240 --text-info --button=OK --filename=<(printf '%s\n' "$text") 2>/dev/null || true
+    else
+        notify "$text"
+    fi
+}
+
+run_on_nvidia() {
+    env "${NVIDIA_ENV[@]}" "$@" >/dev/null 2>&1 &
+    notify "Started on NVIDIA: $*"
+}
+
+prompt_command() {
+    local command_line
+    command_line="$(
+        yad --entry \
+            --title="$APP_NAME" \
+            --text="Command to run with NVIDIA Prime offload:" \
+            --entry-text="" \
+            --width=460 2>/dev/null || true
+    )"
+
+    [[ -n "$command_line" ]] || exit 0
+    env "${NVIDIA_ENV[@]}" sh -lc "$command_line" >/dev/null 2>&1 &
+    notify "Started on NVIDIA: $command_line"
+}
+
+open_settings() {
+    run_on_nvidia nvidia-settings
+}
+
+open_terminal() {
+    run_on_nvidia wezterm
+}
+
+run_tray() {
+    if ! python3 - <<'PY' >/dev/null 2>&1
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("AppIndicator3", "0.1")
+from gi.repository import AppIndicator3, Gtk
+PY
+    then
+        notify "AppIndicator support is missing."
+        exit 1
+    fi
+
+    exec python3 - "$0" "$(nvidia_driver || true)" "$(query_mode)" "$(command -v envycontrol || true)" <<'PY'
+import subprocess
+import sys
+
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("AppIndicator3", "0.1")
+from gi.repository import AppIndicator3, Gtk
+
+script = sys.argv[1]
+driver = sys.argv[2] or "not bound"
+mode = sys.argv[3] or "unknown"
+envycontrol = sys.argv[4]
+
+indicator = AppIndicator3.Indicator.new(
+    "optimus-manager-fedora",
+    "nvidia-settings",
+    AppIndicator3.IndicatorCategory.HARDWARE,
+)
+indicator.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
+indicator.set_title("Optimus Manager")
+
+menu = Gtk.Menu()
+
+status = Gtk.MenuItem(label=f"Mode: {mode}")
+status.set_sensitive(False)
+menu.append(status)
+driver_item = Gtk.MenuItem(label=f"NVIDIA driver: {driver}")
+driver_item.set_sensitive(False)
+menu.append(driver_item)
+menu.append(Gtk.SeparatorMenuItem())
+
+def add_item(label, *args, quit_after=False):
+    item = Gtk.MenuItem(label=label)
+
+    def activate(_item):
+        subprocess.Popen([script, *args])
+        if quit_after:
+            Gtk.main_quit()
+
+    item.connect("activate", activate)
+    menu.append(item)
+
+add_item("Use Intel only", "integrated")
+add_item("Use Hybrid", "hybrid")
+add_item("Use NVIDIA only", "nvidia")
+menu.append(Gtk.SeparatorMenuItem())
+if not envycontrol:
+    add_item("Install EnvyControl", "install-envycontrol")
+    menu.append(Gtk.SeparatorMenuItem())
+add_item("Run app on NVIDIA...", "run")
+add_item("Open WezTerm on NVIDIA", "terminal")
+add_item("Open NVIDIA Settings", "settings")
+menu.append(Gtk.SeparatorMenuItem())
+add_item("Show status", "status")
+add_item("Quit tray", "quit", quit_after=True)
+
+menu.show_all()
+indicator.set_menu(menu)
+Gtk.main()
+PY
+}
+
+case "${1:-tray}" in
+    tray) run_tray ;;
+    status) show_status ;;
+    install-envycontrol) install_envycontrol ;;
+    integrated) set_mode integrated ;;
+    hybrid) set_mode hybrid "--rtd3 3" ;;
+    nvidia) set_mode nvidia ;;
+    run) prompt_command ;;
+    settings) open_settings ;;
+    terminal) open_terminal ;;
+    quit) exit 0 ;;
+    *)
+        echo "Usage: $0 [tray|status|run|settings|terminal|quit]" >&2
+        exit 2
+        ;;
+esac
