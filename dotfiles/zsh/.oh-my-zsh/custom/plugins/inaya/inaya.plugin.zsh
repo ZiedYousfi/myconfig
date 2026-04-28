@@ -33,8 +33,8 @@ export LC_ALL=en_US.UTF-8
 
 export VI_MODE_SET_CURSOR=true
 
-export EDITOR="nvim"
-export VISUAL="nvim"
+export EDITOR="zed --wait"
+export VISUAL="zed --wait"
 
 export TERM="xterm-256color"
 
@@ -268,11 +268,11 @@ elif $IS_LINUX; then
 fi
 
 # =========================
-# AI Commit (Codex clean)
+# AI Commit
 # =========================
 
 aic() {
-  local MODEL="${1:-gpt-5.4-mini}"
+  local MODEL="${1:-openai/gpt-5.4-mini}"
 
   local branch gitLog diffStat diff prompt message rawMessage choice
 
@@ -324,10 +324,7 @@ Rules:
 EOF
 )
 
-    rawMessage="$(printf "%s" "$prompt" | codex exec \
-      -m "$MODEL" \
-      -c model_reasoning_effort=low \
-      -c temperature=0.2)"
+    rawMessage="$(opencode run --model "$MODEL" --prompt "$prompt")"
 
     if [[ -z "$rawMessage" ]]; then
       echo "❌ Failed to generate commit message." >&2
@@ -337,7 +334,7 @@ EOF
     message="$(printf "%s" "$rawMessage" | tr -d '\r')"
 
     if [[ -z "$(printf "%s" "$message" | tr -d '[:space:]')" ]]; then
-      echo "❌ Codex returned an empty commit message." >&2
+      echo "❌ opencode returned an empty commit message." >&2
       return 1
     fi
 
