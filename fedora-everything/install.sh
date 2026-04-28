@@ -710,6 +710,18 @@ EOF
     fi
 }
 
+label_axidev_osk_install() {
+    # The greeter runs confined enough that a copied venv labeled user_home_t can
+    # look executable but still fail with EACCES under SELinux.
+    if command -v restorecon >/dev/null 2>&1; then
+        restorecon -RFv "$AXIDEV_OSK_INSTALL_DIR" >/dev/null 2>&1 || true
+    fi
+
+    if command -v chcon >/dev/null 2>&1; then
+        chcon -R -t bin_t "$AXIDEV_OSK_INSTALL_DIR" >/dev/null 2>&1 || true
+    fi
+}
+
 install_axidev_osk() {
     local arch release_json version tmp_dir archive_path extracted_dir source_dir
     local osk_entrypoint="$AXIDEV_OSK_VENV_DIR/bin/axidev-osk"
@@ -729,6 +741,7 @@ install_axidev_osk() {
 
     if [[ -x "$osk_entrypoint" && -f "$AXIDEV_OSK_INSTALL_DIR/.version" ]] &&
         [[ "$(cat "$AXIDEV_OSK_INSTALL_DIR/.version")" == "$version" ]]; then
+        label_axidev_osk_install
         write_axidev_osk_wrapper
         log_success "Axidev OSK $version is already installed"
         return
@@ -768,12 +781,9 @@ install_axidev_osk() {
     "$AXIDEV_OSK_VENV_DIR/bin/python" -m pip install -e "$AXIDEV_OSK_INSTALL_DIR" --no-deps
     printf '%s\n' "$version" > "$AXIDEV_OSK_INSTALL_DIR/.version"
     chown -R root:root "$AXIDEV_OSK_INSTALL_DIR"
+    label_axidev_osk_install
     write_axidev_osk_wrapper
     rm -rf "$tmp_dir"
-
-    if command -v restorecon >/dev/null 2>&1; then
-        restorecon -RFv "$AXIDEV_OSK_INSTALL_DIR" >/dev/null 2>&1 || true
-    fi
 
     log_success "Axidev OSK $version installed"
 }
@@ -1640,6 +1650,7 @@ export GTK_THEME=Adwaita:dark
 export GTK_APPLICATION_PREFER_DARK_THEME=1
 export ADW_DISABLE_PORTAL=1
 export AXIDEV_OSK_OVERLAY_BACKEND=wayland-layer-shell
+export XDG_SESSION_TYPE=wayland
 
 echo "QT_PLUGIN_PATH=${QT_PLUGIN_PATH:-}"
 echo "WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-}"
@@ -1659,15 +1670,22 @@ if [[ -n "${XDG_RUNTIME_DIR:-}" && -n "${WAYLAND_DISPLAY:-}" && ! -S "$XDG_RUNTI
     echo "Wayland socket did not appear at $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY"
 fi
 
+status=1
 for attempt in 1 2 3 4 5; do
     echo "Launching axidev-osk (attempt $attempt)"
-    if /usr/local/bin/axidev-osk; then
+    set +e
+    /usr/local/bin/axidev-osk
+    status=$?
+    set -e
+    if [[ "$status" -eq 0 ]]; then
         exit 0
     fi
-    status=$?
     echo "axidev-osk exited with status $status"
     sleep 1
 done
+
+echo "axidev-osk failed after retries; ending greeter compositor so greetd fallback can take over"
+niri msg action quit --skip-confirmation >/dev/null 2>&1 || true
 
 exit "$status"
 EOF
@@ -1695,6 +1713,10 @@ vt = 1
 [default_session]
 command = "env GTK_USE_PORTAL=0 GDK_DEBUG=no-portals niri --config /etc/greetd/niri-config.kdl"
 user = "$GREETER_USER"
+
+[initial_session]
+command = "/usr/local/bin/niri-session"
+user = "$USERNAME"
 EOF
 
     cat > /etc/greetd/niri-config.kdl <<'EOF'

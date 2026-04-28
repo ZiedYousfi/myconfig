@@ -352,9 +352,13 @@ EOF
 
     case "${choice:l}" in
       y)
-        printf "%s\n" "$message" | git commit -F -
-        echo "✨ Commit created. Tiny machine goblin satisfied."
-        return 0
+        if printf "%s\n" "$message" | git commit -F -; then
+          echo "✨ Commit created. Tiny machine goblin satisfied."
+          return 0
+        fi
+
+        echo "❌ Commit failed. Nothing was committed." >&2
+        return 1
         ;;
       r)
         echo "🔁 Retrying... maybe the robot was feeling silly."

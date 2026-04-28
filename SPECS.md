@@ -426,7 +426,7 @@ repo: Fedora, Ubuntu, and macOS. Windows keeps its own native package list.
 - 1Password
 - 1Password CLI
 - Google Chrome
-- Docker
+<!--- Docker-->
 - Ollama
 - OpenAI Codex
 - T3 Code
