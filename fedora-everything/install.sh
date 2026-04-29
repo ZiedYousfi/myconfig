@@ -223,7 +223,7 @@ configure_third_party_repos() {
     configure_1password_repo
     configure_docker_repo || log_warning "Docker repository setup failed; docker-ce packages will be skipped"
 
-    # RPM Fusion 
+    # RPM Fusion
     log_info "Configuring RPM Fusion repositories (free and nonfree)"
 
     if ! dnf -y install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm; then
@@ -456,8 +456,8 @@ install_all_packages() {
         docker-buildx-plugin
         docker-compose-plugin
 
-        # G@MING 
-        lutris 
+        # G@MING
+        lutris
         steam
     )
 
@@ -1088,9 +1088,7 @@ write_dark_mode_preferences() {
     ensure_user_owned_dir "$env_dir"
     cat > "$env_dir/90-dark-mode.conf" <<'EOF'
 # Managed by setup-config: prefer dark UI across Wayland toolkits.
-GTK_THEME=Adwaita:dark
 GTK_APPLICATION_PREFER_DARK_THEME=1
-ADW_DISABLE_PORTAL=1
 QT_QPA_PLATFORM=wayland;xcb
 QT_QPA_PLATFORMTHEME=qt6ct
 QT_QUICK_CONTROLS_STYLE=Fusion
@@ -1151,7 +1149,6 @@ EOF
     chown -R "$USERNAME:$USERNAME" "$env_dir" "$gtk3_dir" "$gtk4_dir" "$qt5ct_dir" "$qt6ct_dir"
 
     run_as_user dbus-run-session gsettings set org.gnome.desktop.interface color-scheme prefer-dark >/dev/null 2>&1 || true
-    run_as_user dbus-run-session gsettings set org.gnome.desktop.interface gtk-theme Adwaita-dark >/dev/null 2>&1 || true
     run_as_user dbus-run-session gsettings set org.gnome.desktop.interface icon-theme Adwaita >/dev/null 2>&1 || true
 
     log_success "Dark-mode preferences written"
@@ -1562,9 +1559,7 @@ export XDG_SESSION_TYPE=wayland
 export XDG_SESSION_DESKTOP=niri
 export GTK_USE_PORTAL=1
 
-export GTK_THEME=Adwaita:dark
 export GTK_APPLICATION_PREFER_DARK_THEME=1
-export ADW_DISABLE_PORTAL=1
 export MOZ_ENABLE_WAYLAND=1
 export ELECTRON_OZONE_PLATFORM_HINT=wayland
 export QT_QPA_PLATFORM='wayland;xcb'
@@ -1612,7 +1607,7 @@ cleanup() {
 
 trap cleanup EXIT INT TERM
 
-env GTK_THEME=Adwaita:dark GTK_APPLICATION_PREFER_DARK_THEME=1 ADW_DISABLE_PORTAL=1 gtkgreet --layer-shell --command /usr/local/bin/niri-session
+env GTK_APPLICATION_PREFER_DARK_THEME=1 gtkgreet --layer-shell --command /usr/local/bin/niri-session
 EOF
 
     cat > /usr/local/bin/greetd-axidev-osk <<'EOF'
@@ -1642,9 +1637,7 @@ export QT_QPA_PLATFORM=wayland
 export QT_QPA_PLATFORMTHEME=qt6ct
 export QT_QUICK_CONTROLS_STYLE=Fusion
 export QT_WAYLAND_SHELL_INTEGRATION=layer-shell
-export GTK_THEME=Adwaita:dark
 export GTK_APPLICATION_PREFER_DARK_THEME=1
-export ADW_DISABLE_PORTAL=1
 export AXIDEV_OSK_OVERLAY_BACKEND=wayland-layer-shell
 export XDG_SESSION_TYPE=wayland
 
