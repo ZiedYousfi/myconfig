@@ -324,7 +324,7 @@ Rules:
 EOF
 )
 
-    rawMessage="$(opencode run --model "$MODEL" --prompt "$prompt")"
+    rawMessage="$(opencode run --model "$MODEL" "$prompt")"
 
     if [[ -z "$rawMessage" ]]; then
       echo "❌ Failed to generate commit message." >&2
