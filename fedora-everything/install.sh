@@ -198,6 +198,12 @@ run_as_user() {
     runuser -u "$USERNAME" -- "$@"
 }
 
+install_zed() {
+    if [[ ! curl -f https://zed.dev/install.sh | sh ]] then
+        log_error "Could not install Zed"
+    fi
+}
+
 configure_third_party_repos() {
     log_info "Configuring third-party repositories (COPRs, 1Password, Docker)"
 
@@ -212,14 +218,6 @@ configure_third_party_repos() {
 
     if ! dnf -y copr enable wezfurlong/wezterm-nightly; then
         log_warning "Could not enable the WezTerm COPR; continuing without it"
-    fi
-
-    if ! dnf -y copr enable sureclaw/codex; then
-        log_warning "Could not enable the Codex COPR; continuing without it"
-    fi
-
-    if ! dnf -y copr enable burningpho3nix/T3-Code; then
-        log_warning "Could not enable the T3 Code COPR; continuing without it"
     fi
 
     configure_1password_repo
@@ -438,8 +436,6 @@ install_all_packages() {
         blender
         krita
         kdenlive
-        codex
-        t3code
         akmods
         mokutil
         openssl
@@ -1769,6 +1765,7 @@ main() {
     detect_greeter_user
     install_axidev_osk
     install_kanata
+    install_zed
     setup_axidev_osk_permissions
     setup_kanata_permissions
     configure_audio_stack
