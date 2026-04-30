@@ -8,32 +8,35 @@ setopt prompt_subst
 
 autoload -Uz vcs_info
 
-zstyle ':vcs_info:*' enable hg bzr git
-zstyle ':vcs_info:*:*' unstagedstr '%F{red}!%f'
-zstyle ':vcs_info:*:*' stagedstr '%F{green}+%f'
-zstyle ':vcs_info:*:*' formats '%B%r%b/%S' '%s:%b' '%%u%c'
-zstyle ':vcs_info:*:*' actionformats '%B%r%b/%S' '%s:%b' '%u%c (%a)'
-zstyle ':vcs_info:*:*' nvcsformats '%~' '' ''
+zstyle ':vcs_info:*' enable git hg bzr
+zstyle ':vcs_info:*:*' check-for-changes true
+zstyle ':vcs_info:*:*' unstagedstr '!'
+zstyle ':vcs_info:*:*' stagedstr '+'
+zstyle ':vcs_info:git:*'   formats       '%b' '%u%c'
+zstyle ':vcs_info:git:*'   actionformats '%b|%a' '%u%c'
+zstyle ':vcs_info:hg:*'    formats       '%b' '%u%c'
+zstyle ':vcs_info:bzr:*'   formats       '%b' '%u%c'
 
 blacknpink_git_dirty() {
     command git rev-parse --is-inside-work-tree &>/dev/null || return
-    command git diff --quiet --ignore-submodules HEAD &>/dev/null
-    [[ $? -eq 1 ]] && print -n '%F{magenta}*%f'
+    if ! command git diff --quiet --ignore-submodules HEAD &>/dev/null; then
+        print -n '%F{magenta}●%f'
+    fi
 }
 
 blacknpink_repo_information() {
-    local location="${vcs_info_msg_0_%%/.}"
-    local repo="${vcs_info_msg_1_}"
-    local state="${vcs_info_msg_2_}"
-    local dirty
+    local branch="${vcs_info_msg_0_}"
+    local state="${vcs_info_msg_1_}"
+    local out="%F{magenta}%~%f"
 
-    dirty="$(blacknpink_git_dirty)"
-
-    if [[ -n "$repo" ]]; then
-        print -n "%F{magenta}${location}%f %F{8}${repo}${dirty} ${state}%f"
-    else
-        print -n "%F{white}${location}%f"
+    if [[ -n "$branch" ]]; then
+        out+=" %F{8}on %f%F{magenta}${branch}%f"
+        [[ -n "$state" ]] && out+=" %F{red}${state}%f"
+        local dirty="$(blacknpink_git_dirty)"
+        [[ -n "$dirty" ]] && out+=" ${dirty}"
     fi
+
+    print -n "$out"
 }
 
 blacknpink_cmd_exec_time() {
@@ -41,7 +44,7 @@ blacknpink_cmd_exec_time() {
     local start="${cmd_timestamp:-$stop}"
     local elapsed=$(( stop - start ))
 
-    (( elapsed > 5 )) && print -n "${elapsed}s"
+    (( elapsed > 5 )) && print -n " %F{yellow}${elapsed}s%f"
 }
 
 preexec() {
@@ -52,9 +55,14 @@ precmd() {
     setopt localoptions nopromptsubst
 
     vcs_info
-    print -P "\n$(blacknpink_repo_information) %F{yellow}$(blacknpink_cmd_exec_time)%f"
+    print -P "\n$(blacknpink_repo_information)$(blacknpink_cmd_exec_time)"
     unset cmd_timestamp
 }
 
+blacknpink_ssh_info() {
+    [[ -n "$SSH_TTY" || -n "$SSH_CONNECTION" || -n "$SSH_CLIENT" ]] || return
+    print -n "%F{8}%n@%m%f"
+}
+
 PROMPT='%(?.%F{magenta}.%F{red})❯%f '
-RPROMPT='%F{8}${SSH_TTY:+%n@%m}%f'
+RPROMPT='$(blacknpink_ssh_info)'

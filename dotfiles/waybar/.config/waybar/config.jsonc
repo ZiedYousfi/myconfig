@@ -56,6 +56,7 @@
     "calendar": {
       "mode": "year",
       "mode-mon-col": 3,
+      "first-day-of-week": 1,
       "weeks-pos": "right",
       "on-scroll": 1,
       "on-click-right": "mode",
