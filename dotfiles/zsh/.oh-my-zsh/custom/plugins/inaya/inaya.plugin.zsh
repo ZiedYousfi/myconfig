@@ -106,6 +106,10 @@ if has fastfetch; then
     alias ff='fastfetch'
 fi
 
+if has hyfetch; then
+    alias hf='hyfetch'
+fi
+
 if has opencode; then
     alias oc='opencode'
 fi
@@ -486,3 +490,7 @@ cleanup() {
 
   echo "Process complete. May the light guide your steps. 🌟"
 }
+
+if has hyfetch; then
+    hyfetch
+fi

@@ -17,10 +17,10 @@ config.font = wezterm.font_with_fallback({
 })
 config.font_size = 16.0
 
-config.color_scheme = "BlackPink"
+config.color_scheme = "blacknpink"
 
 config.color_schemes = {
-	["BlackPink"] = {
+	["blacknpink"] = {
 		foreground = "#d0d6e0",
 		background = "#000000",
 		cursor_bg = "#ff4ead",
@@ -85,7 +85,7 @@ config.use_fancy_tab_bar = false
 config.show_new_tab_button_in_tab_bar = false
 config.tab_max_width = 32
 
-config.window_background_opacity = 0.9
+config.window_background_opacity = 0.75
 config.line_height = 1
 config.window_padding = {
 	left = 0,

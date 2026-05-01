@@ -9,12 +9,12 @@ input {
 
         numlock
      }
-     
+
      mouse {
          accel-speed 1.0
          accel-profile "flat"
      }
- 
+
      touchpad {
          tap
          natural-scroll
@@ -68,14 +68,13 @@ screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
 spawn-at-startup "mako"
 spawn-at-startup "waybar"
-spawn-at-startup "swww-daemon"
-spawn-at-startup "sh" "-lc" "sleep 1; swww img ~/wallpapers/fond.jpg --transition-type fade --transition-duration 1"
 spawn-at-startup "axidev-osk"
 spawn-at-startup "sh" "-lc" "~/.config/kanata/kanata-tray"
 spawn-at-startup "sh" "-lc" "~/dotfiles/niri/.config/niri/autostart-desktop"
 spawn-at-startup "sh" "-lc" "nm-applet --indicator"
 spawn-at-startup "sh" "-lc" "/usr/libexec/xdg-desktop-portal-wlr"
 spawn-at-startup "sh" "-lc" "/usr/libexec/xdg-desktop-portal-gtk"
+spawn-at-startup "sh" "-lc" "swaybg -i ~/wallpaper/menhara_mtf_hihi.png -m fill"
 
 animations {
     off
@@ -101,7 +100,7 @@ window-rule {
 
 binds {
     Mod+F hotkey-overlay-title="Reset column width preset" { switch-preset-column-width; }
-    
+
     Mod+T hotkey-overlay-title="Open WezTerm" { spawn "wezterm"; }
     Mod+Q hotkey-overlay-title=null { close-window; }
     Mod+Escape allow-inhibiting=false hotkey-overlay-title="Toggle shortcut inhibition" { toggle-keyboard-shortcuts-inhibit; }
