@@ -74,7 +74,7 @@ spawn-at-startup "sh" "-lc" "~/dotfiles/niri/.config/niri/autostart-desktop"
 spawn-at-startup "sh" "-lc" "nm-applet --indicator"
 spawn-at-startup "sh" "-lc" "/usr/libexec/xdg-desktop-portal-wlr"
 spawn-at-startup "sh" "-lc" "/usr/libexec/xdg-desktop-portal-gtk"
-spawn-at-startup "sh" "-lc" "swaybg -i ~/wallpaper/menhara_mtf_hihi.png -m fill"
+spawn-at-startup "sh" "-lc" "swaybg -i ~/wallpaper/menhara_mtf_hihi_topazlabs_upscale.png -m fill"
 
 animations {
     off
