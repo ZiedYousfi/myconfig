@@ -24,6 +24,7 @@ NC='\033[0m'
 
 SHARED_DOTFILE_PACKAGES=(
     fuzzel
+    hyfetch
     lazygit
     mako
     autostart
@@ -33,6 +34,7 @@ SHARED_DOTFILE_PACKAGES=(
     local
     nvim
     tmux
+    wallpaper
     waybar
     wezterm
     yazi
@@ -332,7 +334,7 @@ install_all_packages() {
         yad
         fuzzel
         mako
-        swww
+        swaybg
         grim
         slurp
         wl-clipboard
@@ -407,6 +409,7 @@ install_all_packages() {
         eza
         bat
         fastfetch
+        hyfetch
         yazi
         wezterm
         btop
