@@ -85,7 +85,7 @@ config.use_fancy_tab_bar = false
 config.show_new_tab_button_in_tab_bar = false
 config.tab_max_width = 32
 
-config.window_background_opacity = 0.75
+config.window_background_opacity = 0.85
 config.line_height = 1
 config.window_padding = {
 	left = 0,
