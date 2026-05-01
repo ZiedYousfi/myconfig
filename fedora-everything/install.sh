@@ -350,6 +350,7 @@ install_all_packages() {
         alsa-firmware
         sof-firmware
         pamixer
+        
         # Flatpak runtime so we can install pwvucontrol from Flathub
         # (pwvucontrol is not in Fedora's main repos and upstream only
         # officially supports Flatpak).
@@ -436,9 +437,6 @@ install_all_packages() {
         poppler-utils
         resvg
         ImageMagick
-        blender
-        krita
-        kdenlive
         akmods
         mokutil
         openssl
@@ -447,10 +445,6 @@ install_all_packages() {
         xorg-x11-drv-nvidia-cuda
         switcheroo-control
         nvidia-settings
-
-        # Desktop apps
-        1password
-        1password-cli
 
         # Docker
         docker-ce
