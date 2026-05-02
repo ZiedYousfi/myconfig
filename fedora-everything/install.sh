@@ -549,16 +549,22 @@ secure_boot_enabled() {
     [[ "$value" == "1" ]]
 }
 
-enable_refind_mouse() {
-    # Source of truth: dotfiles/refind/mouse.conf
+configure_refind_globals() {
+    # Source of truth: dotfiles/refind/global.conf
+    #
+    # Installs the managed snippet as /boot/efi/EFI/refind/managed.conf and
+    # adds a single `include managed.conf` line to refind.conf. This keeps
+    # the global overrides in the global section (above any OS stanzas) and
+    # mirrors the include-based approach used by the theme installer.
     local refind_dir="/boot/efi/EFI/refind"
     local refind_conf="$refind_dir/refind.conf"
     local sample_conf="$refind_dir/refind.conf-sample"
-    local managed_comment="# Managed by setup-config: enable rEFInd mouse input"
-    local snippet_src="$SHARED_DOTFILES_DIR/refind/mouse.conf"
+    local managed_dst="$refind_dir/managed.conf"
+    local managed_comment="# Managed by setup-config: global overrides"
+    local snippet_src="$SHARED_DOTFILES_DIR/refind/global.conf"
 
     if [[ ! -d "$refind_dir" ]]; then
-        log_warning "rEFInd directory was not found at $refind_dir; skipping mouse configuration."
+        log_warning "rEFInd directory was not found at $refind_dir; skipping global configuration."
         return
     fi
 
@@ -568,24 +574,25 @@ enable_refind_mouse() {
     fi
 
     if [[ ! -f "$refind_conf" ]]; then
-        log_warning "rEFInd config was not found at $refind_conf; skipping mouse configuration."
+        log_warning "rEFInd config was not found at $refind_conf; skipping global configuration."
         return
     fi
 
     if [[ ! -f "$snippet_src" ]]; then
-        log_warning "rEFInd mouse snippet was not found at $snippet_src; skipping mouse configuration."
+        log_warning "rEFInd global snippet was not found at $snippet_src; skipping global configuration."
         return
     fi
 
-    # Strip any previous managed block (the comment line plus the next line),
-    # then append the current snippet from dotfiles/refind/.
+    # Drop the canonical snippet next to refind.conf.
+    install -m 0644 "$snippet_src" "$managed_dst"
+
+    # Remove any previous managed include line, then append a fresh one.
     if grep -Fq "$managed_comment" "$refind_conf"; then
         sed -i "\|$managed_comment|,+1d" "$refind_conf"
     fi
 
-    printf '\n' >> "$refind_conf"
-    cat "$snippet_src" >> "$refind_conf"
-    log_success "rEFInd mouse support enabled (from $snippet_src)"
+    printf '\n%s\ninclude managed.conf\n' "$managed_comment" >> "$refind_conf"
+    log_success "rEFInd global overrides installed (from $snippet_src)"
 }
 
 configure_refind_theme() {
@@ -659,7 +666,7 @@ install_refind() {
 
     log_info "Installing rEFInd into the EFI System Partition"
     "${cmd[@]}"
-    enable_refind_mouse
+    configure_refind_globals
     configure_refind_theme
     log_success "rEFInd installed"
 }
