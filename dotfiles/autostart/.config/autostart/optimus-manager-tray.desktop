@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Optimus Manager Tray
-Comment=Fedora NVIDIA Prime offload tray helper
-Exec=sh -lc "$HOME/.local/bin/optimus-manager-tray"
-Terminal=false
-X-GNOME-Autostart-enabled=true

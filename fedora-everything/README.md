@@ -31,7 +31,7 @@ curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.
 - Installs media, file, and creative tools such as FFmpeg, 7-Zip, Poppler, resvg, ImageMagick, Thunar, Blender, Krita, Kdenlive, and Audacity
 - Installs Wi-Fi support packages for NetworkManager, Intel Wi-Fi firmware splits, `nm-applet`, and NetworkManager connection editing tools
 - Installs KDE Connect, enables `firewalld`, and opens the KDE Connect firewall service
-- Installs RPM Fusion NVIDIA/Optimus packages and writes `~/enroll-secure-boot-nvidia.sh` so one shared MOK key signs both NVIDIA kernel modules and rEFInd
+- Installs RPM Fusion NVIDIA packages and writes `~/enroll-secure-boot-nvidia.sh` so one shared MOK key signs both NVIDIA kernel modules and rEFInd
 - Installs `Iosevka Nerd Font` for the shared WezTerm profile and Yazi icons
 - Enables the `lihaohong/yazi` COPR before the optional `yazi` install
 - Enables the `dejan/lazygit` COPR before the optional `lazygit` install

@@ -443,7 +443,6 @@ install_all_packages() {
         sbsigntools
         akmod-nvidia
         xorg-x11-drv-nvidia-cuda
-        switcheroo-control
         nvidia-settings
 
         # Docker
@@ -970,9 +969,7 @@ configure_kde_connect() {
 configure_nvidia_stack() {
     local helper_script="$USER_HOME/enroll-secure-boot-nvidia.sh"
 
-    log_info "Configuring NVIDIA Optimus support and shared rEFInd/NVIDIA MOK signing"
-
-    systemctl enable --now switcheroo-control || log_warning "Could not enable switcheroo-control"
+    log_info "Configuring shared rEFInd/NVIDIA MOK signing"
 
     cat > "$helper_script" <<'EOF'
 #!/usr/bin/env bash
