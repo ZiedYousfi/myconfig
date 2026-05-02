@@ -550,10 +550,12 @@ secure_boot_enabled() {
 }
 
 enable_refind_mouse() {
+    # Source of truth: dotfiles/refind/mouse.conf
     local refind_dir="/boot/efi/EFI/refind"
     local refind_conf="$refind_dir/refind.conf"
     local sample_conf="$refind_dir/refind.conf-sample"
     local managed_comment="# Managed by setup-config: enable rEFInd mouse input"
+    local snippet_src="$SHARED_DOTFILES_DIR/refind/mouse.conf"
 
     if [[ ! -d "$refind_dir" ]]; then
         log_warning "rEFInd directory was not found at $refind_dir; skipping mouse configuration."
@@ -570,62 +572,57 @@ enable_refind_mouse() {
         return
     fi
 
+    if [[ ! -f "$snippet_src" ]]; then
+        log_warning "rEFInd mouse snippet was not found at $snippet_src; skipping mouse configuration."
+        return
+    fi
+
+    # Strip any previous managed block (the comment line plus the next line),
+    # then append the current snippet from dotfiles/refind/.
     if grep -Fq "$managed_comment" "$refind_conf"; then
         sed -i "\|$managed_comment|,+1d" "$refind_conf"
     fi
 
-    printf '\n%s\nenable_mouse true\n' "$managed_comment" >> "$refind_conf"
-    log_success "rEFInd mouse support enabled"
+    printf '\n' >> "$refind_conf"
+    cat "$snippet_src" >> "$refind_conf"
+    log_success "rEFInd mouse support enabled (from $snippet_src)"
 }
 
 configure_refind_theme() {
+    # Source of truth: dotfiles/refind/themes/black-pink/
     local refind_dir="/boot/efi/EFI/refind"
     local refind_conf="$refind_dir/refind.conf"
     local theme_dir="$refind_dir/themes/black-pink"
     local theme_conf="$theme_dir/theme.conf"
     local managed_comment="# Managed by setup-config: black-pink minimal theme"
-    local image_tool=""
+    local theme_src="$SHARED_DOTFILES_DIR/refind/themes/black-pink"
+    local theme_conf_src="$theme_src/theme.conf"
+    local theme_assets_script="$theme_src/generate-theme-assets.sh"
 
     if [[ ! -d "$refind_dir" || ! -f "$refind_conf" ]]; then
         log_warning "rEFInd config was not found; skipping rEFInd theme setup."
         return
     fi
 
-    if command -v magick >/dev/null 2>&1; then
-        image_tool="magick"
-    elif command -v convert >/dev/null 2>&1; then
-        image_tool="convert"
-    else
+    if [[ ! -f "$theme_conf_src" || ! -x "$theme_assets_script" ]]; then
+        log_warning "rEFInd theme sources were not found under $theme_src; skipping rEFInd theme setup."
+        return
+    fi
+
+    if ! command -v magick >/dev/null 2>&1 && ! command -v convert >/dev/null 2>&1; then
         log_warning "ImageMagick was not found; skipping rEFInd theme asset generation."
         return
     fi
 
-    log_info "Installing black-pink rEFInd theme"
+    log_info "Installing black-pink rEFInd theme (from $theme_src)"
 
     install -d "$theme_dir"
 
-    "$image_tool" -size 1920x1080 xc:'#000000' \
-        -fill '#ff4ead' -draw 'rectangle 0,1076 1920,1080' \
-        "$theme_dir/banner.png"
-    "$image_tool" -size 144x144 xc:none \
-        -fill 'rgba(255,78,173,0.16)' -draw 'roundrectangle 2,2 142,142 12,12' \
-        -stroke '#ff4ead' -strokewidth 3 -fill none -draw 'roundrectangle 2,2 142,142 12,12' \
-        "$theme_dir/selection_big.png"
-    "$image_tool" -size 64x64 xc:none \
-        -fill 'rgba(255,78,173,0.16)' -draw 'roundrectangle 1,1 63,63 6,6' \
-        -stroke '#ff4ead' -strokewidth 2 -fill none -draw 'roundrectangle 1,1 63,63 6,6' \
-        "$theme_dir/selection_small.png"
+    # Regenerate PNG assets from the canonical script.
+    "$theme_assets_script" "$theme_dir"
 
-    cat > "$theme_conf" <<'EOF'
-# Managed by setup-config.
-banner themes/black-pink/banner.png
-banner_scale fillscreen
-selection_big themes/black-pink/selection_big.png
-selection_small themes/black-pink/selection_small.png
-hideui hints,label,singleuser,arrows,badges
-showtools reboot,shutdown,firmware
-use_graphics_for linux,windows
-EOF
+    # Copy the canonical theme.conf into place.
+    install -m 0644 "$theme_conf_src" "$theme_conf"
 
     if grep -Fq "$managed_comment" "$refind_conf"; then
         sed -i "\|$managed_comment|,+1d" "$refind_conf"

@@ -56,7 +56,7 @@ curl -fsSL https://raw.githubusercontent.com/ZiedYousfi/myconfig/main/bootstrap.
 - Installs the repo Yazi config into `~/.config/yazi`, including `yazi.toml` with `nvim` as the editor
 - Installs Oh My Zsh plus `zsh-autosuggestions` and `zsh-syntax-highlighting`
 - Installs Oh My Tmux
-- Installs `rEFInd`, runs `refind-install`, enables mouse input in `refind.conf`, and adds a minimal black-pink rEFInd theme under `/boot/efi/EFI/refind/themes/black-pink`
+- Installs `rEFInd`, runs `refind-install`, enables mouse input in `refind.conf`, and adds a minimal black-pink rEFInd theme under `/boot/efi/EFI/refind/themes/black-pink` (the source-of-truth files live in [`../dotfiles/refind/`](../dotfiles/refind/) and are copied onto the ESP by the installer; they are not stowed)
 - Installs `gtkgreet`
 - Downloads the latest `axidev-osk-source.zip` release archive into a temp directory, extracts it into `/opt/axidev-osk`, creates a system venv there with `--system-site-packages`, refreshes `pip`/`setuptools`/`wheel`, installs the bundled `vendor/axidev-io-python` dependency plus `axidev-osk` itself with `pip --no-deps`, and writes `/usr/local/bin/axidev-osk` as a small launcher that enables Qt Wayland layer-shell support
 - Downloads the latest upstream Kanata `kanata-linux-x64.zip` release archive and installs the non-legacy Linux binary as `/usr/local/bin/kanata`
@@ -89,6 +89,7 @@ Fedora does not install repo files directly into place anymore.
 - `~/.config/niri` is also stowed unless `~/.config/niri/config.kdl` already exists as a regular file, in which case the installer leaves the existing session config untouched
 - `~/.config/waybar` is stowed from the shared repo package and the shared `niri` config starts `waybar` at session startup
 - The shared `niri` config also starts `swww-daemon`, applies `~/wallpapers/fond.jpg` with a fade transition, and starts `axidev-osk` plus `~/.config/kanata/kanata-tray` at session startup so the wallpaper, on-screen keyboard, and mouse-accessible Kanata profile switcher are available after login
+- `dotfiles/refind/` is **not** stowed because rEFInd lives on the EFI System Partition (FAT32, mounted at `/boot/efi`). The installer copies its contents onto `/boot/efi/EFI/refind/` instead. See [`../dotfiles/refind/README.md`](../dotfiles/refind/README.md) for what each file controls and how to update it.
 
 ## Kanata Profiles
 
@@ -125,7 +126,7 @@ The Fedora `niri` config follows the Windows `komorebi` + AHK workflow in this r
 
 - Fedora does not install or depend on Homebrew.
 - `rEFInd` is installed from Fedora packages and the installer runs `refind-install` to copy it onto the EFI System Partition.
-- The installer enables `rEFInd` mouse input by ensuring `enable_mouse true` is present in `/boot/efi/EFI/refind/refind.conf`.
+- The installer enables `rEFInd` mouse input by ensuring `enable_mouse true` is present in `/boot/efi/EFI/refind/refind.conf`. The snippet that gets appended is read from [`../dotfiles/refind/mouse.conf`](../dotfiles/refind/mouse.conf), and the black-pink theme is sourced from [`../dotfiles/refind/themes/black-pink/`](../dotfiles/refind/themes/black-pink/). To change rEFInd settings or theme, edit the files there and re-run `install.sh`; see [`../dotfiles/refind/README.md`](../dotfiles/refind/README.md) for details.
 - When Secure Boot is enabled, the installer tries to reuse Fedora's shim for the `rEFInd` install.
 - `gtkgreet` is installed from Fedora packages.
 - `axidev-osk` does not have a Fedora package yet, so the installer follows the upstream Fedora source-install path using the published `axidev-osk-source.zip` release archive and installs it under `/opt/axidev-osk`.

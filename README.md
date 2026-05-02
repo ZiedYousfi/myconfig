@@ -69,7 +69,7 @@ Available uninstall scripts:
 ## Documentation
 
 See [SPECS.md](SPECS.md) for complete configuration specifications and details about all installed components.
-For the Fedora Niri target, see [fedora-everything/README.md](fedora-everything/README.md).
+For the Fedora Niri target, see [fedora-everything/README.md](fedora-everything/README.md). The Fedora rEFInd boot-manager configuration (theme, mouse setting, generator script) lives in [dotfiles/refind/](dotfiles/refind/) — it is not stowed; the Fedora installer copies it onto the EFI System Partition at `/boot/efi/EFI/refind/`.
 
 ## Requirements
 
