@@ -29,6 +29,7 @@ SHARED_DOTFILE_PACKAGES=(
     mako
     autostart
     display
+    libinput
     niri
     kanata
     local
@@ -201,7 +202,7 @@ run_as_user() {
 }
 
 install_zed() {
-    if [[ ! curl -f https://zed.dev/install.sh | sh ]] then
+    if ! curl -f https://zed.dev/install.sh | sh; then
         log_error "Could not install Zed"
     fi
 }
@@ -888,6 +889,21 @@ EOF
     udevadm trigger --subsystem-match=input >/dev/null 2>&1 || true
 
     log_success "Kanata permissions configured for user: $USERNAME"
+}
+
+install_libinput_plugins() {
+    local source_plugin="$USER_DOTFILES_DIR/libinput/10-mouse-sensitivity.lua"
+    local target_plugin="/etc/libinput/plugins/10-mouse-sensitivity.lua"
+
+    if [[ ! -f "$source_plugin" ]]; then
+        log_warning "libinput plugin was not found at $source_plugin"
+        return
+    fi
+
+    log_info "Linking libinput plugin into /etc/libinput/plugins"
+    install -d "${target_plugin%/*}"
+    ln -sfn "$source_plugin" "$target_plugin"
+    log_success "libinput plugin linked"
 }
 
 configure_audio_stack() {
@@ -1759,6 +1775,7 @@ main() {
     install_zed
     setup_axidev_osk_permissions
     setup_kanata_permissions
+    install_libinput_plugins
     configure_audio_stack
     configure_networking
     configure_file_management
